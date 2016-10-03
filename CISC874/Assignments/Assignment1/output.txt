@@ -1,7 +1,7 @@
-Initial random weights for setosa versus non-setosa classification: -0.960000	-0.470000	-0.110000	-0.200000	0.850000	 (where w0 is the threshold)
-Initial random weights for versicolor versus virginica classification: -0.300000	-0.220000	-0.580000	0.690000	0.780000	 (where w0 is the threshold)
-Training epochs required to correctly classify all setosas versus non-setosas: 13
-Normalized weight vector which classifies setosas versus non-setosas: 	-0.231952	-0.007758	0.503314	-0.822766	-0.125976
+Initial random weights for setosa versus non-setosa classification: 0.890000	-0.390000	-0.970000	0.130000	-0.450000	 (where w0 is the threshold)
+Initial random weights for versicolor versus virginica classification: 0.470000	0.770000	-0.590000	-0.380000	-0.630000	 (where w0 is the threshold)
+Training epochs required to correctly classify all setosas versus non-setosas: 3
+Normalized weight vector which classifies setosas versus non-setosas: 	0.890000	0.870937	0.397125	0.155492	-0.244096
 Perceptron classified input pattern 0:	5.100000	3.500000	1.400000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
 Perceptron classified input pattern 1:	4.900000	3.000000	1.400000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
 Perceptron classified input pattern 2:	4.700000	3.200000	1.300000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa

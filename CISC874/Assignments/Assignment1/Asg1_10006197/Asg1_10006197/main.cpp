@@ -7,8 +7,8 @@
 #include <vector>
 #include <Windows.h>
 
-static const int MAX_TRAINING_EPOCHS = 1000;			// Need to allow for non-linearly seperable data
-static const char * dir = "C:\\Users\\church\\Documents\\Fall2016\\CISC874\\Assignments\\Assignment1";
+static const int MAX_TRAINING_EPOCHS = 100;			// Need to allow for non-linearly seperable data
+static const char * dir = "C:\\Users\\Ben\\Documents\\Masters16_17\\Fall2016\\CISC874\\Assignments\\Assignment1";
 
 using namespace std;
 
@@ -31,9 +31,6 @@ public:
 
 InputData ReadData();	// Both vectors will be populated by function and should be passed empty
 
-
-
-
 class Perceptron
 {
 	// Default constructors should work
@@ -42,7 +39,8 @@ public:
 	double VersicolorOrVirginicaWeights[5];
 	double Inputs[5];
 	double ActivationPotential = 0;
-	double LearningRate = 1;							// Try 1, doesn't have to be 1
+	double LearningRate = 0.5;							// Try 1, doesn't have to be 1
+	double ClassificationPolarization = 0;				// During error correction learning, perceptron tries to map inputs of different classes to (-/+)ClassificationPolarization 
 
 	ofstream Output;
 	void WriteData(string OutputData);
@@ -52,8 +50,11 @@ public:
 	void NormalizeWeights();							
 	void TrainForSetosaOrNot(vector<array<double, 4>> TrainingBiometrics, vector<string> TrainingSpeciesNames);
 	void TestForSetosaOrNot(vector<array<double, 4>> TestBiometrics, vector<string> TestSpeciesNames);
-  void TrainForVersicolorOrVirginica(vector<array<double, 4>> TrainingBiometrics, vector<string> TrainingSpeciesNames);
+	void TrainForVersicolorOrVirginica(vector<array<double, 4>> TrainingBiometrics, vector<string> TrainingSpeciesNames);
 	void TestForVersicolorOrVirginica(vector<array<double, 4>> TestBiometrics, vector<string> TestSpeciesNames);
+
+	bool ClassifySetosaOrNot(array<double, 4> Inputs, string CorrectName);
+	bool ClassifyVersicolorOrVirginica(array<double, 4> Inputs, string CorrectName);
 };
 
 
@@ -73,8 +74,8 @@ int main()
 	IrisIdentifier.InitializeWeights();
 	IrisIdentifier.TrainForSetosaOrNot(TrainingBiometrics, TrainingSpeciesNames);
 	IrisIdentifier.TestForSetosaOrNot(TestBiometrics, TestSpeciesNames);
-  IrisIdentifier.TrainForVersicolorOrVirginica(TrainingBiometrics, TrainingSpeciesNames);
-  IrisIdentifier.TestForVersicolorOrVirginica(TrainingBiometrics, TrainingSpeciesNames);
+	IrisIdentifier.TrainForVersicolorOrVirginica(TrainingBiometrics, TrainingSpeciesNames);
+	IrisIdentifier.TestForVersicolorOrVirginica(TrainingBiometrics, TrainingSpeciesNames);
 	IrisIdentifier.Output.close();
 
 	std::cout << "Pres enter to end program." << endl;
@@ -91,6 +92,15 @@ InputData ReadData()
 	vector<array<double, 4>> TestBiometrics;
 	vector<string> TestSpeciesNames;
 
+	// Used to normalize input dimensions
+	double Col0Sum = 0;
+	double Col0Avg;
+	double Col1Sum = 0;
+	double Col1Avg;
+	double Col2Sum = 0;
+	double Col2Avg;
+	double Col3Sum = 0;
+	double Col3Avg;
 	
 	string line;
 	std::string::size_type DatumEnd;
@@ -110,21 +120,25 @@ InputData ReadData()
 				RawDatum = (line.substr(0, DatumEnd));
 				RemainingData = line.substr(DatumEnd+1, line.size());
 				Biometrics[0] = atof(RawDatum.c_str());
+				Col0Sum += Biometrics[0];
 
 				DatumEnd = RemainingData.find(",");
 				RawDatum = (RemainingData.substr(0, DatumEnd));
 				RemainingData = RemainingData.substr(DatumEnd + 1, RemainingData.size());
 				Biometrics[1] = atof(RawDatum.c_str());
+				Col1Sum += Biometrics[1];
 
 				DatumEnd = RemainingData.find(",");
 				RawDatum = (RemainingData.substr(0, DatumEnd));
 				RemainingData = RemainingData.substr(DatumEnd + 1, RemainingData.size());
 				Biometrics[2] = atof(RawDatum.c_str());
+				Col2Sum += Biometrics[2];
 
 				DatumEnd = RemainingData.find(",");
 				RawDatum = (RemainingData.substr(0, DatumEnd));
 				RemainingData = RemainingData.substr(DatumEnd + 1, RemainingData.size());
 				Biometrics[3] = atof(RawDatum.c_str());
+				Col3Sum += Biometrics[3];
 
 				DatumEnd = RemainingData.find(",");
 				RawDatum = (RemainingData.substr(0, DatumEnd));
@@ -143,6 +157,17 @@ InputData ReadData()
 			}
 		}
 		TrainingData.close();
+		Col0Avg = Col0Sum / TrainingBiometrics.size();
+		Col1Avg = Col1Sum / TrainingBiometrics.size();
+		Col2Avg = Col2Sum / TrainingBiometrics.size();
+		Col3Avg = Col3Sum / TrainingBiometrics.size();
+		for (int i = 0; i < TrainingBiometrics.size(); i++)
+		{
+	//		TrainingBiometrics[i][0] = TrainingBiometrics[i][0] / Col0Avg;
+	//		TrainingBiometrics[i][1] = TrainingBiometrics[i][1] / Col1Avg;
+	//		TrainingBiometrics[i][2] = TrainingBiometrics[i][2] / Col2Avg;
+	//		TrainingBiometrics[i][3] = TrainingBiometrics[i][3] / Col3Avg;
+		}
 	}
 	else
 	{
@@ -155,6 +180,10 @@ InputData ReadData()
 	ifstream TestData("test.txt");
 	if (TestData.is_open())
 	{
+		Col0Sum = 0;
+		Col1Sum = 0;
+		Col2Sum = 0;
+		Col3Sum = 0;
 		while (getline(TestData, line))
 		{
 			DatumEnd = line.find(",");
@@ -163,21 +192,25 @@ InputData ReadData()
 				RawDatum = (line.substr(0, DatumEnd));
 				RemainingData = line.substr(DatumEnd + 1, line.size());
 				Biometrics[0] = atof(RawDatum.c_str());
+				Col0Sum += Biometrics[0];
 
 				DatumEnd = RemainingData.find(",");
 				RawDatum = (RemainingData.substr(0, DatumEnd));
 				RemainingData = RemainingData.substr(DatumEnd + 1, RemainingData.size());
 				Biometrics[1] = atof(RawDatum.c_str());
+				Col1Sum += Biometrics[1];
 
 				DatumEnd = RemainingData.find(",");
 				RawDatum = (RemainingData.substr(0, DatumEnd));
 				RemainingData = RemainingData.substr(DatumEnd + 1, RemainingData.size());
 				Biometrics[2] = atof(RawDatum.c_str());
+				Col2Sum += Biometrics[2];
 
 				DatumEnd = RemainingData.find(",");
 				RawDatum = (RemainingData.substr(0, DatumEnd));
 				RemainingData = RemainingData.substr(DatumEnd + 1, RemainingData.size());
 				Biometrics[3] = atof(RawDatum.c_str());
+				Col3Sum += Biometrics[3];
 
 				DatumEnd = RemainingData.find(",");
 				RawDatum = (RemainingData.substr(0, DatumEnd));
@@ -196,6 +229,17 @@ InputData ReadData()
 			}
 		}
 		TestData.close();
+		Col0Avg = Col0Sum / TestBiometrics.size();
+		Col1Avg = Col1Sum / TestBiometrics.size();
+		Col2Avg = Col2Sum / TestBiometrics.size();
+		Col3Avg = Col3Sum / TestBiometrics.size();
+		for (int i = 0; i < TestBiometrics.size(); i++)
+		{
+		//	TestBiometrics[i][0] = TestBiometrics[i][0] / Col0Avg;
+		//	TestBiometrics[i][1] = TestBiometrics[i][1] / Col1Avg;
+		//	TestBiometrics[i][2] = TestBiometrics[i][2] / Col2Avg;
+		//	TestBiometrics[i][3] = TestBiometrics[i][3] / Col3Avg;
+		}
 	}
 	else
 	{
@@ -266,19 +310,19 @@ void Perceptron::NormalizeWeights()
 	double SetosaOrNotWeightLength = 0;
 	double VersicolourOrVirginiaWeightLength = 0;
 
-	for (int i = 0; i < 5; i++)
+	for (int i = 1; i < 5; i++)
 	{
 		SetosaOrNotWeightLength += (this->SetosaOrNotWeights[i]) * (this->SetosaOrNotWeights[i]);
-    VersicolourOrVirginiaWeightLength += (this->VersicolorOrVirginicaWeights[i]) * (this->VersicolorOrVirginicaWeights[i]);
+		VersicolourOrVirginiaWeightLength += (this->VersicolorOrVirginicaWeights[i]) * (this->VersicolorOrVirginicaWeights[i]);
 	}
 
 	SetosaOrNotWeightLength = sqrt(SetosaOrNotWeightLength);
 	VersicolourOrVirginiaWeightLength = sqrt(VersicolourOrVirginiaWeightLength);
 
-	for (int i = 0; i < 5; i++)
+	for (int i = 1; i < 5; i++)
   {
 		this->SetosaOrNotWeights[i] = this->SetosaOrNotWeights[i] / SetosaOrNotWeightLength;
-    this->VersicolorOrVirginicaWeights[i] = this->VersicolorOrVirginicaWeights[i] / VersicolourOrVirginiaWeightLength;
+		this->VersicolorOrVirginicaWeights[i] = this->VersicolorOrVirginicaWeights[i] / VersicolourOrVirginiaWeightLength;
   }
 }
 
@@ -286,7 +330,6 @@ void Perceptron::TrainForSetosaOrNot(vector<array<double, 4>> TrainingBiometrics
 {
 	int IncorrectlyClassified = TrainingBiometrics.size();							// Assume all samples are misclassified and count down
 	this->Inputs[0] = 1;
-	double InputVectorLength = 0;													              // Leave Inputs[0] out of normalization
 	// Assume Iris-setosa is +ve class, otherwise is -ve class
 	int CurrentEpoch = 0;
 	string EpochsRequired = "Training epochs required to correctly classify all setosas versus non-setosas: ";	// For output.txt
@@ -296,57 +339,40 @@ void Perceptron::TrainForSetosaOrNot(vector<array<double, 4>> TrainingBiometrics
 		IncorrectlyClassified = TrainingBiometrics.size();							// New epoch, reinitialize IncorrectlyClassified count
 		for (unsigned int i = 0; i < TrainingBiometrics.size(); i++)		// For all the training patterns
 		{
-      this->ActivationPotential = 0;												        // Reinitialize activation potential for next pattern
-      InputVectorLength = 0;                                        // Reinitialize InputVectorLength for next input normalization
-			// (Re)Initialize input vector
-			for (int j = 1; j < 5; j++)												            // For each biometric in the pattern
+			if (this->ClassifySetosaOrNot(TrainingBiometrics[i], TrainingSpeciesNames[i]))					// returns true for Iris-setosa
 			{
-				this->Inputs[j] = TrainingBiometrics[i][j - 1];
-				InputVectorLength += (this->Inputs[j])*(this->Inputs[j]);
-			}
-
-			// Normalize input vector
-			InputVectorLength = sqrt(InputVectorLength);
-			for (int j = 1; j < 5; j++)
-				this->Inputs[j] = this->Inputs[j] / InputVectorLength;
-
-			for (int j = 0; j < 5; j++)												            // For each input-weight pair
-				this->ActivationPotential += this->Inputs[j] * this->SetosaOrNotWeights[j];
-
-			// Do I need an activation function? A threshold maybe?
-			if (this->ActivationPotential > this->SetosaOrNotWeights[0])										        // Output corresponds to Iris-setosa
-			{
-				if (TrainingSpeciesNames[i] != "Iris-setosa")					    	// Input is miscorrectly classified, output is too large
+				if (TrainingSpeciesNames[i] == "Iris-setosa")
 				{
-					for (int j = 0; j < 5; j++)
-					{
-						this->SetosaOrNotWeights[j] -= this->LearningRate * this->Inputs[j];
-					}
+					IncorrectlyClassified--;
 				}
 				else
-					IncorrectlyClassified--;
-				//cout << "Remaining input patterns to be classified in epoch " << CurrentEpoch << ": " << IncorrectlyClassified << endl;
-			}
-			else																	// Output corresponds to Versicolour or Virginia
-			{
-				if (TrainingSpeciesNames[i] == "Iris-setosa")						// Input is miscorrectly classidied, output is too small
 				{
-					for (int j = 0; j < 5; j++)
+					for (int j = 1; j < 5; j++)
+						this->SetosaOrNotWeights[j] -= this->LearningRate * this->Inputs[j];
+				}
+			}
+			else
+			{
+				if (TrainingSpeciesNames[i] != "Iris-setosa")
+				{
+					IncorrectlyClassified--;
+				}
+				else
+				{
+					for (int j = 1; j < 5; j++)
 						this->SetosaOrNotWeights[j] += this->LearningRate * this->Inputs[j];
 				}
-				else
-					IncorrectlyClassified--;
-				//cout << "Remaining input patterns to be classified in epoch " << CurrentEpoch << ": " << IncorrectlyClassified << endl;
 			}
+			this->NormalizeWeights();
 		}
-		std::cout << "Incorrectly classified inputs after epoch " << CurrentEpoch << ": " << IncorrectlyClassified << endl;
+		//std::cout << "Incorrectly classified inputs after epoch " << CurrentEpoch << ": " << IncorrectlyClassified << endl;
 		CurrentEpoch++;																// Guarantee training termination
 	}
 
 	EpochsRequired = EpochsRequired + to_string(CurrentEpoch);
 	this->WriteData(EpochsRequired);
 
-	this->NormalizeWeights();
+	
 	for (int i = 0; i < 5; i++)
 		FinalNormalizedWeights = FinalNormalizedWeights + "	" + to_string(this->SetosaOrNotWeights[i]);
 	this->WriteData(FinalNormalizedWeights);
@@ -369,19 +395,10 @@ void Perceptron::TestForSetosaOrNot(vector<array<double, 4>> TestBiometrics, vec
 	for (unsigned int i = 0; i < TestBiometrics.size(); i++)							// Run test on all input patterns
 	{
 		InputPattern = "";													// Reinitialize to empty string
-		this->ActivationPotential = 0;
-		// (Re) Initialize inputs
-		for (int j = 1; j < 5; j++)											// Input[0] = 1
-		{
-			this->Inputs[j] = TestBiometrics[i][j - 1];
+		for (int j = 1; j < 5; j++)											
 			InputPattern = InputPattern + "	" + to_string(TestBiometrics[i][j - 1]);
-		}
 
-		// (Re)Compute activation potential
-		for (int j = 0; j < 5; j++)
-			this->ActivationPotential += this->Inputs[j] * this->SetosaOrNotWeights[j];
-
-		if (this->ActivationPotential > this->SetosaOrNotWeights[0])									// Input is classified as Iris-setosa
+		if (this->ClassifySetosaOrNot(TestBiometrics[i], TestSpeciesNames[i]))									// Input is classified as Iris-setosa
 		{
 			if (TestSpeciesNames[i] == "Iris-setosa")
 				CorrectlyClassified++;
@@ -404,9 +421,12 @@ void Perceptron::TestForSetosaOrNot(vector<array<double, 4>> TestBiometrics, vec
 void Perceptron::TrainForVersicolorOrVirginica(vector<array<double, 4>> TrainingBiometrics, vector<string> TrainingSpeciesNames)
 {
   int IncorrectlyClassified = TrainingBiometrics.size();							// Assume all samples are misclassified and count down
-  this->Inputs[0] = 1;
-  double InputVectorLength = 0;													              
-  // Assume Iris-Versicolour is class 1, Iris-Virginia is class -1
+  int MinMisclassified = IncorrectlyClassified;
+  double RollbackWeights[5];														// Will store weights of greatest classification accuracy, so they aren't replaced
+  for (int j = 0; j < 5; j++)
+	  RollbackWeights[j] = this->VersicolorOrVirginicaWeights[j];
+  this->Inputs[0] = 1;														
+  // Assume Iris-Versicolor is class 1, Iris-Virginica is class -1
   int CurrentEpoch = 0;
   string EpochsRequired = "Training epochs required to correctly classify all versicolor versus virginica: ";	// For output.txt
   string FinalNormalizedWeights = "Normalized weight vector which classifies versicolor versus virginica: ";
@@ -415,56 +435,74 @@ void Perceptron::TrainForVersicolorOrVirginica(vector<array<double, 4>> Training
   {
     IncorrectlyClassified = TrainingBiometrics.size();                  // New epoch, must reclassify all input patterns
     for (unsigned int i = 0; i < TrainingBiometrics.size(); i++)         // Run through all patterns again
-    {
-      this->ActivationPotential = 0;                                    // Reinitialize activation potential for new input
-      InputVectorLength = 0;
-      // First, decide if input is Iris-setosa or not
-      for (int j = 1; j < 5; j++)                                       // Leave Inputs[0] out of normalization
-      {
-        this->Inputs[j] = TrainingBiometrics[i][j - 1];
-        InputVectorLength += (this->Inputs[j] * this->Inputs[j]);
-      }
-      InputVectorLength = sqrt(InputVectorLength);
-      // Normalize input vector
-      for (int j = 1; j < 5; j++)
-        this->Inputs[j] = this->Inputs[j] / InputVectorLength;
-      // Compute activation potential with Setosa-NotSetosa weights
-      for (int j = 0; j < 5; j++)
-        this->ActivationPotential += this->SetosaOrNotWeights[j] * this->Inputs[j];
-      if (this->ActivationPotential > this->SetosaOrNotWeights[0])                                // Input classified as Iris-setosa - already learned, do nothing
-      {
-        if (TrainingSpeciesNames[i] == "Iris-setosa")
-          IncorrectlyClassified--;
-      }
-
-      else                                                              // Input is classified as either versicolor or virginica, we don't know which yet
-      {                     
-        if (TrainingSpeciesNames[i] != "Iris-setosa")                   // So we don't accidentally train off a mis-classified Iris-setosa
-        {
-          this->ActivationPotential = 0;                                  // Reinitialize to percieve new distinction
-          // Compute activation potential with Versicolour-Virginia classification weights
-          for (int j = 0; j < 5; j++)
-            this->ActivationPotential += this->VersicolorOrVirginicaWeights[j] * this->Inputs[j];
-
-          if (this->ActivationPotential > this->VersicolorOrVirginicaWeights[0])                            // Input classified as Versicolour
-            if (TrainingSpeciesNames[i] == "Iris-versicolor")          // If input is correctly classified
-              IncorrectlyClassified--;
-            else                                                        // Input is too large for Virginia
-              for (int j = 0; j < 5; j++)                               // Adjust weight vector
-                this->VersicolorOrVirginicaWeights[j] -= this->Inputs[j] * this->LearningRate;
-          else
-            if (TrainingSpeciesNames[i] == "Iris-virginica")
-              IncorrectlyClassified--;
-            else
-              for (int j = 0; j < 5; j++)
-                this->VersicolorOrVirginicaWeights[j] += this->Inputs[j] * this->LearningRate;
-        }
-      }
-      this->NormalizeWeights();
-    }
-    //std::cout << "Incorrectly classified inputs after epoch " << CurrentEpoch << ": " << IncorrectlyClassified << " (for versicolor-virginica training)" << endl;
+    {                        
+		  if (this->ClassifySetosaOrNot(TrainingBiometrics[i], TrainingSpeciesNames[i]))                                // Input classified as Iris-setosa - already learned, but now use error correction
+		  {
+			  if (TrainingSpeciesNames[i] == "Iris-setosa")
+				  IncorrectlyClassified--;
+		  }
+		  else                                                              // Input is classified as either versicolor or virginica, we don't know which yet           
+		  {
+			if (TrainingSpeciesNames[i] != "Iris-setosa")                   // So we don't accidentally train off a mis-classified Iris-setosa
+			{
+				if (this->ClassifyVersicolorOrVirginica(TrainingBiometrics[i], TrainingSpeciesNames[i]))            // Input classified as Versicolour
+				{
+					if (TrainingSpeciesNames[i] == "Iris-versicolor")          // If input is correctly classified
+					{
+						IncorrectlyClassified--;
+						for (int j = 1; j < 5; j++)
+							this->VersicolorOrVirginicaWeights[j] += (this->ClassificationPolarization - this->ActivationPotential) * this->LearningRate * this->Inputs[j];
+						cout << "Error on input pattern " << i << ":	" << to_string(this->ClassificationPolarization - this->ActivationPotential) << endl;
+					}
+					else                                                        // Input is too large for Virginica
+					{
+						for (int j = 1; j < 5; j++)                               // Adjust weight vector
+							this->VersicolorOrVirginicaWeights[j] += ((-1 * this->ClassificationPolarization) - this->ActivationPotential) * this->Inputs[j] * this->LearningRate;
+						cout << "Error on input pattern " << i << ":	" << to_string((-1 * this->ClassificationPolarization) - this->ActivationPotential) << endl;
+					}
+				}
+				else																			// Input classified as virginica
+				{
+					if (TrainingSpeciesNames[i] == "Iris-virginica")
+					{
+						IncorrectlyClassified--;
+						for (int j = 1; j < 5; j++)
+						{
+							this->VersicolorOrVirginicaWeights[j] += ((-1 * this->ClassificationPolarization) - this->ActivationPotential) * this->LearningRate * this->Inputs[j];
+						}
+						cout << "Error on input pattern " << i << ":	" << to_string((-1*this->ClassificationPolarization) - this->ActivationPotential) << endl;
+					}
+					else
+					{
+						for (int j = 1; j < 5; j++)
+						{
+							this->VersicolorOrVirginicaWeights[j] += (this->ClassificationPolarization - this->ActivationPotential) * this->Inputs[j] * this->LearningRate;
+						}
+						cout << "Error on input pattern " << i << ":	" << to_string(this->ClassificationPolarization - this->ActivationPotential) << endl;
+					}
+				}
+			}
+		}
+	  this->NormalizeWeights();
+	}
+	if (MinMisclassified < IncorrectlyClassified)						// The weights we wound up with after this iteration perform worse
+	{
+		//for (int j = 0; j < 5; j++)
+		//	this->VersicolorOrVirginicaWeights[j] = RollbackWeights[j];
+	}
+	else
+	{
+		MinMisclassified = IncorrectlyClassified;
+		for (int j = 0; j < 5; j++)
+			RollbackWeights[j] = this->VersicolorOrVirginicaWeights[j];
+	}
+	
+    std::cout << "Incorrectly classified inputs after epoch " << CurrentEpoch << ": " << IncorrectlyClassified << " (for versicolor-virginica training)" << endl;
     CurrentEpoch++;
+	//this->LearningRate = this->LearningRate*0.5;
   }
+  for (int j = 0; j < 5; j++)
+	  this->VersicolorOrVirginicaWeights[j] = RollbackWeights[j];
   std::cout << "Versicolour-Virginia training complete!" << endl;
   std::cout << "  Incorrectly classified inputs after " << CurrentEpoch << " training epochs: " << IncorrectlyClassified << endl;
   std::cout << "  Resulting normalized weight vector for versicolor-virginica classification: " << endl;
@@ -478,61 +516,88 @@ void Perceptron::TestForVersicolorOrVirginica(vector<array<double, 4>> TestBiome
 {
   string InputPattern;
   int CorrectlyClassified = 0;
-  double InputVectorLength;
-  for (unsigned int i = 0; i < TestBiometrics.size(); i++)							// Run test on all input patterns
+  for (unsigned int i = 0; i < TestBiometrics.size(); i++)				// Run test on all input patterns
   {
-    InputVectorLength = 0;
     InputPattern = "";													// Reinitialize to empty string
-    this->ActivationPotential = 0;
     // (Re) Initialize inputs
     for (int j = 1; j < 5; j++)											// Input[0] = 1
-    {
-      this->Inputs[j] = TestBiometrics[i][j - 1];
-      InputVectorLength += (this->Inputs[j] * this->Inputs[j]);
       InputPattern = InputPattern + "	" + to_string(TestBiometrics[i][j - 1]);
-    }
-    InputVectorLength = sqrt(InputVectorLength);
-    for (int j = 1; j < 5; j++)
-      this->Inputs[j] = this->Inputs[j] / InputVectorLength;
 
-    // (Re)Compute activation potential
-    for (int j = 0; j < 5; j++)
-      this->ActivationPotential += this->Inputs[j] * this->SetosaOrNotWeights[j];
-
-    if (this->ActivationPotential > this->SetosaOrNotWeights[0])									// Input is classified as Iris-setosa
+    if (this->ClassifySetosaOrNot(TestBiometrics[i], TestSpeciesNames[i]))		// Input is classified as Iris-setosa
     {
       if (TestSpeciesNames[i] == "Iris-setosa")
         CorrectlyClassified++;
       this->WriteData("Perceptron classified input pattern " + to_string(i) + ":" + InputPattern + " as Iris-setosa. Correct classification is: " + TestSpeciesNames[i]);
-      std::cout << "Input pattern " << i << " classified as: Iris-setosa." << endl;
-      std::cout << "	Correct classification: " << TestSpeciesNames[i] << endl << endl;
+      //std::cout << "Input pattern " << i << " classified as: Iris-setosa." << endl;
+      //std::cout << "	Correct classification: " << TestSpeciesNames[i] << endl << endl;
     }
     else																// Input classified as NOT Iris-setosa
     {
-      this->ActivationPotential = 0;
       if (TestSpeciesNames[i] != "Iris-setosa")
       {
-        for (int j = 0; j < 5; j++)
-          this->ActivationPotential += this->Inputs[j] * this->VersicolorOrVirginicaWeights[j];
-        
-        if (this->ActivationPotential > this->VersicolorOrVirginicaWeights[0])
+        if (this->ClassifyVersicolorOrVirginica(TestBiometrics[i], TestSpeciesNames[i]))
         {
           if (TestSpeciesNames[i] == "Iris-versicolor")
             CorrectlyClassified++;
           this->WriteData("Perceptron classified input pattern " + to_string(i) + ":" + InputPattern + " as Iris-versicolor. Correct classification is: " + TestSpeciesNames[i]);
-          std::cout << "Input pattern " << i << " classified as: NOT Iris-setosa." << endl;
-          std::cout << "	Correct classification: " << TestSpeciesNames[i] << endl << endl;
+          //std::cout << "Input pattern " << i << " classified as: Iris-versicolor." << endl;
+         // std::cout << "	Correct classification: " << TestSpeciesNames[i] << endl << endl;
         }
         else
         {
           if (TestSpeciesNames[i] == "Iris-virginica")
             CorrectlyClassified++;
           this->WriteData("Perceptron classified input pattern " + to_string(i) + ":" + InputPattern + " as Iris-virginica. Correct classification is: " + TestSpeciesNames[i]);
-          std::cout << "Input pattern " << i << " classified as: NOT Iris-setosa." << endl;
-          std::cout << "	Correct classification: " << TestSpeciesNames[i] << endl << endl;
+          //std::cout << "Input pattern " << i << " classified as: Iris-virginica." << endl;
+          //std::cout << "	Correct classification: " << TestSpeciesNames[i] << endl << endl;
         }
       }
+	  else
+	  {
+		  this->WriteData("Pereptron classified input pattern " + to_string(i) + ":" + InputPattern + " incorrectly as NOT Iris-setosa");
+	  }
     }
   }
   this->WriteData("Therefore the perceptron correctly distinguished " + to_string(CorrectlyClassified) + " samples out of " + to_string(TestSpeciesNames.size()) + " as being Iris-setosa or not.");
+}
+
+bool Perceptron::ClassifySetosaOrNot(array<double, 4> Inputs, string CorrectClassification)
+{
+	double InputVectorLength = 0;									// Used for input vector normalization
+	this->ActivationPotential = 0;									// Reinitialize for new classification
+	for (int j = 1; j < 5; j++)
+	{
+		this->Inputs[j] = Inputs[j - 1];
+		InputVectorLength += (this->Inputs[j] * this->Inputs[j]);
+	}
+	InputVectorLength = sqrt(InputVectorLength);
+	for (int j = 1; j < 5; j++)
+	{
+		this->Inputs[j] = this->Inputs[j] / InputVectorLength;
+		this->ActivationPotential += this->Inputs[j] * this->SetosaOrNotWeights[j];
+	}
+	
+	if (this->ActivationPotential > this->SetosaOrNotWeights[0])
+		return true;
+	else return false;
+}
+
+bool Perceptron::ClassifyVersicolorOrVirginica(array<double, 4> Inputs, string CorrectName)			// Returns true for versicolor classification
+{
+	double InputVectorLength = 0;
+	this->ActivationPotential = 0;
+	for (int j = 1; j < 5; j++)
+	{
+		this->Inputs[j] = Inputs[j - 1];
+		InputVectorLength += (this->Inputs[j] * this->Inputs[j]);
+	}
+	InputVectorLength = sqrt(InputVectorLength);
+	for (int j = 1; j < 5; j++)
+	{
+		this->Inputs[j] = this->Inputs[j] / InputVectorLength;
+		this->ActivationPotential += this->Inputs[j] * this->VersicolorOrVirginicaWeights[j];
+	}
+	if (this->ActivationPotential > this->VersicolorOrVirginicaWeights[0])
+		return true;
+	else return false;
 }
