@@ -1,17 +1,15 @@
-Initial random weights for setosa versus non-setosa classification: 0.890000	-0.390000	-0.970000	0.130000	-0.450000	 (where w0 is the threshold)
-Initial random weights for versicolor versus virginica classification: 0.470000	0.770000	-0.590000	-0.380000	-0.630000	 (where w0 is the threshold)
-Training epochs required to correctly classify all setosas versus non-setosas: 3
-Normalized weight vector which classifies setosas versus non-setosas: 	0.890000	0.870937	0.397125	0.155492	-0.244096
-Perceptron classified input pattern 0:	5.100000	3.500000	1.400000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 1:	4.900000	3.000000	1.400000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 2:	4.700000	3.200000	1.300000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 3:	4.600000	3.100000	1.500000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 4:	5.000000	3.600000	1.400000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 5:	5.400000	3.900000	1.700000	0.400000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 6:	4.600000	3.400000	1.400000	0.300000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 7:	5.000000	3.400000	1.500000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 8:	4.400000	2.900000	1.400000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 9:	4.900000	3.100000	1.500000	0.100000 as Iris-setosa. Correct classification is: Iris-setosa
+Training epochs required to correctly classify all setosas versus non-setosas: 100
+Normalized weight vector which classifies setosas versus non-setosas: 	0.150000	-0.092455	0.409125	-0.841276	-0.341063
+Perceptron classified input pattern 0:	5.100000	3.500000	1.400000	0.200000 as NON Iris-setosa. Correct classification is: Iris-setosa
+Perceptron classified input pattern 1:	4.900000	3.000000	1.400000	0.200000 as NON Iris-setosa. Correct classification is: Iris-setosa
+Perceptron classified input pattern 2:	4.700000	3.200000	1.300000	0.200000 as NON Iris-setosa. Correct classification is: Iris-setosa
+Perceptron classified input pattern 3:	4.600000	3.100000	1.500000	0.200000 as NON Iris-setosa. Correct classification is: Iris-setosa
+Perceptron classified input pattern 4:	5.000000	3.600000	1.400000	0.200000 as NON Iris-setosa. Correct classification is: Iris-setosa
+Perceptron classified input pattern 5:	5.400000	3.900000	1.700000	0.400000 as NON Iris-setosa. Correct classification is: Iris-setosa
+Perceptron classified input pattern 6:	4.600000	3.400000	1.400000	0.300000 as NON Iris-setosa. Correct classification is: Iris-setosa
+Perceptron classified input pattern 7:	5.000000	3.400000	1.500000	0.200000 as NON Iris-setosa. Correct classification is: Iris-setosa
+Perceptron classified input pattern 8:	4.400000	2.900000	1.400000	0.200000 as NON Iris-setosa. Correct classification is: Iris-setosa
+Perceptron classified input pattern 9:	4.900000	3.100000	1.500000	0.100000 as NON Iris-setosa. Correct classification is: Iris-setosa
 Perceptron classified input pattern 10:	5.000000	2.000000	3.500000	1.000000 as NON Iris-setosa. Correct classification is: Iris-versicolor
 Perceptron classified input pattern 11:	5.900000	3.000000	4.200000	1.500000 as NON Iris-setosa. Correct classification is: Iris-versicolor
 Perceptron classified input pattern 12:	6.000000	2.200000	4.000000	1.000000 as NON Iris-setosa. Correct classification is: Iris-versicolor
@@ -32,125 +30,4 @@ Perceptron classified input pattern 26:	6.300000	2.800000	5.100000	1.500000 as N
 Perceptron classified input pattern 27:	6.100000	2.600000	5.600000	1.400000 as NON Iris-setosa. Correct classification is: Iris-virginica
 Perceptron classified input pattern 28:	7.700000	3.000000	6.100000	2.300000 as NON Iris-setosa. Correct classification is: Iris-virginica
 Perceptron classified input pattern 29:	6.300000	3.400000	5.600000	2.400000 as NON Iris-setosa. Correct classification is: Iris-virginica
-Therefore the perceptron correctly distinguished 30 samples out of 30 as being Iris-setosa or not.
-Perceptron classified input pattern 0:	5.400000	3.700000	1.500000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 1:	4.800000	3.400000	1.600000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 2:	4.800000	3.000000	1.400000	0.100000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 3:	4.300000	3.000000	1.100000	0.100000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 4:	5.800000	4.000000	1.200000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 5:	5.700000	4.400000	1.500000	0.400000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 6:	5.400000	3.900000	1.300000	0.400000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 7:	5.100000	3.500000	1.400000	0.300000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 8:	5.700000	3.800000	1.700000	0.300000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 9:	5.100000	3.800000	1.500000	0.300000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 10:	5.400000	3.400000	1.700000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 11:	5.100000	3.700000	1.500000	0.400000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 12:	4.600000	3.600000	1.000000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 13:	5.100000	3.300000	1.700000	0.500000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 14:	4.800000	3.400000	1.900000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 15:	5.000000	3.000000	1.600000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 16:	5.000000	3.400000	1.600000	0.400000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 17:	5.200000	3.500000	1.500000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 18:	5.200000	3.400000	1.400000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 19:	4.700000	3.200000	1.600000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 20:	4.800000	3.100000	1.600000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 21:	5.400000	3.400000	1.500000	0.400000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 22:	5.200000	4.100000	1.500000	0.100000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 23:	5.500000	4.200000	1.400000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 24:	4.900000	3.100000	1.500000	0.100000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 25:	5.000000	3.200000	1.200000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 26:	5.500000	3.500000	1.300000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 27:	4.900000	3.100000	1.500000	0.100000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 28:	4.400000	3.000000	1.300000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 29:	5.100000	3.400000	1.500000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 30:	5.000000	3.500000	1.300000	0.300000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 31:	4.500000	2.300000	1.300000	0.300000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 32:	4.400000	3.200000	1.300000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 33:	5.000000	3.500000	1.600000	0.600000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 34:	5.100000	3.800000	1.900000	0.400000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 35:	4.800000	3.000000	1.400000	0.300000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 36:	5.100000	3.800000	1.600000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 37:	4.600000	3.200000	1.400000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 38:	5.300000	3.700000	1.500000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 39:	5.000000	3.300000	1.400000	0.200000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 40:	7.000000	3.200000	4.700000	1.400000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 41:	6.400000	3.200000	4.500000	1.500000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 42:	6.900000	3.100000	4.900000	1.500000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 43:	5.500000	2.300000	4.000000	1.300000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 44:	6.500000	2.800000	4.600000	1.500000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 45:	5.700000	2.800000	4.500000	1.300000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 46:	6.300000	3.300000	4.700000	1.600000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 47:	4.900000	2.400000	3.300000	1.000000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 48:	6.600000	2.900000	4.600000	1.300000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 49:	5.200000	2.700000	3.900000	1.400000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 50:	5.900000	3.200000	4.800000	1.800000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 51:	6.100000	2.800000	4.000000	1.300000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 52:	6.300000	2.500000	4.900000	1.500000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 53:	6.100000	2.800000	4.700000	1.200000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 54:	6.400000	2.900000	4.300000	1.300000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 55:	6.600000	3.000000	4.400000	1.400000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 56:	6.800000	2.800000	4.800000	1.400000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 57:	6.700000	3.000000	5.000000	1.700000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 58:	6.000000	2.900000	4.500000	1.500000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 59:	5.700000	2.600000	3.500000	1.000000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 60:	5.500000	2.400000	3.800000	1.100000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 61:	5.500000	2.400000	3.700000	1.000000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 62:	5.800000	2.700000	3.900000	1.200000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 63:	6.000000	2.700000	5.100000	1.600000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 64:	5.400000	3.000000	4.500000	1.500000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 65:	6.000000	3.400000	4.500000	1.600000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 66:	6.700000	3.100000	4.700000	1.500000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 67:	6.300000	2.300000	4.400000	1.300000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 68:	5.600000	3.000000	4.100000	1.300000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 69:	5.500000	2.500000	4.000000	1.300000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 70:	5.500000	2.600000	4.400000	1.200000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 71:	6.100000	3.000000	4.600000	1.400000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 72:	5.800000	2.600000	4.000000	1.200000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 73:	5.000000	2.300000	3.300000	1.000000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 74:	5.600000	2.700000	4.200000	1.300000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 75:	5.700000	3.000000	4.200000	1.200000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 76:	5.700000	2.900000	4.200000	1.300000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 77:	6.200000	2.900000	4.300000	1.300000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 78:	5.100000	2.500000	3.000000	1.100000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 79:	5.700000	2.800000	4.100000	1.300000 as Iris-virginica. Correct classification is: Iris-versicolor
-Perceptron classified input pattern 80:	6.300000	3.300000	6.000000	2.500000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 81:	5.800000	2.700000	5.100000	1.900000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 82:	7.100000	3.000000	5.900000	2.100000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 83:	6.300000	2.900000	5.600000	1.800000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 84:	6.500000	3.000000	5.800000	2.200000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 85:	7.600000	3.000000	6.600000	2.100000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 86:	4.900000	2.500000	4.500000	1.700000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 87:	7.300000	2.900000	6.300000	1.800000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 88:	6.700000	2.500000	5.800000	1.800000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 89:	7.200000	3.600000	6.100000	2.500000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 90:	6.500000	3.200000	5.100000	2.000000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 91:	6.400000	2.700000	5.300000	1.900000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 92:	6.800000	3.000000	5.500000	2.100000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 93:	5.700000	2.500000	5.000000	2.000000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 94:	5.800000	2.800000	5.100000	2.400000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 95:	6.400000	3.200000	5.300000	2.300000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 96:	6.500000	3.000000	5.500000	1.800000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 97:	7.700000	3.800000	6.700000	2.200000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 98:	7.700000	2.600000	6.900000	2.300000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 99:	6.000000	2.200000	5.000000	1.500000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 100:	6.900000	3.200000	5.700000	2.300000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 101:	5.600000	2.800000	4.900000	2.000000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 102:	7.700000	2.800000	6.700000	2.000000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 103:	6.300000	2.700000	4.900000	1.800000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 104:	6.700000	3.300000	5.700000	2.100000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 105:	7.200000	3.200000	6.000000	1.800000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 106:	6.200000	2.800000	4.800000	1.800000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 107:	6.400000	3.100000	5.500000	1.800000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 108:	6.000000	3.000000	4.800000	1.800000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 109:	6.900000	3.100000	5.400000	2.100000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 110:	6.700000	3.100000	5.600000	2.400000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 111:	6.900000	3.100000	5.100000	2.300000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 112:	5.800000	2.700000	5.100000	1.900000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 113:	6.800000	3.200000	5.900000	2.300000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 114:	6.700000	3.300000	5.700000	2.500000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 115:	6.700000	3.000000	5.200000	2.300000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 116:	6.300000	2.500000	5.000000	1.900000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 117:	6.500000	3.000000	5.200000	2.000000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 118:	6.200000	3.400000	5.400000	2.300000 as Iris-virginica. Correct classification is: Iris-virginica
-Perceptron classified input pattern 119:	5.900000	3.000000	5.100000	1.800000 as Iris-virginica. Correct classification is: Iris-virginica
-Therefore the perceptron correctly distinguished 80 samples out of 120 as being Iris-setosa or not.
+Therefore the perceptron correctly distinguished 20 samples out of 30 as being Iris-setosa or not.
