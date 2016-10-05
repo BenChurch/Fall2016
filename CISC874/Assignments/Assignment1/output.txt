@@ -1,5 +1,6 @@
 Training epochs required to correctly classify all setosas versus non-setosas: 5
-Normalized weight vector which classifies setosas versus non-setosas: 	0.398279	0.136972	-0.030940	-0.906452
+Weight values used to classify setosa versus non-setosa before learning:   0.060000  -0.660000  -0.250000  0.110000
+Normalized weight vector which classifies setosas versus non-setosas: 	0.410649	0.317273	-0.721014	-0.530000
 Perceptron classified input pattern 0:	0.645570	0.897436	0.218750	0.083333 as Iris-setosa. Correct classification is: Iris-setosa
 Perceptron classified input pattern 1:	0.620253	0.769231	0.218750	0.083333 as Iris-setosa. Correct classification is: Iris-setosa
 Perceptron classified input pattern 2:	0.594937	0.820513	0.203125	0.083333 as Iris-setosa. Correct classification is: Iris-setosa
@@ -31,6 +32,9 @@ Perceptron classified input pattern 27:	0.772152	0.666667	0.875000	0.583333 as N
 Perceptron classified input pattern 28:	0.974684	0.769231	0.953125	0.958333 as NON Iris-setosa. Correct classification is: Iris-virginica
 Perceptron classified input pattern 29:	0.797468	0.871795	0.875000	1.000000 as NON Iris-setosa. Correct classification is: Iris-virginica
 Therefore the perceptron correctly distinguished 30 samples out of 30 as being Iris-setosa or not.
+ 
+Initial value of weight vector used to classify versicolor-virginica: 0.340000 -0.720000 -0.760000 -0.380000
+Final value of weight vector used to classift versicolor-virginica: 1.571429 1.913043 2.299982 2.500000
 Perceptron classified input pattern 0:	0.701299	0.840909	0.217391	0.080000 as Iris-setosa. Correct classification is: Iris-setosa
 Perceptron classified input pattern 1:	0.623377	0.772727	0.231884	0.080000 as Iris-setosa. Correct classification is: Iris-setosa
 Perceptron classified input pattern 2:	0.623377	0.681818	0.202899	0.040000 as Iris-setosa. Correct classification is: Iris-setosa
@@ -71,84 +75,84 @@ Perceptron classified input pattern 36:	0.662338	0.863636	0.231884	0.080000 as I
 Perceptron classified input pattern 37:	0.597403	0.727273	0.202899	0.080000 as Iris-setosa. Correct classification is: Iris-setosa
 Perceptron classified input pattern 38:	0.688312	0.840909	0.217391	0.080000 as Iris-setosa. Correct classification is: Iris-setosa
 Perceptron classified input pattern 39:	0.649351	0.750000	0.202899	0.080000 as Iris-setosa. Correct classification is: Iris-setosa
-Perceptron classified input pattern 40:	0.909091	0.727273	0.681159	0.560000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.015413
-Perceptron classified input pattern 41:	0.831169	0.727273	0.652174	0.600000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.012105
-Perceptron classified input pattern 42:	0.896104	0.704545	0.710145	0.600000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.010176
-Perceptron classified input pattern 43:	0.714286	0.522727	0.579710	0.520000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.001360
-Perceptron classified input pattern 44:	0.844156	0.636364	0.666667	0.600000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.004388
-Perceptron classified input pattern 45:	0.740260	0.636364	0.652174	0.520000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.011005
-Perceptron classified input pattern 46:	0.818182	0.750000	0.681159	0.640000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.010726
-Perceptron classified input pattern 47:	0.636364	0.545455	0.478261	0.400000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.013214
-Perceptron classified input pattern 48:	0.857143	0.659091	0.666667	0.520000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.012934
-Perceptron classified input pattern 49:	0.675325	0.613636	0.565217	0.560000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.005768
-Perceptron classified input pattern 50:	0.766234	0.727273	0.695652	0.720000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.002180
-Perceptron classified input pattern 51:	0.792208	0.636364	0.579710	0.520000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.011006
-Perceptron classified input pattern 52:	0.818182	0.568182	0.710145	0.600000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -0.001400
-Perceptron classified input pattern 53:	0.792208	0.636364	0.681159	0.480000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.014313
-Perceptron classified input pattern 54:	0.831169	0.659091	0.623188	0.520000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.012935
-Perceptron classified input pattern 55:	0.857143	0.681818	0.637681	0.560000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.011555
-Perceptron classified input pattern 56:	0.883117	0.636364	0.695652	0.560000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.007696
-Perceptron classified input pattern 57:	0.870130	0.681818	0.724638	0.680000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.001630
-Perceptron classified input pattern 58:	0.779221	0.659091	0.652174	0.600000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.006318
-Perceptron classified input pattern 59:	0.740260	0.590909	0.507246	0.400000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.017073
-Perceptron classified input pattern 60:	0.714286	0.545455	0.550725	0.440000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.009906
-Perceptron classified input pattern 61:	0.714286	0.545455	0.536232	0.400000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.013214
-Perceptron classified input pattern 62:	0.753247	0.613636	0.565217	0.480000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.012385
-Perceptron classified input pattern 63:	0.779221	0.613636	0.739130	0.640000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -0.000850
-Perceptron classified input pattern 64:	0.701299	0.681818	0.652174	0.600000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.008247
-Perceptron classified input pattern 65:	0.779221	0.772727	0.652174	0.640000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.012655
-Perceptron classified input pattern 66:	0.870130	0.704545	0.681159	0.600000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.010176
-Perceptron classified input pattern 67:	0.818182	0.522727	0.637681	0.520000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.001359
-Perceptron classified input pattern 68:	0.727273	0.681818	0.594203	0.520000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.014864
-Perceptron classified input pattern 69:	0.714286	0.568182	0.579710	0.520000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.005218
-Perceptron classified input pattern 70:	0.714286	0.590909	0.637681	0.480000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.010455
-Perceptron classified input pattern 71:	0.792208	0.681818	0.666667	0.560000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.011555
-Perceptron classified input pattern 72:	0.753247	0.590909	0.579710	0.480000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.010456
-Perceptron classified input pattern 73:	0.649351	0.522727	0.478261	0.400000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.011285
-Perceptron classified input pattern 74:	0.727273	0.613636	0.608696	0.520000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.009076
-Perceptron classified input pattern 75:	0.740260	0.681818	0.608696	0.480000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.018172
-Perceptron classified input pattern 76:	0.740260	0.659091	0.608696	0.520000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.012935
-Perceptron classified input pattern 77:	0.805195	0.659091	0.623188	0.520000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.012935
-Perceptron classified input pattern 78:	0.662338	0.568182	0.434783	0.440000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.011836
-Perceptron classified input pattern 79:	0.740260	0.636364	0.594203	0.520000 as Iris-versicolor. Correct classification is: Iris-versicolor Activation: 0.011006
-Perceptron classified input pattern 80:	0.818182	0.750000	0.869565	1.000000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.019051
-Perceptron classified input pattern 81:	0.753247	0.613636	0.739130	0.760000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.010775
-Perceptron classified input pattern 82:	0.922078	0.681818	0.855072	0.840000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.011605
-Perceptron classified input pattern 83:	0.818182	0.659091	0.811594	0.720000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.003609
-Perceptron classified input pattern 84:	0.844156	0.681818	0.840580	0.880000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.014913
-Perceptron classified input pattern 85:	0.987013	0.681818	0.956522	0.840000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.011605
-Perceptron classified input pattern 86:	0.636364	0.568182	0.652174	0.680000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.008016
-Perceptron classified input pattern 87:	0.948052	0.659091	0.913043	0.720000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.003609
-Perceptron classified input pattern 88:	0.870130	0.568182	0.840580	0.720000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.011326
-Perceptron classified input pattern 89:	0.935065	0.818182	0.884058	1.000000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.013263
-Perceptron classified input pattern 90:	0.844156	0.727273	0.739130	0.800000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.004437
-Perceptron classified input pattern 91:	0.831169	0.613636	0.768116	0.760000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.010775
-Perceptron classified input pattern 92:	0.883117	0.681818	0.797101	0.840000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.011604
-Perceptron classified input pattern 93:	0.740260	0.568182	0.724638	0.800000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.017942
-Perceptron classified input pattern 94:	0.753247	0.636364	0.739130	0.960000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.025387
-Perceptron classified input pattern 95:	0.831169	0.727273	0.768116	0.920000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.014362
-Perceptron classified input pattern 96:	0.844156	0.681818	0.797101	0.720000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.001679
-Perceptron classified input pattern 97:	1.000000	0.863636	0.971014	0.880000 as Iris-versicolor. Correct classification is: Iris-virginica Activation: 0.000520
-Perceptron classified input pattern 98:	1.000000	0.590909	1.000000	0.920000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.025939
-Perceptron classified input pattern 99:	0.779221	0.500000	0.724638	0.600000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.007187
-Perceptron classified input pattern 100:	0.896104	0.727273	0.826087	0.920000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.014363
-Perceptron classified input pattern 101:	0.727273	0.636364	0.710145	0.800000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.012154
-Perceptron classified input pattern 102:	1.000000	0.636364	0.971014	0.800000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.012156
-Perceptron classified input pattern 103:	0.818182	0.613636	0.710145	0.720000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.007466
-Perceptron classified input pattern 104:	0.870130	0.750000	0.826087	0.840000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.005817
-Perceptron classified input pattern 105:	0.935065	0.727273	0.869565	0.720000 as Iris-versicolor. Correct classification is: Iris-virginica Activation: 0.002179
-Perceptron classified input pattern 106:	0.805195	0.636364	0.695652	0.720000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.005537
-Perceptron classified input pattern 107:	0.831169	0.704545	0.797101	0.720000 as Iris-versicolor. Correct classification is: Iris-virginica Activation: 0.000250
-Perceptron classified input pattern 108:	0.779221	0.681818	0.695652	0.720000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.001679
-Perceptron classified input pattern 109:	0.896104	0.704545	0.782609	0.840000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.009675
-Perceptron classified input pattern 110:	0.870130	0.704545	0.811594	0.960000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.019600
-Perceptron classified input pattern 111:	0.896104	0.704545	0.739130	0.920000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.016291
-Perceptron classified input pattern 112:	0.753247	0.613636	0.739130	0.760000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.010775
-Perceptron classified input pattern 113:	0.883117	0.727273	0.855072	0.920000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.014363
-Perceptron classified input pattern 114:	0.870130	0.750000	0.826087	1.000000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.019050
-Perceptron classified input pattern 115:	0.870130	0.681818	0.753623	0.920000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.018221
-Perceptron classified input pattern 116:	0.818182	0.568182	0.724638	0.760000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.014633
-Perceptron classified input pattern 117:	0.844156	0.681818	0.753623	0.800000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.008296
-Perceptron classified input pattern 118:	0.805195	0.772727	0.782609	0.920000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.010504
-Perceptron classified input pattern 119:	0.766234	0.681818	0.739130	0.720000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -0.001679
-Therefore the perceptron correctly distinguished 115 samples out of 120 as being Iris-setosa or not.
+Perceptron classified input pattern 40:	0.909091	0.727273	0.681159	0.560000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.399206
+Perceptron classified input pattern 41:	0.831169	0.727273	0.652174	0.600000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.388852
+Perceptron classified input pattern 42:	0.896104	0.704545	0.710145	0.600000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.449224
+Perceptron classified input pattern 43:	0.714286	0.522727	0.579710	0.520000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -2.781684
+Perceptron classified input pattern 44:	0.844156	0.636364	0.666667	0.600000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.275443
+Perceptron classified input pattern 45:	0.740260	0.636364	0.652174	0.520000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.016082
+Perceptron classified input pattern 46:	0.818182	0.750000	0.681159	0.640000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.505827
+Perceptron classified input pattern 47:	0.636364	0.545455	0.478261	0.400000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -2.449476
+Perceptron classified input pattern 48:	0.857143	0.659091	0.666667	0.520000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.164758
+Perceptron classified input pattern 49:	0.675325	0.613636	0.565217	0.560000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -2.949421
+Perceptron classified input pattern 50:	0.766234	0.727273	0.695652	0.720000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.589668
+Perceptron classified input pattern 51:	0.792208	0.636364	0.579710	0.520000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.020096
+Perceptron classified input pattern 52:	0.818182	0.568182	0.710145	0.600000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.177334
+Perceptron classified input pattern 53:	0.792208	0.636364	0.681159	0.480000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.002762
+Perceptron classified input pattern 54:	0.831169	0.659091	0.623188	0.520000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.115084
+Perceptron classified input pattern 55:	0.857143	0.681818	0.637681	0.560000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.258903
+Perceptron classified input pattern 56:	0.883117	0.636364	0.695652	0.560000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.250286
+Perceptron classified input pattern 57:	0.870130	0.681818	0.724638	0.680000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.556739
+Perceptron classified input pattern 58:	0.779221	0.659091	0.652174	0.600000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.241071
+Perceptron classified input pattern 59:	0.740260	0.590909	0.507246	0.400000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -2.628460
+Perceptron classified input pattern 60:	0.714286	0.545455	0.550725	0.440000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -2.641829
+Perceptron classified input pattern 61:	0.714286	0.545455	0.536232	0.400000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -2.555163
+Perceptron classified input pattern 62:	0.753247	0.613636	0.565217	0.480000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -2.864441
+Perceptron classified input pattern 63:	0.779221	0.613636	0.739130	0.640000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.304114
+Perceptron classified input pattern 64:	0.701299	0.681818	0.652174	0.600000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.203528
+Perceptron classified input pattern 65:	0.779221	0.772727	0.652174	0.640000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.486462
+Perceptron classified input pattern 66:	0.870130	0.704545	0.681159	0.600000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.408217
+Perceptron classified input pattern 67:	0.818182	0.522727	0.637681	0.520000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -2.911045
+Perceptron classified input pattern 68:	0.727273	0.681818	0.594203	0.520000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.036536
+Perceptron classified input pattern 69:	0.714286	0.568182	0.579710	0.520000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -2.848641
+Perceptron classified input pattern 70:	0.714286	0.590909	0.637681	0.480000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -2.838786
+Perceptron classified input pattern 71:	0.792208	0.681818	0.666667	0.560000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.217052
+Perceptron classified input pattern 72:	0.753247	0.590909	0.579710	0.480000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -2.839629
+Perceptron classified input pattern 73:	0.649351	0.522727	0.478261	0.400000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -2.427835
+Perceptron classified input pattern 74:	0.727273	0.613636	0.608696	0.520000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -2.944767
+Perceptron classified input pattern 75:	0.740260	0.681818	0.608696	0.480000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -2.979039
+Perceptron classified input pattern 76:	0.740260	0.659091	0.608696	0.520000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.023561
+Perceptron classified input pattern 77:	0.805195	0.659091	0.623188	0.520000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -3.091411
+Perceptron classified input pattern 78:	0.662338	0.568182	0.434783	0.440000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -2.558628
+Perceptron classified input pattern 79:	0.740260	0.636364	0.594203	0.520000 as Iris-virginica. Correct classification is: Iris-versicolor Activation: -2.981416
+Perceptron classified input pattern 80:	0.818182	0.750000	0.869565	1.000000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -4.320493
+Perceptron classified input pattern 81:	0.753247	0.613636	0.739130	0.760000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.514440
+Perceptron classified input pattern 82:	0.922078	0.681818	0.855072	0.840000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.994085
+Perceptron classified input pattern 83:	0.818182	0.659091	0.811594	0.720000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.605913
+Perceptron classified input pattern 84:	0.844156	0.681818	0.840580	0.880000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.992398
+Perceptron classified input pattern 85:	0.987013	0.681818	0.956522	0.840000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -4.113935
+Perceptron classified input pattern 86:	0.636364	0.568182	0.652174	0.680000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.132953
+Perceptron classified input pattern 87:	0.948052	0.659091	0.913043	0.720000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.784947
+Perceptron classified input pattern 88:	0.870130	0.568182	0.840580	0.720000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.536680
+Perceptron classified input pattern 89:	0.935065	0.818182	0.884058	1.000000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -4.536125
+Perceptron classified input pattern 90:	0.844156	0.727273	0.739130	0.800000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.842689
+Perceptron classified input pattern 91:	0.831169	0.613636	0.768116	0.760000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.602794
+Perceptron classified input pattern 92:	0.883117	0.681818	0.797101	0.840000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.923909
+Perceptron classified input pattern 93:	0.740260	0.568182	0.724638	0.800000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.504980
+Perceptron classified input pattern 94:	0.753247	0.636364	0.739130	0.960000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.937918
+Perceptron classified input pattern 95:	0.831169	0.727273	0.768116	0.920000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -4.082185
+Perceptron classified input pattern 96:	0.844156	0.681818	0.797101	0.720000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.654399
+Perceptron classified input pattern 97:	1.000000	0.863636	0.971014	0.880000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -4.480265
+Perceptron classified input pattern 98:	1.000000	0.590909	1.000000	0.920000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -4.173859
+Perceptron classified input pattern 99:	0.779221	0.500000	0.724638	0.600000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.050056
+Perceptron classified input pattern 100:	0.896104	0.727273	0.826087	0.920000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -4.176035
+Perceptron classified input pattern 101:	0.727273	0.636364	0.710145	0.800000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.584912
+Perceptron classified input pattern 102:	1.000000	0.636364	0.971014	0.800000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.989482
+Perceptron classified input pattern 103:	0.818182	0.613636	0.710145	0.720000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.478291
+Perceptron classified input pattern 104:	0.870130	0.750000	0.826087	0.840000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -4.029840
+Perceptron classified input pattern 105:	0.935065	0.727273	0.869565	0.720000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.847545
+Perceptron classified input pattern 106:	0.805195	0.636364	0.695652	0.720000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.491266
+Perceptron classified input pattern 107:	0.831169	0.704545	0.797101	0.720000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.676040
+Perceptron classified input pattern 108:	0.779221	0.681818	0.695652	0.720000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.534549
+Perceptron classified input pattern 109:	0.896104	0.704545	0.782609	0.840000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.960557
+Perceptron classified input pattern 110:	0.870130	0.704545	0.811594	0.960000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -4.188217
+Perceptron classified input pattern 111:	0.896104	0.704545	0.739130	0.920000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -4.090557
+Perceptron classified input pattern 112:	0.753247	0.613636	0.739130	0.760000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.514440
+Perceptron classified input pattern 113:	0.883117	0.727273	0.855072	0.920000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -4.181532
+Perceptron classified input pattern 114:	0.870130	0.750000	0.826087	1.000000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -4.341840
+Perceptron classified input pattern 115:	0.870130	0.681818	0.753623	0.920000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -4.042072
+Perceptron classified input pattern 116:	0.818182	0.568182	0.724638	0.760000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.498001
+Perceptron classified input pattern 117:	0.844156	0.681818	0.753623	0.800000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.784399
+Perceptron classified input pattern 118:	0.805195	0.772727	0.782609	0.920000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -4.134135
+Perceptron classified input pattern 119:	0.766234	0.681818	0.739130	0.720000 as Iris-virginica. Correct classification is: Iris-virginica Activation: -3.548712
+Therefore the perceptron correctly distinguished 80 samples out of 120 as being Iris-setosa or not.

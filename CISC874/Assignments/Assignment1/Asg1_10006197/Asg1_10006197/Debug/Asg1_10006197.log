@@ -1,16 +1,16 @@
-﻿Build started 03/10/2016 9:53:03 PM.
-     1>Project "C:\Users\Ben\Documents\Masters16_17\Fall2016\CISC874\Assignments\Assignment1\Asg1_10006197\Asg1_10006197\Asg1_10006197.vcxproj" on node 2 (Build target(s)).
+﻿Build started 10/5/2016 3:00:42 PM.
+     1>Project "C:\Users\church\Documents\Fall2016\CISC874\Assignments\Assignment1\Asg1_10006197\Asg1_10006197\Asg1_10006197.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
          main.cpp
-     1>c:\users\ben\documents\masters16_17\fall2016\cisc874\assignments\assignment1\asg1_10006197\asg1_10006197\main.cpp(186): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\ben\documents\masters16_17\fall2016\cisc874\assignments\assignment1\asg1_10006197\asg1_10006197\main.cpp(252): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\ben\documents\masters16_17\fall2016\cisc874\assignments\assignment1\asg1_10006197\asg1_10006197\main.cpp(288): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
+     1>c:\users\church\documents\fall2016\cisc874\assignments\assignment1\asg1_10006197\asg1_10006197\main.cpp(186): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\church\documents\fall2016\cisc874\assignments\assignment1\asg1_10006197\asg1_10006197\main.cpp(252): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\church\documents\fall2016\cisc874\assignments\assignment1\asg1_10006197\asg1_10006197\main.cpp(288): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Ben\Documents\Masters16_17\Fall2016\CISC874\Assignments\Assignment1\Asg1_10006197\Debug\Asg1_10006197.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Ben\Documents\Masters16_17\Fall2016\CISC874\Assignments\Assignment1\Asg1_10006197\Debug\Asg1_10006197.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Ben\Documents\Masters16_17\Fall2016\CISC874\Assignments\Assignment1\Asg1_10006197\Debug\Asg1_10006197.lib" /MACHINE:X86 Debug\main.obj
-         Asg1_10006197.vcxproj -> C:\Users\Ben\Documents\Masters16_17\Fall2016\CISC874\Assignments\Assignment1\Asg1_10006197\Debug\Asg1_10006197.exe
-     1>Done Building Project "C:\Users\Ben\Documents\Masters16_17\Fall2016\CISC874\Assignments\Assignment1\Asg1_10006197\Asg1_10006197\Asg1_10006197.vcxproj" (Build target(s)).
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\church\Documents\Fall2016\CISC874\Assignments\Assignment1\Asg1_10006197\Debug\Asg1_10006197.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\church\Documents\Fall2016\CISC874\Assignments\Assignment1\Asg1_10006197\Debug\Asg1_10006197.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\church\Documents\Fall2016\CISC874\Assignments\Assignment1\Asg1_10006197\Debug\Asg1_10006197.lib" /MACHINE:X86 Debug\main.obj
+         Asg1_10006197.vcxproj -> C:\Users\church\Documents\Fall2016\CISC874\Assignments\Assignment1\Asg1_10006197\Debug\Asg1_10006197.exe
+     1>Done Building Project "C:\Users\church\Documents\Fall2016\CISC874\Assignments\Assignment1\Asg1_10006197\Asg1_10006197\Asg1_10006197.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:01.37
+Time Elapsed 00:00:00.84

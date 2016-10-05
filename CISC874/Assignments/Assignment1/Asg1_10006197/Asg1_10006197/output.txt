@@ -1,3 +1,0 @@
-Training epochs required to correctly classify all setosas versus non-setosas: 0
-Normalized weight vector which classifies setosas versus non-setosas: 	-0.720000	0.700000	-0.150000	-0.710000	0.000000
-Therefore the perceptron correctly distinguished 0 samples out of 0 as being Iris-setosa or not.
