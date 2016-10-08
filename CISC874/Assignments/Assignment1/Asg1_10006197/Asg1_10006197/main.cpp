@@ -93,7 +93,6 @@ public:
 	bool ClassifyVersicolorOrVirginica(array<double, 4> Inputs, string CorrectName);
 
 	void SimpleFeedbackForSetosa(string CorrectName);
-	void ErrorCorrectionForVersicolorOrVirginica(string CorrectName);
 	void BatchErrorCorrectionForVersicolorOrVirginica(vector<array<double, 4>> TrainingBiometrics, vector<string> TrainingSpeciesNames);
 };
 

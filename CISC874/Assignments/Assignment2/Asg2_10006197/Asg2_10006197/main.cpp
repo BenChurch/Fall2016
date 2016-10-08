@@ -1,0 +1,400 @@
+#include <array>
+#include <fstream>
+#include <iostream>
+#include <math.h>		// For computation of nodes' sigmoidal-exponential activation function
+#include <stdlib.h>		// For .txt file strings to double representations, and random number generation, and random number generation
+#include <string>
+#include <time.h>		// Used to seed random number generator
+#include <vector>
+#include <Windows.h>
+
+static const int MAX_TRAINING_EPOCHS = 100;
+
+static const char * Dir = ".";
+
+using namespace std;
+
+class Node
+{
+public:
+	Node(double Threshold, int Inputs);
+	double Threshold;
+	vector<int> Inputs;				// Should be same length as Weights vector
+	vector<double> Weights;
+
+	double ActivationPotential = 0;
+
+	void ComputeIdentityActivation();		// Used for input layer nodes
+	void ComputeSigmoidActivation();
+
+	
+};
+
+Node::Node(double Threshold, int Inputs)
+{
+	this->Threshold = Threshold;
+	int RandomInt;
+	double RandomDouble;
+	for (int i = 0; i < Inputs; i++)
+	{
+		this->Inputs.push_back(0);
+		RandomInt = (rand() % 200) - 100;			// Random int in range [-100 to 100] to leave us with some decimal places
+		RandomDouble = ((double)RandomInt / 100);
+		this->Weights.push_back(RandomDouble);
+	}
+}
+
+void Node::ComputeIdentityActivation()
+{
+	for (int i = 0; i < this->Inputs.size(); i++)
+		this->ActivationPotential += this->Inputs[i] * this->Weights[i];
+}
+
+void Node::ComputeSigmoidActivation()
+{
+	double Xi;						// Input to activation function, Input * Weight
+	for (int i = 0; i < Inputs.size(); i++)			// Will any normalization be necessary?
+	{
+		Xi = this->Inputs[i] * this->Weights[i];
+		this->ActivationPotential += 1 / (1 + exp((-1)*Xi));			// Slope of function curve can be adjusted by multiplying Xi by a constant
+	}
+}
+
+class Network
+{
+public:
+	Network();
+	double Momentum;				// Used to keep weights from settling on local minima
+
+	vector<vector<Node>> InputLayer;// Activation function is identity, serves to pass weighted inputs to hidden node - representing in matrix form analogous to image pixels		
+	vector<Node> HiddenLayer;		// Activation function is sigmoidal
+	vector<Node> OutputLayer;		// Activation function is sigmoidal
+
+	void ConstructNodes(vector<vector<int>> TemplateImage);
+	void Feedworward(vector<vector<int>> Image, int CorrectClassification);
+
+	void WriteSelf();
+};
+Network::Network()
+{
+	srand(time(NULL));			// Provide random number seed for random weight initialization
+}
+
+void Network::ConstructNodes(vector<vector<int>> TemplateImage)	// Initialize network architecture
+{
+	// Initialize input layer
+	vector<Node> AnInputRow;
+	for (int InputRow = 0; InputRow < TemplateImage.size(); InputRow++)
+	{
+		for (int InputNode = 0; InputNode < TemplateImage[InputRow].size(); InputNode++)
+		{
+			AnInputRow.push_back(Node(0, 1));
+		}
+		this->InputLayer.push_back(AnInputRow);
+		AnInputRow.clear();
+	}
+
+	// Construct hidden layer to recognize features
+	for (int HiddenNode = 0; HiddenNode < 10; HiddenNode++)
+		this->HiddenLayer.push_back(Node(0, (this->InputLayer.size() * this->InputLayer[0].size())));
+
+	// Construct output layer to classify 10 different digits
+	for (int OutputNode = 0; OutputNode < 10; OutputNode++)		// Need to recognize 10 different digits
+		this->OutputLayer.push_back(Node(0, this->HiddenLayer.size()));
+}
+
+void Network::Feedworward(vector<vector<int>> Image, int CorrectClassification)
+{
+	for (int InputNodeRow = 0; InputNodeRow < Image.size(); InputNodeRow++)
+	{
+		for (int InputNode = 0; InputNode < Image[InputNodeRow].size(); InputNode++)	//Image[InputNodeRow] should be the same for all InputNodeRow
+		{
+
+		}
+	}
+}
+
+void Network::WriteSelf()
+{
+	ofstream SelfOutput;
+	SelfOutput.open("NetworkState.txt");
+
+	// Write input array
+	SelfOutput << endl << "Input array: " << endl;
+	for (int InputRow = 0; InputRow < this->InputLayer.size(); InputRow++)
+	{
+		SelfOutput << endl;
+		//std::cout << "	Input array, row " << InputRow << ": " << endl;
+		for (int InputNode = 0; InputNode < this->InputLayer[InputRow].size(); InputNode++)
+		{	// Print nodes' index values
+			SelfOutput << "		Index: " << InputRow << ", " << InputNode << "	";
+		}
+		SelfOutput << endl;
+		for (int InputNode = 0; InputNode < this->InputLayer[InputRow].size(); InputNode++)
+		{	// Print nodes' input values
+			SelfOutput << "		Input: " << this->InputLayer[InputRow][InputNode].Inputs[0] << "	";
+		}
+		SelfOutput << endl;
+		for (int InputNode = 0; InputNode < this->InputLayer[InputRow].size(); InputNode++)
+		{	// Print nodes' weight values
+			SelfOutput << "		Weight: " << this->InputLayer[InputRow][InputNode].Weights[0] << "	";
+		}
+		SelfOutput << endl;
+		for (int InputNode = 0; InputNode < this->InputLayer[InputRow].size(); InputNode++)
+		{	// Print nodes' activation potentials
+			SelfOutput << "		Activation: " << this->InputLayer[InputRow][InputNode].ActivationPotential << "	";
+		}
+		SelfOutput << endl;
+		for (int InputNode = 0; InputNode < this->InputLayer[InputRow].size(); InputNode++)
+		{	// Print nodes' threshold values
+			SelfOutput << "		Threshold: " << this->InputLayer[InputRow][InputNode].Threshold << "	";
+		}
+		SelfOutput << endl;
+	}
+
+	// Write hidden layer
+	SelfOutput << "Hidden layer: " << endl;
+	SelfOutput << endl;
+	SelfOutput << "		";
+	for (int Node = 0; Node < this->HiddenLayer.size(); Node++)
+	{	// Print nodes' index values
+		SelfOutput << "		Node: " << Node << "	";
+	}
+	SelfOutput << endl;
+
+	SelfOutput << "	Inputs:" << endl;
+	for (int Input = 0; Input < this->HiddenLayer[0].Inputs.size(); Input++)
+	{	// Print nodes' input values
+		SelfOutput << "		Input number" << Input;
+		for (int Node = 0; Node < this->HiddenLayer.size(); Node++)
+			SelfOutput << "		" << this->HiddenLayer[Node].Inputs[Input] << "	";
+		SelfOutput << endl;
+	}
+	SelfOutput << endl;
+
+	SelfOutput << "	Weights:" << endl;
+	for (int Weight = 0; Weight < this->HiddenLayer[0].Weights.size(); Weight++)
+	{	// Print nodes' input values
+		SelfOutput << "		Weight number" << Weight;
+		for (int Node = 0; Node < this->HiddenLayer.size(); Node++)
+			SelfOutput << "		" << this->HiddenLayer[Node].Weights[Weight] << "	";
+		SelfOutput << endl;
+	}
+	SelfOutput << endl;
+
+	SelfOutput << "		Activation: ";
+	for (int Node = 0; Node < this->HiddenLayer.size(); Node++)
+	{	// Print nodes' activation potentials
+		SelfOutput << "		" << this->HiddenLayer[Node].ActivationPotential << "	";
+	}
+	SelfOutput << endl;
+	
+	SelfOutput << endl;
+	SelfOutput << "		Threshold: ";
+	for (int Node = 0; Node < this->HiddenLayer.size(); Node++)
+	{	// Print nodes' threshold values
+		SelfOutput << "		" << this->HiddenLayer[Node].Threshold << "	";
+	}
+	SelfOutput << endl;
+
+	// Write output layer
+	SelfOutput << endl;
+	SelfOutput << "Output layer: " << endl;
+	SelfOutput << endl;
+	SelfOutput << "		";
+	for (int Node = 0; Node < this->OutputLayer.size(); Node++)
+	{	// Print nodes' index values
+		SelfOutput << "		Node: " << Node << "	";
+	}
+	SelfOutput << endl;
+
+	SelfOutput << "	Inputs:" << endl;
+	for (int Input = 0; Input < this->OutputLayer[0].Inputs.size(); Input++)
+	{	// Print nodes' input values
+		SelfOutput << "		Input number" << Input;
+		for (int Node = 0; Node < this->OutputLayer.size(); Node++)
+			SelfOutput << "		" << this->OutputLayer[Node].Inputs[Input] << "	";
+		SelfOutput << endl;
+	}
+	SelfOutput << endl;
+
+	SelfOutput << "	Weights:" << endl;
+	for (int Weight = 0; Weight < this->OutputLayer[0].Weights.size(); Weight++)
+	{	// Print nodes' input values
+		SelfOutput << "		Weight number" << Weight;
+		for (int Node = 0; Node < this->OutputLayer.size(); Node++)
+			SelfOutput << "		" << this->OutputLayer[Node].Weights[Weight] << "	";
+		SelfOutput << endl;
+	}
+	SelfOutput << endl;
+
+	SelfOutput << "		Activation: ";
+	for (int Node = 0; Node < this->OutputLayer.size(); Node++)
+	{	// Print nodes' activation potentials
+		SelfOutput << "		" << this->OutputLayer[Node].ActivationPotential << "	";
+	}
+	SelfOutput << endl;
+
+	SelfOutput << endl;
+	SelfOutput << "		Threshold: ";
+	for (int Node = 0; Node < this->OutputLayer.size(); Node++)
+	{	// Print nodes' threshold values
+		SelfOutput << "		" << this->OutputLayer[Node].Threshold << "	";
+	}
+	SelfOutput << endl;
+
+}
+
+class ImageData		// Can store either 1 bit or 4 bit image data with the images' correct classification
+{
+public:
+	vector<vector<vector<int>>> Images;				// Each <vector<vector<int>> is a vector of rows, each of which is a vector of pixel values; use a 3rd vector "layer" to store muliple images
+	vector<int> CorrectClassifications;
+
+	void PrintAllData();							// Used in development to verify ReadInputs() functionality
+};
+
+ImageData ReadInputs(const char * FileName);
+
+int main()
+{
+	ImageData InputData;
+	InputData = ReadInputs("testing.txt");
+	//InputData.PrintAllData();
+	Network BackpropagationNetwork;
+	BackpropagationNetwork.ConstructNodes(InputData.Images[0]);
+	BackpropagationNetwork.WriteSelf();
+
+	cout << "Press enter to end the program." << endl;
+	cin.ignore();
+	return 0;
+}
+
+void ImageData::PrintAllData()
+{
+	for (int i = 0; i < this->Images.size(); i++)			// For each image stored herein
+	{
+		cout << "Image number " << i << endl;
+		for (int Row = 0; Row < this->Images[i].size(); Row++)
+		{
+			for (int Col = 0; Col < this->Images[i][Row].size(); Col++)
+				cout << Images[i][Row][Col] << ", ";
+			cout << endl;
+		}
+		cout << "		Correct classification: " << this->CorrectClassifications[i] << endl << endl;
+	}
+}
+
+ImageData ReadInputs(const char * FileName)
+{
+	SetCurrentDirectoryA(Dir);
+	ImageData InputData;
+	ifstream Data(FileName);
+	string line;
+std:string::size_type DatumEnd;	// Repeatedly pushed past the next data value to be read into InputData
+	std::string::size_type SubstringSize;
+	int DatumValue;
+	string Datum;
+
+	vector<int> Cols;				// One pixel value for each col in a row
+	vector<vector<int>> RowOfCols;	// Represents one image
+
+	if (Data.is_open())
+	{
+		getline(Data, line);
+		SubstringSize = line.size();
+		if ((line[0]) == 48)		// Not exactly robust, but first char in both 4-bit image input files is 0, represented by an int = 48, whereas original-data files have headers
+		{	// FileName contains rows of 64 4-bit pixel data corresponding to 8X8 pixel images, followed by one digit representing correct classification
+			for (int Row = 1; Row <= 8; Row++)									// First line instance contains values we need
+			{
+				for (int Col = 1; Col <= 8; Col++)		
+				{
+					DatumEnd = line.find(",");
+					Datum = line.substr(0, DatumEnd);
+					line = line.substr(DatumEnd+1, SubstringSize);
+					SubstringSize = line.size();
+					DatumValue = atoi(Datum.c_str());
+					Cols.push_back(DatumValue);			
+				}
+				RowOfCols.push_back(Cols);
+				Cols.clear();
+			}
+			InputData.Images.push_back(RowOfCols);
+			RowOfCols.clear();
+			Datum = line.substr(0, SubstringSize);	// The correct classification value remains - guaranteed to be 1 digit
+			DatumValue = atoi(Datum.c_str());
+			InputData.CorrectClassifications.push_back(DatumValue);			
+			while (getline(Data, line))				// Writes line line from FileName into line variable
+			{
+				SubstringSize = line.size();
+				for (int Row = 1; Row <= 8; Row++)									// First line instance contains values we need
+				{
+					for (int Col = 1; Col <= 8; Col++)
+					{
+						DatumEnd = line.find(",");
+						Datum = line.substr(0, DatumEnd);
+						line = line.substr(DatumEnd + 1, SubstringSize);
+						SubstringSize = line.size();
+						DatumValue = atoi(Datum.c_str());
+						Cols.push_back(DatumValue);			
+					}
+					RowOfCols.push_back(Cols);
+					Cols.clear();
+				}
+				InputData.Images.push_back(RowOfCols);
+				RowOfCols.clear();
+				Datum = line.substr(0, SubstringSize);	// The correct classification value remains - guaranteed to be 1 digit
+				DatumValue = atoi(Datum.c_str());
+				InputData.CorrectClassifications.push_back(DatumValue);
+			}
+			return InputData;
+		}
+		else
+		{	// FileName constains Rows of binary pixel values corresponding to 8X8 1-bit images
+			while (getline(Data, line) && (line[0] != 48 || line.size() < 10))		// Read past header
+			{
+				// Do nothing
+			}
+			// line that exits above while-loop is not a header line
+			for (int Row = 0; Row < 32; Row++)
+			{
+				for (int Col = 0; Col < line.size(); Col++)		//line.size() == NumRows == 32
+				{
+					Cols.push_back(line[Col] - 48);				// val = data - 48 seems to be some encoding, subtract it off, undo it
+				}
+				RowOfCols.push_back(Cols);
+				Cols.clear();
+				getline(Data, line);
+			}
+			InputData.Images.push_back(RowOfCols);
+			RowOfCols.clear();
+			//getline(Data, line);				// now line == <CorrectClassifcation>
+			InputData.CorrectClassifications.push_back(line[1] - 48);
+			while (getline(Data, line))			
+			{	// Iterate through the remaining, non-header lines
+				for (int Row = 0; Row < 32; Row++)
+				{
+					for (int Col = 0; Col < line.size(); Col++)		//line.size() == NumRows == 32
+					{
+						Cols.push_back(line[Col] - 48);				// val = data - 48 seems to be some encoding, subtract it off, undo it
+					}
+					RowOfCols.push_back(Cols);
+					Cols.clear();
+					getline(Data, line);
+				}
+
+				InputData.Images.push_back(RowOfCols);
+				RowOfCols.clear();
+				// now line == <CorrectClassifcation>
+				InputData.CorrectClassifications.push_back(line[1] - 48);
+			}
+			return InputData;
+		}
+	}
+	else
+	{
+		std::cout << "Warning - could not open data file " << Dir << FileName << endl;
+		std::cout << "Returning empty ImageData object." << endl;
+		return InputData;
+	}
+}

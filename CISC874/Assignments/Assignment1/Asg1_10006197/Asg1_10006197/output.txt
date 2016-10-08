@@ -1,10 +1,10 @@
 Training epochs required to correctly classify all setosas versus non-setosas: 5
-Weight values used to classify setosa versus non-setosa before learning:   0.540000  0.870000  0.800000  0.470000
-Weight vector which classifies setosas versus non-setosas: 	-0.187273	0.676818	-0.221739	-0.550000
+Weight values used to classify setosa versus non-setosa before learning:   0.730000  0.240000  0.140000  0.640000
+Weight vector which classifies setosas versus non-setosas: 	0.314416	0.433182	-0.765797	-0.340000
 After the last training epoch, 120 out of 120 inputs were correctly classified as setosa vs. NON-setosa for a classification accuracy of 1.000000
 
 The equation of the line for the setosa - NON-setosa classification node is:
-	-0.187273 X1 + 0.676818 X2 + -0.221739 X3 + -0.550000 X4 = 0.000000
+	0.314416 X1 + 0.433182 X2 + -0.765797 X3 + -0.340000 X4 = 0.000000
 	Where X1 is sepal length, X2 is sepal width, X3 is petal length, and X4 is petal width, all normalized in terms of the largest value in their respective dimension.
 
 Perceptron classified input pattern 0:	0.645570	0.897436	0.218750	0.083333 as Iris-setosa. Correct classification is: Iris-setosa
@@ -39,7 +39,7 @@ Perceptron classified input pattern 28:	0.974684	0.769231	0.953125	0.958333 as N
 Perceptron classified input pattern 29:	0.797468	0.871795	0.875000	1.000000 as NON Iris-setosa. Correct classification is: Iris-virginica
 Therefore the perceptron correctly distinguished 30 samples out of 30 as being Iris-setosa or not for a classification rate of 1.000000
  
-Initial value of weight vector used to classify versicolor-virginica: 0.110000 0.200000 0.500000 0.580000
+Initial value of weight vector used to classify versicolor-virginica: 0.960000 0.760000 0.240000 0.850000
 Final value of weight vector used to classift versicolor-virginica: 1.230243 1.520518 1.405413 1.472839
 After the last training epoch, 106 out of 120 inputs were correctly classified as setosa vs. versicolor vs. virginica for a classification accuracy of 0.883333
 
