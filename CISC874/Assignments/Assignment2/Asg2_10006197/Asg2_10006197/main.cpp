@@ -19,7 +19,7 @@ class Node
 public:
 	Node(double Threshold, int Inputs);
 	double Threshold;
-	vector<int> Inputs;				// Should be same length as Weights vector
+	vector<double> Inputs;				// Should be same length as Weights vector
 	vector<double> Weights;
 
 	double ActivationPotential = 0;
@@ -46,18 +46,20 @@ Node::Node(double Threshold, int Inputs)
 
 void Node::ComputeIdentityActivation()
 {
+	this->ActivationPotential = 0;					// Reinitialize for new iteration
 	for (int i = 0; i < this->Inputs.size(); i++)
 		this->ActivationPotential += this->Inputs[i] * this->Weights[i];
 }
 
 void Node::ComputeSigmoidActivation()
 {
-	double Xi;						// Input to activation function, Input * Weight
-	for (int i = 0; i < Inputs.size(); i++)			// Will any normalization be necessary?
+	this->ActivationPotential = 0;
+	double A = 0;						// Input to activation function, SUM(Input * Weight)
+	for (int i = 0; i < this->Inputs.size(); i++)			// Will any normalization be necessary?
 	{
-		Xi = this->Inputs[i] * this->Weights[i];
-		this->ActivationPotential += 1 / (1 + exp((-1)*Xi));			// Slope of function curve can be adjusted by multiplying Xi by a constant
+		A += this->Inputs[i] * this->Weights[i];
 	}
+	this->ActivationPotential = 1 / (1 + exp((-1)*A));			// Slope of function curve can be adjusted by multiplying Xi by a constant
 }
 
 class Network
@@ -65,15 +67,17 @@ class Network
 public:
 	Network();
 	double Momentum;				// Used to keep weights from settling on local minima
+	double LeanringRate = 0.5;
 
 	vector<vector<Node>> InputLayer;// Activation function is identity, serves to pass weighted inputs to hidden node - representing in matrix form analogous to image pixels		
 	vector<Node> HiddenLayer;		// Activation function is sigmoidal
 	vector<Node> OutputLayer;		// Activation function is sigmoidal
 
 	void ConstructNodes(vector<vector<int>> TemplateImage);
-	void Feedworward(vector<vector<int>> Image, int CorrectClassification);
+	void Feedworward(vector<vector<int>> Image);
+	void Backpropagate(int CorrectClassification);
 
-	void WriteSelf();
+	void WriteSelf(string FileIdentifier);
 };
 Network::Network()
 {
@@ -85,7 +89,7 @@ void Network::ConstructNodes(vector<vector<int>> TemplateImage)	// Initialize ne
 	// Initialize input layer
 	vector<Node> AnInputRow;
 	for (int InputRow = 0; InputRow < TemplateImage.size(); InputRow++)
-	{
+	{	// Organize in array structure, like image data
 		for (int InputNode = 0; InputNode < TemplateImage[InputRow].size(); InputNode++)
 		{
 			AnInputRow.push_back(Node(0, 1));
@@ -100,24 +104,87 @@ void Network::ConstructNodes(vector<vector<int>> TemplateImage)	// Initialize ne
 
 	// Construct output layer to classify 10 different digits
 	for (int OutputNode = 0; OutputNode < 10; OutputNode++)		// Need to recognize 10 different digits
-		this->OutputLayer.push_back(Node(0, this->HiddenLayer.size()));
+		this->OutputLayer.push_back(Node(0.5, this->HiddenLayer.size()));
 }
 
-void Network::Feedworward(vector<vector<int>> Image, int CorrectClassification)
+void Network::Feedworward(vector<vector<int>> Image)
 {
-	for (int InputNodeRow = 0; InputNodeRow < Image.size(); InputNodeRow++)
-	{
-		for (int InputNode = 0; InputNode < Image[InputNodeRow].size(); InputNode++)	//Image[InputNodeRow] should be the same for all InputNodeRow
-		{
+	// Iterators just to tidy the code
+	Node * CurrentInputNode; 
+	Node * CurrentHiddenNode; 
+	Node * CurrentOutputNode;		// I arbitrarily chose 10 hidden nodes, I should make this a variable
 
+	for (int InputNodeRow = 0; InputNodeRow < this->InputLayer.size(); InputNodeRow++)
+	{
+		for (int InputNode = 0; InputNode < this->InputLayer[InputNodeRow].size(); InputNode++)
+		{
+			CurrentInputNode =  &(this->InputLayer[InputNodeRow][InputNode]);			
+			(*CurrentInputNode).Inputs[0] = Image[InputNodeRow][InputNode];
+			(*CurrentInputNode).ComputeIdentityActivation();		// ? Input nodes not to perform computation, just pass weighted value ?
+			for (int HiddenNode = 0; HiddenNode < 10; HiddenNode++)
+			{
+				CurrentHiddenNode = &(this->HiddenLayer[HiddenNode]);
+				(*CurrentHiddenNode).Inputs[((InputNodeRow + 1) * (InputNode + 1)) - 1] = (*CurrentInputNode).ActivationPotential;		// This 2D to 1D indexing redistributes values across HiddenNode Inputs
+				// ComputeSigmoidActivation() iterates through each weight, populated or not, therfore only run this once all inputs updated
+			}
 		}
+	}
+
+	for (int HiddenNode = 0; HiddenNode < this->HiddenLayer.size(); HiddenNode++)
+	{
+		CurrentHiddenNode = &(this->HiddenLayer[HiddenNode]);
+		(*CurrentHiddenNode).ComputeSigmoidActivation();
+		for (int OutputNode = 0; OutputNode < this->OutputLayer.size(); OutputNode++)
+		{
+			CurrentOutputNode = &(this->OutputLayer[OutputNode]);
+			(*CurrentOutputNode).Inputs[HiddenNode] = (*CurrentHiddenNode).ActivationPotential;
+		}
+	}
+
+	for (int OutputNode = 0; OutputNode < this->OutputLayer.size(); OutputNode++)
+	{
+		CurrentOutputNode = &(this->OutputLayer[OutputNode]);
+		(*CurrentOutputNode).ComputeSigmoidActivation();
+	}
+	// Assert that network is in equilibrium with input Image
+}
+
+void Network::Backpropagate(int CorrectClassification)
+{
+	Node * CurrentInputNode;
+	Node * CurrentHiddenNode;
+	Node * CurrentOutputNode;
+	double CurrentActivation;						// Saves me from writing (*CurrentNode).Activation (== y) everywhere
+
+	double SumSquaredOuputError = 0;
+	for (int digit = 0; digit < 10; digit++)		// Check all possible classifications
+	{
+		CurrentOutputNode = &(this->OutputLayer[digit]);
+		CurrentActivation = (*CurrentOutputNode).ActivationPotential;
+		if (digit != CorrectClassification && CurrentActivation > (*CurrentOutputNode).Threshold)
+		{	// If an output node is active that shouldn't be
+			for (int Input = 0; Input < (*CurrentOutputNode).Weights.size(); Input++)
+			{
+				(*CurrentOutputNode).Weights[Input] += (this->LeanringRate) * ((*CurrentOutputNode).Inputs[Input]) * ((*CurrentOutputNode).Threshold - CurrentActivation) * (CurrentActivation)* (1 - CurrentActivation);
+			}
+			continue;
+		}
+		else if (digit == CorrectClassification && CurrentActivation < (*CurrentOutputNode).Threshold)
+		{	// If an output node isn't active but should be
+			for (int Input = 0; Input < (*CurrentOutputNode).Weights.size(); Input++)
+			{
+				(*CurrentOutputNode).Weights[Input] += (this->LeanringRate) * ((*CurrentOutputNode).Inputs[Input]) * ((*CurrentOutputNode).Threshold - CurrentActivation) * (CurrentActivation)* (1 - CurrentActivation);
+			}
+		}
+		// Else output nodes are in the correct state
+
 	}
 }
 
-void Network::WriteSelf()
+void Network::WriteSelf(string FileIdentifier)						// Just used for my debugging purposes. Output doesn't necessarily line up - can be confusing
 {
 	ofstream SelfOutput;
-	SelfOutput.open("NetworkState.txt");
+	SelfOutput.open("NetworkState" + FileIdentifier + ".txt");
 
 	// Write input array
 	SelfOutput << endl << "Input array: " << endl;
@@ -142,7 +209,7 @@ void Network::WriteSelf()
 		SelfOutput << endl;
 		for (int InputNode = 0; InputNode < this->InputLayer[InputRow].size(); InputNode++)
 		{	// Print nodes' activation potentials
-			SelfOutput << "		Activation: " << this->InputLayer[InputRow][InputNode].ActivationPotential << "	";
+			SelfOutput << "		Act.: " << this->InputLayer[InputRow][InputNode].ActivationPotential << "		";
 		}
 		SelfOutput << endl;
 		for (int InputNode = 0; InputNode < this->InputLayer[InputRow].size(); InputNode++)
@@ -242,8 +309,8 @@ void Network::WriteSelf()
 		SelfOutput << "		" << this->OutputLayer[Node].Threshold << "	";
 	}
 	SelfOutput << endl;
-
-}
+	SelfOutput.close();
+}	  
 
 class ImageData		// Can store either 1 bit or 4 bit image data with the images' correct classification
 {
@@ -263,7 +330,11 @@ int main()
 	//InputData.PrintAllData();
 	Network BackpropagationNetwork;
 	BackpropagationNetwork.ConstructNodes(InputData.Images[0]);
-	BackpropagationNetwork.WriteSelf();
+	BackpropagationNetwork.WriteSelf("1");
+	BackpropagationNetwork.Feedworward(InputData.Images[0]);
+	BackpropagationNetwork.WriteSelf("2");
+	BackpropagationNetwork.Backpropagate(InputData.CorrectClassifications[0]);
+	BackpropagationNetwork.WriteSelf("3");
 
 	cout << "Press enter to end the program." << endl;
 	cin.ignore();
@@ -313,7 +384,7 @@ std:string::size_type DatumEnd;	// Repeatedly pushed past the next data value to
 					Datum = line.substr(0, DatumEnd);
 					line = line.substr(DatumEnd+1, SubstringSize);
 					SubstringSize = line.size();
-					DatumValue = atoi(Datum.c_str());
+					DatumValue = atof(Datum.c_str());
 					Cols.push_back(DatumValue);			
 				}
 				RowOfCols.push_back(Cols);
@@ -322,7 +393,7 @@ std:string::size_type DatumEnd;	// Repeatedly pushed past the next data value to
 			InputData.Images.push_back(RowOfCols);
 			RowOfCols.clear();
 			Datum = line.substr(0, SubstringSize);	// The correct classification value remains - guaranteed to be 1 digit
-			DatumValue = atoi(Datum.c_str());
+			DatumValue = atof(Datum.c_str());
 			InputData.CorrectClassifications.push_back(DatumValue);			
 			while (getline(Data, line))				// Writes line line from FileName into line variable
 			{
@@ -335,7 +406,7 @@ std:string::size_type DatumEnd;	// Repeatedly pushed past the next data value to
 						Datum = line.substr(0, DatumEnd);
 						line = line.substr(DatumEnd + 1, SubstringSize);
 						SubstringSize = line.size();
-						DatumValue = atoi(Datum.c_str());
+						DatumValue = atof(Datum.c_str());
 						Cols.push_back(DatumValue);			
 					}
 					RowOfCols.push_back(Cols);
@@ -344,9 +415,10 @@ std:string::size_type DatumEnd;	// Repeatedly pushed past the next data value to
 				InputData.Images.push_back(RowOfCols);
 				RowOfCols.clear();
 				Datum = line.substr(0, SubstringSize);	// The correct classification value remains - guaranteed to be 1 digit
-				DatumValue = atoi(Datum.c_str());
+				DatumValue = atof(Datum.c_str());
 				InputData.CorrectClassifications.push_back(DatumValue);
 			}
+			Data.close();
 			return InputData;
 		}
 		else
@@ -388,6 +460,7 @@ std:string::size_type DatumEnd;	// Repeatedly pushed past the next data value to
 				// now line == <CorrectClassifcation>
 				InputData.CorrectClassifications.push_back(line[1] - 48);
 			}
+			Data.close();
 			return InputData;
 		}
 	}
