@@ -3,49 +3,49 @@ Input array:
 
 		Index: 0, 0			Index: 0, 1			Index: 0, 2			Index: 0, 3			Index: 0, 4			Index: 0, 5			Index: 0, 6			Index: 0, 7	
 		Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0	
-		Weight: 0.41			Weight: -0.35			Weight: -0.05			Weight: -0.39			Weight: -0.84			Weight: -0.72			Weight: -0.33			Weight: 0.81	
+		Weight: 0.47			Weight: -0.06			Weight: 0.22			Weight: -0.32			Weight: -0.13			Weight: 0.91			Weight: 0.37			Weight: -0.49	
 		Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0		
 		Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0	
 
 		Index: 1, 0			Index: 1, 1			Index: 1, 2			Index: 1, 3			Index: 1, 4			Index: 1, 5			Index: 1, 6			Index: 1, 7	
 		Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0	
-		Weight: 0.77			Weight: 0.27			Weight: -0.55			Weight: -0.54			Weight: 0.84			Weight: -0.66			Weight: 0.09			Weight: 0.48	
+		Weight: 0.31			Weight: -0.64			Weight: 0.71			Weight: 0.84			Weight: -0.72			Weight: -0.19			Weight: -0.86			Weight: -0.78	
 		Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0		
 		Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0	
 
 		Index: 2, 0			Index: 2, 1			Index: 2, 2			Index: 2, 3			Index: 2, 4			Index: 2, 5			Index: 2, 6			Index: 2, 7	
 		Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0	
-		Weight: -0.08			Weight: -0.82			Weight: 0.65			Weight: -0.8			Weight: 0.24			Weight: 0.24			Weight: 0.29			Weight: 0.2	
+		Weight: -0.32			Weight: -0.33			Weight: 0.32			Weight: -0.83			Weight: 0.96			Weight: 0.42			Weight: -0.98			Weight: 0.05	
 		Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0		
 		Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0	
 
 		Index: 3, 0			Index: 3, 1			Index: 3, 2			Index: 3, 3			Index: 3, 4			Index: 3, 5			Index: 3, 6			Index: 3, 7	
 		Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0	
-		Weight: -0.21			Weight: 0.24			Weight: -0.77			Weight: -0.05			Weight: 0.35			Weight: -0.12			Weight: -0.43			Weight: -0.33	
+		Weight: 0.37			Weight: -0.06			Weight: -0.92			Weight: -0.3			Weight: 0.64			Weight: -0.21			Weight: 0.05			Weight: -0.79	
 		Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0		
 		Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0	
 
 		Index: 4, 0			Index: 4, 1			Index: 4, 2			Index: 4, 3			Index: 4, 4			Index: 4, 5			Index: 4, 6			Index: 4, 7	
 		Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0	
-		Weight: -0.89			Weight: 0.04			Weight: -0.35			Weight: -0.13			Weight: -0.47			Weight: 0.13			Weight: 0			Weight: -0.83	
+		Weight: 0.18			Weight: 0.05			Weight: 0.49			Weight: 0.38			Weight: 0.63			Weight: 0.98			Weight: -0.22			Weight: 0.82	
 		Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0		
 		Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0	
 
 		Index: 5, 0			Index: 5, 1			Index: 5, 2			Index: 5, 3			Index: 5, 4			Index: 5, 5			Index: 5, 6			Index: 5, 7	
 		Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0	
-		Weight: 0.56			Weight: -0.09			Weight: -0.5			Weight: 0			Weight: 0.22			Weight: -0.28			Weight: -0.38			Weight: -0.99	
+		Weight: -0.13			Weight: -0.54			Weight: 0.91			Weight: -0.16			Weight: 0.42			Weight: 0.74			Weight: -0.4			Weight: -0.14	
 		Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0		
 		Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0	
 
 		Index: 6, 0			Index: 6, 1			Index: 6, 2			Index: 6, 3			Index: 6, 4			Index: 6, 5			Index: 6, 6			Index: 6, 7	
 		Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0	
-		Weight: -0.12			Weight: -0.46			Weight: -0.83			Weight: -0.77			Weight: 0.21			Weight: -0.54			Weight: -0.73			Weight: 0.04	
+		Weight: -0.12			Weight: -0.96			Weight: -0.47			Weight: 0.89			Weight: 0.57			Weight: -0.14			Weight: -0.07			Weight: 0.77	
 		Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0		
 		Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0	
 
 		Index: 7, 0			Index: 7, 1			Index: 7, 2			Index: 7, 3			Index: 7, 4			Index: 7, 5			Index: 7, 6			Index: 7, 7	
 		Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0			Input: 0	
-		Weight: 0.41			Weight: 0.57			Weight: -0.48			Weight: 0.02			Weight: -0.69			Weight: -0.33			Weight: 0.76			Weight: -0.78	
+		Weight: 0.58			Weight: -0.97			Weight: 0.31			Weight: 0.26			Weight: -0.07			Weight: 0.29			Weight: 0.1			Weight: 0.99	
 		Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0				Act.: 0		
 		Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0			Threshold: 0	
 Hidden layer: 
@@ -118,70 +118,70 @@ Hidden layer:
 		Input number63		0			0			0			0			0			0			0			0			0			0	
 
 	Weights:
-		Weight number0		0.04			-0.76			0.48			0.81			0.69			-0.18			-0.29			0.68			-0.06			-0.2	
-		Weight number1		-0.81			0.12			0.29			0.65			-0.63			-0.61			-0.79			0.82			-0.66			-0.9	
-		Weight number2		-0.18			0.62			-0.75			-0.23			0.77			0.94			0.21			-0.37			-0.57			0.02	
-		Weight number3		0.95			-0.29			-0.84			-0.85			0.62			0.39			0.78			0.57			0.42			-0.88	
-		Weight number4		0.73			0.46			0.12			-0.06			0.32			-0.82			0.28			-0.13			0.34			-0.71	
-		Weight number5		0.06			0.2			-0.56			-0.6			0.15			0.98			0.27			-1			-0.12			-0.12	
-		Weight number6		0.54			-0.89			-0.54			0.79			-0.49			0.49			0.45			-0.05			-0.28			0.63	
-		Weight number7		-0.14			0.77			-0.32			-0.03			0.11			-0.53			0.51			0.61			-0.08			0.13	
-		Weight number8		0.67			0.37			0.35			-0.43			-0.44			0.95			-0.1			-0.63			0.89			-0.59	
-		Weight number9		0.88			-0.25			0.1			0.64			0.57			0.61			0.29			0			-0.74			-0.88	
-		Weight number10		-0.43			-0.72			-0.39			-0.88			0.85			0.01			-0.37			0.27			-0.7			-0.74	
-		Weight number11		0.41			0.06			-0.71			-0.56			-0.59			0.55			0.07			0.99			0.53			-0.28	
-		Weight number12		0.46			-0.72			-0.3			0.28			0.06			0.97			0.04			-0.49			0.43			-0.97	
-		Weight number13		-0.97			0.87			-0.98			-0.2			-0.31			-0.98			-0.38			0.14			0.4			-0.62	
-		Weight number14		-0.23			0.02			0.06			-0.44			-0.91			0.31			0.44			0.51			-0.27			-0.88	
-		Weight number15		-0.26			-0.82			0.56			0.42			-0.82			-0.61			-0.55			-0.39			0.26			-0.04	
-		Weight number16		-0.2			0.05			-0.22			-0.68			-0.23			0.11			0.81			-0.84			-0.7			0.85	
-		Weight number17		-0.03			-0.09			0.93			0.14			-0.86			-0.31			-0.92			0.74			0.59			-0.25	
-		Weight number18		0.44			0.78			0.54			0.05			-0.14			0.28			0.22			-0.67			0.83			0.71	
-		Weight number19		-0.3			0.25			0.3			-0.88			-0.89			-0.77			-0.44			-0.29			-0.89			-0.64	
-		Weight number20		0.51			-0.18			-0.47			0.53			0.17			-0.67			-0.94			0.23			0.52			0.49	
-		Weight number21		0.12			0.23			-0.87			0.91			-0.6			0.36			-0.68			0.66			-0.72			-0.11	
-		Weight number22		0.98			-0.79			0.99			0.15			-0.27			-0.1			0.32			0.53			0.52			-0.5	
-		Weight number23		0.82			0.32			-0.32			0.01			-0.04			0.32			0.05			0.27			-0.06			-0.45	
-		Weight number24		-0.2			0.33			0.82			0.87			-0.07			0.95			-0.63			0.79			0.02			0.97	
-		Weight number25		-0.61			0.5			-0.13			-0.64			-0.72			-0.85			-0.7			-0.13			0.56			-0.47	
-		Weight number26		0.35			-0.47			0.14			0.64			-0.95			0.89			0.46			-0.06			0.36			0.84	
-		Weight number27		-0.08			-0.7			0.42			-0.89			-0.31			0.64			-0.67			0.55			0.3			0.75	
-		Weight number28		-0.11			-0.34			-0.64			0.83			-0.59			0.64			0.19			-0.42			0.5			0.14	
-		Weight number29		-0.44			-0.2			-0.45			0.25			-0.82			-0.21			0.7			-0.3			0.04			0.85	
-		Weight number30		0.69			-0.33			-0.68			-0.38			0.75			0.71			-0.04			0.52			0.86			0.66	
-		Weight number31		-0.6			0.35			0.34			0.75			0.77			-0.24			-0.75			0.91			-0.7			0.74	
-		Weight number32		-0.79			0.79			-0.71			0.95			0.9			-0.31			-0.92			0.36			-0.41			-0.97	
-		Weight number33		-1			0.55			-0.26			0.48			-0.52			-0.35			-0.96			0.23			-0.07			0.7	
-		Weight number34		-0.1			-0.11			0.43			-0.49			0.25			0.34			0.89			-0.42			-0.15			-0.62	
-		Weight number35		-0.59			-0.05			-0.97			0.4			-0.74			-0.3			-0.77			-0.39			0.04			-0.75	
-		Weight number36		0.78			0.43			0.81			-0.25			-0.11			0.75			0.66			-0.24			0.07			-0.57	
-		Weight number37		0.03			-0.08			0.84			-0.72			0.59			0.61			-0.66			-0.02			-0.82			-0.19	
-		Weight number38		0.32			0.74			-0.1			0.93			0.14			0.65			0.46			-0.99			0.95			0.43	
-		Weight number39		0.74			0.01			0.42			-0.13			0.46			-0.22			0.23			-0.9			0.45			0.54	
-		Weight number40		0.15			-0.69			0.44			0.08			0.65			0.06			-0.97			-0.51			0.46			-0.44	
-		Weight number41		-0.35			0.7			-0.14			0.42			-0.83			-0.29			0.2			0.25			0.65			0.36	
-		Weight number42		-0.18			0.6			-0.88			-0.46			-0.53			-0.31			-0.82			0.74			-0.37			0.67	
-		Weight number43		-0.82			-0.22			-0.45			0.81			-0.67			0.05			0.11			0.79			0.87			-0.35	
-		Weight number44		0.04			-0.7			-0.72			0.46			-0.83			0.2			-0.13			0.98			0.18			-0.38	
-		Weight number45		0.08			0.27			0.38			-0.72			0.41			0.65			-0.23			0.64			0.7			-0.85	
-		Weight number46		0.38			-0.99			0.62			0.49			-0.25			-0.34			-0.31			0.45			-0.29			0.44	
-		Weight number47		-0.28			0.77			0.79			0.26			-0.82			0.36			-0.21			0.27			-0.19			-0.81	
-		Weight number48		0.63			-0.34			-0.31			-0.07			-0.91			-0.27			0.89			-0.87			-0.18			-0.81	
-		Weight number49		-0.89			0.07			0.26			-0.96			-0.06			0.31			-0.01			0.35			0.89			0.99	
-		Weight number50		0.88			0.41			0.88			-0.11			0.89			-0.85			0.44			0.02			-0.33			0.34	
-		Weight number51		-0.73			-0.47			-0.64			0.93			-0.42			0.85			0.73			0.43			-0.07			0.45	
-		Weight number52		-0.64			0.76			-0.65			0.59			-0.57			0.68			-0.4			-0.67			0.82			-0.8	
-		Weight number53		0.45			0.4			-0.22			-0.76			-0.12			0.36			-0.53			-0.15			0.31			-0.52	
-		Weight number54		-0.03			0.06			0.49			-0.34			0.85			-0.17			0.51			0.33			-0.79			0.59	
-		Weight number55		0.46			-0.47			0.46			-0.05			-0.45			-0.69			0.44			-0.01			0.51			-0.63	
-		Weight number56		-0.84			0.83			0.78			0.53			-0.87			-0.23			0.46			-0.26			-0.69			0.68	
-		Weight number57		0.7			0.86			0.65			-0.17			0.97			-0.18			0.62			0.81			0.96			0.82	
-		Weight number58		-0.37			-0.51			0.36			0.66			-0.02			0.4			0.17			0.72			0.61			-0.72	
-		Weight number59		0.77			0.87			-0.11			0.56			0.49			0.07			-0.78			0.35			-0.31			-1	
-		Weight number60		0.32			0.78			0.93			-0.45			0.9			0.09			0.72			0.55			-0.81			0.39	
-		Weight number61		-0.21			0.54			0.81			0.26			-0.21			-0.92			-0.69			-0.46			-0.72			-0.43	
-		Weight number62		0.57			0.32			-0.22			-0.18			-0.12			0.84			0.47			0.99			0.83			0.2	
-		Weight number63		-0.81			0.06			0.94			-0.56			0.99			0.55			-0.12			0.26			-0.86			-0.21	
+		Weight number0		0.89			-0.88			0.21			-0.34			-0.1			0.74			0.91			-0.06			0.54			-0.08	
+		Weight number1		-0.91			-0.56			0.19			-0.25			0.35			-0.97			-0.29			-0.25			-0.92			0.73	
+		Weight number2		0.9			0.78			-0.14			0.6			-0.98			-0.41			0.31			-0.01			0.3			-0.28	
+		Weight number3		0.27			0.64			0.79			-0.39			0.12			-0.14			-0.14			-0.67			-0.71			-0.72	
+		Weight number4		0.72			-0.82			-0.82			-0.58			-0.15			-0.84			-0.4			-0.1			-0.03			0.53	
+		Weight number5		0.45			0.03			0.61			-1			-0.49			-0.1			0.17			-0.55			0.69			0.69	
+		Weight number6		0.77			-0.41			0.29			0.46			-0.45			-0.86			0.69			-0.21			-0.43			0.25	
+		Weight number7		-0.14			-0.77			-0.7			-0.4			-0.84			-0.18			0.94			0.05			0.18			-0.83	
+		Weight number8		0.43			0.21			-0.76			-0.72			-0.39			-0.01			0.35			-0.2			0.58			0.14	
+		Weight number9		0.28			-0.23			0.06			0.83			0.96			-0.51			-0.37			0.09			0.4			-0.42	
+		Weight number10		-0.17			-0.09			0.29			-0.77			-0.23			0.45			0.01			-0.36			-0.26			-0.81	
+		Weight number11		-0.44			0.07			-0.44			0.67			0.29			0.4			0.86			-0.98			-0.95			0.3	
+		Weight number12		0.35			0.24			0.07			0.78			0.87			-0.39			-0.2			0.08			-0.42			-0.43	
+		Weight number13		-0.93			-0.91			-0.2			-0.02			0.93			0.4			-0.64			-0.76			0.99			0.72	
+		Weight number14		0.38			-0.84			-0.02			0.19			0.59			0.55			0.22			-0.08			-0.83			0.29	
+		Weight number15		-0.31			-0.9			-0.06			-0.44			0.12			-0.38			0.23			-0.38			-0.37			0.59	
+		Weight number16		-0.88			0.36			-0.74			0.13			0.82			-0.04			-0.3			-0.25			0.56			-0.17	
+		Weight number17		0.9			-0.19			0.24			-0.44			-0.72			-0.6			0.8			-0.19			-0.38			-0.41	
+		Weight number18		0.69			-0.71			-0.76			0.14			0.8			0.8			-0.4			-0.16			-0.74			-0.84	
+		Weight number19		-0.72			-0.1			-0.67			0.07			-0.2			-0.7			0.59			-0.5			0.67			0.27	
+		Weight number20		0.19			-0.32			0.14			-0.27			-0.83			0.31			0.5			0.62			0.67			-0.14	
+		Weight number21		0.57			0.36			0.03			-0.97			-0.41			-0.53			-0.05			-0.24			-0.15			0.94	
+		Weight number22		-0.82			0.5			-0.8			0.02			0.87			0.8			0.36			-0.06			-0.19			0.66	
+		Weight number23		-0.75			0.12			0.97			0.28			0.7			0.69			0.59			0.55			-0.46			0.03	
+		Weight number24		0.48			0.81			-0.25			-0.14			0.19			-0.71			-0.44			-0.12			0.66			0.76	
+		Weight number25		0.8			0.07			-0.11			0.6			0.04			0.19			-0.77			-0.53			0.76			-0.92	
+		Weight number26		-0.5			-0.41			-0.17			-0.41			0.38			0.52			-0.46			0.79			0.75			0.78	
+		Weight number27		-0.59			0.27			-0.62			0.76			-0.16			0.62			0.55			-0.39			-0.74			-0.5	
+		Weight number28		-0.2			-0.47			-0.56			-0.41			-0.4			-0.77			0.7			0.11			0.73			0.96	
+		Weight number29		-0.56			0.02			-0.25			-0.63			0.47			-0.23			-0.17			0.74			0.73			0.52	
+		Weight number30		-0.04			-0.59			0.01			0.57			-0.28			0.91			-0.92			-0.63			0.41			-0.36	
+		Weight number31		0.8			-0.83			-0.88			-0.39			-0.23			0.55			-0.93			-0.34			-0.25			0.3	
+		Weight number32		0.91			0.73			0.28			-1			-0.14			0.29			-0.75			-0.45			-0.91			0.37	
+		Weight number33		-0.84			0.27			0.18			-0.46			-0.86			-0.7			0.5			-0.29			-0.92			-0.75	
+		Weight number34		0.89			0.09			0.32			-0.66			0.36			0.48			0.92			-0.25			0.9			0.75	
+		Weight number35		-0.74			-0.56			0.21			0.67			0.12			-0.01			0.92			0.68			0.21			0.65	
+		Weight number36		-0.67			0.04			0.92			0.61			-0.4			-0.12			0.25			0.72			0.07			0.32	
+		Weight number37		0.5			0.22			0.71			-1			-0.35			-0.62			-0.61			0.41			-0.69			0.49	
+		Weight number38		0.95			-0.97			-0.94			0.57			-0.45			-0.8			0.89			0.44			-0.77			0.78	
+		Weight number39		-0.92			-0.43			0.19			-0.24			0.19			0.92			-0.76			0.9			0.86			0.88	
+		Weight number40		-0.15			-0.1			-0.49			0.06			-0.31			-0.54			-0.47			-0.76			0.45			0.51	
+		Weight number41		0.63			0.83			-0.48			-0.99			-0.61			0.96			-0.82			-1			-0.45			-0.23	
+		Weight number42		0.03			-0.94			-0.72			0.86			0.75			0.07			0.82			0.77			-0.09			-0.64	
+		Weight number43		-0.71			-0.35			0.67			0.28			-0.1			-0.53			0.74			0.99			0.31			0.61	
+		Weight number44		-0.21			-0.36			-0.33			0.11			0.01			0.55			0.47			0.64			0.1			-0.58	
+		Weight number45		-0.38			-0.1			0.15			0.35			-0.28			-0.7			0.91			-0.71			0.27			0.89	
+		Weight number46		0.45			0.21			-0.4			0.23			-0.15			-0.98			-0.5			-0.78			0.25			0.83	
+		Weight number47		0.69			0.05			-0.28			0.25			-0.92			0.46			0.14			0.04			0.24			0.99	
+		Weight number48		0.98			-0.9			0.94			-0.2			0.71			-0.73			-0.11			0.48			-0.56			0.69	
+		Weight number49		0.07			-0.1			0.61			-0.51			0.29			0.29			-0.75			0.78			0.63			0.08	
+		Weight number50		-0.3			0.09			0.08			-0.82			0.11			0.4			-0.29			0.62			0.8			-0.54	
+		Weight number51		-0.38			0.2			-0.47			-0.32			0.58			0.61			-0.29			0.59			-0.83			-0.14	
+		Weight number52		-0.75			0.83			-0.79			-0.47			-0.62			-0.12			0.32			0.44			-0.78			0.42	
+		Weight number53		0.79			0.16			-0.51			0.79			-0.11			0.8			-0.98			0.57			0.96			0.51	
+		Weight number54		0.71			-0.8			-0.44			-0.93			-0.74			-0.6			-0.02			0.98			-0.46			-0.35	
+		Weight number55		0.93			0.43			-0.17			-0.47			-0.22			-0.72			0.62			-0.15			-0.13			0.42	
+		Weight number56		-0.96			0.67			-0.2			0.9			0.93			0.7			0.19			0.54			0.38			0.52	
+		Weight number57		-0.03			0.76			-0.21			0.98			0.74			0.65			0.81			-0.23			-0.7			-0.69	
+		Weight number58		0.48			0.01			0.65			0.33			0.47			-0.67			0.34			-0.57			0.02			0.37	
+		Weight number59		-0.66			-0.52			-0.91			-0.32			-0.67			0.92			0.86			0.34			0.08			0.32	
+		Weight number60		-0.31			-0.05			0.86			0.43			0.16			0.39			0.95			-0.79			-0.05			0.23	
+		Weight number61		-0.52			-0.08			0.71			-0.77			0.59			0.8			0			-0.83			-0.18			0.92	
+		Weight number62		-0.22			-0.27			0.19			0.52			-0.07			-0.55			-0.36			-0.13			-1			0.41	
+		Weight number63		-0.27			-0.99			-0.12			-0.48			0.35			0.2			-0.52			-0.95			-0.03			-0.89	
 
 		Activation: 		0			0			0			0			0			0			0			0			0			0	
 
@@ -203,16 +203,16 @@ Output layer:
 		Input number9		0			0			0			0			0			0			0			0			0			0	
 
 	Weights:
-		Weight number0		0.1			-0.79			-0.5			0.72			-0.82			-0.21			-0.89			-0.05			0.24			-0.73	
-		Weight number1		0.25			-0.55			-0.62			0.12			0.5			0.3			-0.39			-0.63			0.25			-0.45	
-		Weight number2		-0.38			-0.29			-0.22			0.12			0.49			-0.59			0.87			-0.71			-0.07			-0.58	
-		Weight number3		0.99			0.59			0.05			0.94			0.56			0.8			-0.35			-0.36			-0.37			0.86	
-		Weight number4		-0.55			0.22			0.44			0.98			0.58			0.4			0.52			0.34			0.44			-0.95	
-		Weight number5		-0.62			0.79			0.76			-0.86			-0.24			-0.89			-0.25			-0.62			0.14			0.79	
-		Weight number6		-0.92			0.28			0.42			0.14			-0.25			0.89			0.97			-0.33			0.88			0.76	
-		Weight number7		-0.62			-0.49			-0.44			0.19			0.43			0.31			-0.85			0.99			0.56			0.9	
-		Weight number8		0.77			-0.15			0.82			0.73			0.6			0.66			0.08			0.38			0.03			0.64	
-		Weight number9		0.12			0.55			-0.58			0.81			0.17			0.52			-0.32			-0.36			0.43			-0.91	
+		Weight number0		-0.58			0.72			-0.46			-0.29			-0.73			-0.05			0.2			0.68			0.12			0.58	
+		Weight number1		0.94			0.61			0			0.43			-0.88			0.25			0.29			-0.34			-0.47			-0.61	
+		Weight number2		0.57			0.21			-0.93			0.99			-0.24			-0.7			0.66			-0.52			0.7			-0.86	
+		Weight number3		0.65			-0.64			0.02			-0.66			-0.99			0.75			-0.16			0.28			0.88			-0.64	
+		Weight number4		-0.49			-0.55			0.61			-0.44			-0.37			-0.21			-0.06			-0.8			-0.77			-0.27	
+		Weight number5		0.09			0			0.61			-0.72			0.68			-0.95			0.44			-0.34			-0.59			0.46	
+		Weight number6		0.65			0.35			0.72			-0.06			0.72			0.94			-0.67			0.47			-0.25			-0.59	
+		Weight number7		0.71			-0.12			-0.89			-0.84			-0.6			0.2			-0.03			0.05			0.31			-0.64	
+		Weight number8		-0.26			0.65			0.41			0.43			0.31			-0.09			-0.06			0.64			-0.94			0.04	
+		Weight number9		0.53			0.28			-0.28			0.25			0.9			-0.21			0.02			0.52			-0.66			-0.8	
 
 		Activation: 		0			0			0			0			0			0			0			0			0			0	
 

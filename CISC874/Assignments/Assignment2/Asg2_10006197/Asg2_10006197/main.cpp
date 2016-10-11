@@ -8,7 +8,8 @@
 #include <vector>
 #include <Windows.h>
 
-static const int MAX_TRAINING_EPOCHS = 100;
+static const int MAX_TRAINING_EPOCHS = 1000;
+static const int NumHiddenNodes = 10;
 
 static const char * Dir = ".";
 
@@ -77,10 +78,13 @@ void Node::ComputeSigmoidActivation()
 class Network
 {
 public:
+	int Classification;
+
 	Network();
-	static const int MAX_TRAINGING_EPOCHS = 100;
+	static const int MAX_TRAINGING_EPOCHS = MAX_TRAINING_EPOCHS;
 	double Momentum = 0.1;			// Used to keep weights from settling on local minima
 	double LeanringRate = 1;
+	double ErrorOffset = 0.1;		//
 
 	vector<vector<Node>> InputLayer;// Activation function is identity, serves to pass weighted inputs to hidden node - representing in matrix form analogous to image pixels		
 	vector<Node> HiddenLayer;		// Activation function is sigmoidal
@@ -91,6 +95,8 @@ public:
 	void Backpropagate(int CorrectClassification);
 	void Train(ImageData TrainingData);
 	void Test(ImageData TestData);
+
+	void Classify();				// maps state of output neurons to [0-9] integer classification
 
 	void WriteSelf(string FileIdentifier);
 };
@@ -114,7 +120,7 @@ void Network::ConstructNodes(vector<vector<int>> TemplateImage)	// Initialize ne
 	}
 
 	// Construct hidden layer to recognize features
-	for (int HiddenNode = 0; HiddenNode < 10; HiddenNode++)
+	for (int HiddenNode = 0; HiddenNode < NumHiddenNodes; HiddenNode++)
 		this->HiddenLayer.push_back(Node(0, (this->InputLayer.size() * this->InputLayer[0].size())));
 
 	// Construct output layer to classify 10 different digits
@@ -182,7 +188,7 @@ void Network::Backpropagate(int CorrectClassification)
 		
 		if (OutputNode != CorrectClassification && CurrentActivation >(*CurrentOutputNode).Threshold)
 		{	// If an output node is active that shouldn't be
-			ErrorVector.push_back(((*CurrentOutputNode).Threshold - CurrentActivation));		// Error is negative
+			ErrorVector.push_back(((*CurrentOutputNode).Threshold - CurrentActivation) - this->ErrorOffset);		// Error is negative
 			deltaHiddenToOutput.push_back(ErrorVector[OutputNode] * CurrentActivation * (1 - CurrentActivation));
 			for (int Input = 0; Input < (*CurrentOutputNode).Weights.size(); Input++)
 			{
@@ -196,7 +202,7 @@ void Network::Backpropagate(int CorrectClassification)
 		}
 		else if (OutputNode == CorrectClassification && CurrentActivation < (*CurrentOutputNode).Threshold)
 		{	// If an output node isn't active but should be
-			ErrorVector.push_back((*CurrentOutputNode).Threshold - CurrentActivation);			// Error is positive
+			ErrorVector.push_back((*CurrentOutputNode).Threshold - CurrentActivation + this->ErrorOffset);			// Error is positive
 			deltaHiddenToOutput.push_back(ErrorVector[OutputNode] * CurrentActivation * (1 - CurrentActivation));
 			for (int Input = 0; Input < (*CurrentOutputNode).Weights.size(); Input++)
 			{
@@ -257,30 +263,39 @@ void Network::Test(ImageData TestData)
 	for (int i = 0; i < TestData.Images.size(); i++)
 	{
 		this->Feedworward(TestData.Images[i]);
-		for (int OutputNode = 0; OutputNode < this->OutputLayer.size(); OutputNode++)
-		{
-			CurrentOutputNode = &(this->OutputLayer[OutputNode]);
-			if ((*CurrentOutputNode).ActivationPotential > (*CurrentOutputNode).Threshold)
-			{	// If one of the nodes is active
-				for (int OtherNodes = 0; OtherNodes < this->OutputLayer.size(); OtherNodes++)
-				{
-					OtherOutputNode = &(this->OutputLayer[OtherNodes]);
-					if (((*OtherOutputNode).ActivationPotential > ((*OtherOutputNode).Threshold)) && (OtherNodes != OutputNode))
-					{	// If two or more nodes are acitve, classification failed
-						std::cout << "Unable to classify image #" << i << endl;
-						break;
-					}
-					else if (OtherNodes == this->OutputLayer.size())
-					{	// We try all the other output nodes and no other ones are active
-						std::cout << "Image #" << i << " correctly classified as: " << OutputNode << endl;
-						CorrectlyClassified++;
-					}
-				}
-				break;
-			}
-		}
+		this->Classify();
+		if (this->Classification == TestData.CorrectClassifications[i])
+			CorrectlyClassified++;
+
 	}
 	std::cout << "Correctly classified " << CorrectlyClassified << " images out of " << TestData.Images.size() << " for a classification accuracy of " << ((double)CorrectlyClassified)/(TestData.Images.size()) << endl;
+}
+
+void Network::Classify()
+{
+
+	Node * CurrentOutputNode;
+	Node * CurrentOtherNode;
+	for (int OutputNode = 0; OutputNode < this->OutputLayer.size(); OutputNode++)
+	{	// For all 10 output nodes
+		CurrentOutputNode = (&this->OutputLayer[OutputNode]);
+		if ((*CurrentOutputNode).ActivationPotential > (*CurrentOutputNode).Threshold)
+		{
+			for (int OtherNodes = 0; OtherNodes < this->OutputLayer.size(); OtherNodes++)
+			{
+				CurrentOtherNode = (&this->OutputLayer[OtherNodes]);
+				if (((*CurrentOtherNode).ActivationPotential > (*CurrentOtherNode).Threshold) && OtherNodes != OutputNode)
+				{	// We have more than one active output neuron
+					std::cout << "Multiple output neurons active - classification uncertain - this.Classification not updated" << endl;
+					return;
+				}
+			}
+			this->Classification = OutputNode;
+			return;
+		}
+	}
+
+	std::cout << "No output neurons active - classification uncertain - this.Classification not updated" << endl;
 }
 
 void Network::WriteSelf(string FileIdentifier)						// Just used for my debugging purposes. Output doesn't necessarily line up - can be confusing
@@ -427,6 +442,7 @@ int main()
 	BackpropagationNetwork.Train(InputData);
 	BackpropagationNetwork.WriteSelf("2");
 	BackpropagationNetwork.Test(TestData);
+
 
 	cout << "Press enter to end the program." << endl;
 	cin.ignore();
