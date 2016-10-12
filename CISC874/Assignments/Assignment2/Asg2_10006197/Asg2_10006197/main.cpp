@@ -8,8 +8,8 @@
 #include <vector>
 #include <Windows.h>
 
-static const int MAX_TRAINING_EPOCHS = 1000;
-static const int NumHiddenNodes = 10;
+static const int MAX_TRAINING_EPOCHS = 500;
+static const int NumHiddenNodes = 20;
 
 static const char * Dir = ".";
 
@@ -84,7 +84,7 @@ public:
 	static const int MAX_TRAINGING_EPOCHS = MAX_TRAINING_EPOCHS;
 	double Momentum = 0.1;			// Used to keep weights from settling on local minima
 	double LeanringRate = 1;
-	double ErrorOffset = 0.1;		//
+	double ErrorOffset = 0.5;		//
 
 	vector<vector<Node>> InputLayer;// Activation function is identity, serves to pass weighted inputs to hidden node - representing in matrix form analogous to image pixels		
 	vector<Node> HiddenLayer;		// Activation function is sigmoidal
@@ -130,10 +130,10 @@ void Network::ConstructNodes(vector<vector<int>> TemplateImage)	// Initialize ne
 
 void Network::Feedworward(vector<vector<int>> Image)
 {
-	// Iterators just to tidy the code
+	// Iterators over network just to tidy the code
 	Node * CurrentInputNode; 
 	Node * CurrentHiddenNode; 
-	Node * CurrentOutputNode;		// I arbitrarily chose 10 hidden nodes, I should make this a variable
+	Node * CurrentOutputNode;
 
 	for (int InputNodeRow = 0; InputNodeRow < this->InputLayer.size(); InputNodeRow++)
 	{
