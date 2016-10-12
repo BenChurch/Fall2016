@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿Build started 10/12/2016 4:20:46 PM.
      1>Project "C:\Users\church\Documents\Fall2016\CISC874\Assignments\Assignment2\Asg2_10006197\Asg2_10006197\Asg2_10006197.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
@@ -68,3 +69,15 @@
 Build succeeded.
 
 Time Elapsed 00:00:00.84
+=======
+﻿Build started 11/10/2016 8:54:24 PM.
+     1>Project "C:\Users\Ben\Documents\Masters16_17\Fall2016\CISC874\Assignments\Assignment2\Asg2_10006197\Asg2_10006197\Asg2_10006197.vcxproj" on node 2 (Build target(s)).
+     1>Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Ben\Documents\Masters16_17\Fall2016\CISC874\Assignments\Assignment2\Asg2_10006197\Debug\Asg2_10006197.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Ben\Documents\Masters16_17\Fall2016\CISC874\Assignments\Assignment2\Asg2_10006197\Debug\Asg2_10006197.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Ben\Documents\Masters16_17\Fall2016\CISC874\Assignments\Assignment2\Asg2_10006197\Debug\Asg2_10006197.lib" /MACHINE:X86 Debug\main.obj
+         Asg2_10006197.vcxproj -> C:\Users\Ben\Documents\Masters16_17\Fall2016\CISC874\Assignments\Assignment2\Asg2_10006197\Debug\Asg2_10006197.exe
+     1>Done Building Project "C:\Users\Ben\Documents\Masters16_17\Fall2016\CISC874\Assignments\Assignment2\Asg2_10006197\Asg2_10006197\Asg2_10006197.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.51
+>>>>>>> cab62334720641f8a8ec8048aa4990c60b54b609
