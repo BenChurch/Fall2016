@@ -8,9 +8,9 @@
 #include <vector>
 #include <Windows.h>
 
-static const int MAX_TRAINING_EPOCHS = 10000;
+static const int MAX_TRAINING_EPOCHS = 200;
 
-static const int NumHiddenNodes = 16;
+static const int NumHiddenNodes = 32;
 
 static const char * Dir = ".";
 
