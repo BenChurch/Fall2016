@@ -8,14 +8,9 @@
 #include <vector>
 #include <Windows.h>
 
-<<<<<<< HEAD
 static const int MAX_TRAINING_EPOCHS = 10000;
 
 static const int NumHiddenNodes = 16;
-=======
-static const int MAX_TRAINING_EPOCHS = 500;
-static const int NumHiddenNodes = 20;
->>>>>>> cab62334720641f8a8ec8048aa4990c60b54b609
 
 static const char * Dir = ".";
 
@@ -86,21 +81,14 @@ void Node::ComputeSigmoidActivation()
 class Network
 {
 public:
-	int Classification;
 
 	Network();
-<<<<<<< HEAD
   int Classification;
   double MeanSquaredError = 0;    // Used to decide when to stop training
   static const int MAX_TRAINGING_EPOCHS = MAX_TRAINING_EPOCHS;
-  double ErrorOffset = 0.3;   // Used to aim past the threshold, so we don't sit right on it
-	double Momentum = 0.4;			// Used to keep weights from settling on local minima
-=======
-	static const int MAX_TRAINGING_EPOCHS = MAX_TRAINING_EPOCHS;
+  double ErrorOffset = 0.4;   // Used to aim past the threshold, so we don't sit right on it
 	double Momentum = 0.1;			// Used to keep weights from settling on local minima
->>>>>>> cab62334720641f8a8ec8048aa4990c60b54b609
-	double LeanringRate = 1;
-	double ErrorOffset = 0.5;		//
+	double LeanringRate = 0.5;
 
 	vector<vector<Node>> InputLayer;// Activation function is identity, serves to pass weighted inputs to hidden node - representing in matrix form analogous to image pixels		
 	vector<Node> HiddenLayer;		// Activation function is sigmoidal
@@ -111,9 +99,8 @@ public:
 	void Backpropagate(int CorrectClassification);
 	void Train(ImageData TrainingData);
 	void Test(ImageData TestData);
-  void Classify();
-  void EasyClassify();
 
+  void EasyClassify();
 	void Classify();				// maps state of output neurons to [0-9] integer classification
 
 	void WriteSelf(string FileIdentifier);
@@ -139,7 +126,7 @@ void Network::ConstructNodes(vector<vector<int>> TemplateImage)	// Initialize ne
 
 	// Construct hidden layer to recognize features
 	for (int HiddenNode = 0; HiddenNode < NumHiddenNodes; HiddenNode++)
-		this->HiddenLayer.push_back(Node(0, (this->InputLayer.size() * this->InputLayer[0].size())));
+		this->HiddenLayer.push_back(Node(0.5, (this->InputLayer.size() * this->InputLayer[0].size())));
 
 	// Construct output layer to classify 10 different digits
 	for (int OutputNode = 0; OutputNode < 10; OutputNode++)		// Need to recognize 10 different digits
@@ -163,8 +150,7 @@ void Network::Feedworward(vector<vector<int>> Image)
 			for (int HiddenNode = 0; HiddenNode < this->HiddenLayer.size(); HiddenNode++)
 			{
 				CurrentHiddenNode = &(this->HiddenLayer[HiddenNode]);
-				(*CurrentHiddenNode).Inputs[((InputNodeRow + 1) * (InputNode + 1)) - 1] = (*CurrentInputNode).ActivationPotential;		// This 2D to 1D indexing redistributes values across HiddenNode Inputs
-				// ComputeSigmoidActivation() iterates through each weight, populated or not, therfore only run this once all inputs updated
+				(*CurrentHiddenNode).Inputs[(InputNodeRow)*(this->InputLayer.size()) + InputNode] = (*CurrentInputNode).ActivationPotential;		// This 2D to 1D indexing redistributes values across HiddenNode Inputs
 			}
 		}
 	}
@@ -204,14 +190,10 @@ void Network::Backpropagate(int CorrectClassification)
 		CurrentOutputNode = &(this->OutputLayer[OutputNode]);
 		CurrentActivation = (*CurrentOutputNode).ActivationPotential;
 		
-		if (OutputNode != CorrectClassification && (CurrentActivation >(*CurrentOutputNode).Threshold - this->ErrorOffset))
+		if (OutputNode != CorrectClassification && (CurrentActivation >(*CurrentOutputNode).Threshold) - this->ErrorOffset)
 		{	// If an output node is active that shouldn't be
-<<<<<<< HEAD
-      this->MeanSquaredError += ((CurrentActivation - (*CurrentOutputNode).Threshold)*(CurrentActivation - (*CurrentOutputNode).Threshold));
-			ErrorVector.push_back(((*CurrentOutputNode).Threshold - CurrentActivation - this->ErrorOffset));		// Error is negative
-=======
+      this->MeanSquaredError += ((CurrentActivation - ((*CurrentOutputNode).Threshold - this->ErrorOffset))*(CurrentActivation - ((*CurrentOutputNode).Threshold - this->ErrorOffset)));
 			ErrorVector.push_back(((*CurrentOutputNode).Threshold - CurrentActivation) - this->ErrorOffset);		// Error is negative
->>>>>>> cab62334720641f8a8ec8048aa4990c60b54b609
 			deltaHiddenToOutput.push_back(ErrorVector[OutputNode] * CurrentActivation * (1 - CurrentActivation));
 			for (int Input = 0; Input < (*CurrentOutputNode).Weights.size(); Input++)
 			{
@@ -225,10 +207,7 @@ void Network::Backpropagate(int CorrectClassification)
 		}
 		else if (OutputNode == CorrectClassification && CurrentActivation < (*CurrentOutputNode).Threshold + this->ErrorOffset)
 		{	// If an output node isn't active but should be
-<<<<<<< HEAD
-      this->MeanSquaredError += ((CurrentActivation - (*CurrentOutputNode).Threshold)*(CurrentActivation - (*CurrentOutputNode).Threshold));
-=======
->>>>>>> cab62334720641f8a8ec8048aa4990c60b54b609
+      this->MeanSquaredError += ((CurrentActivation - ((*CurrentOutputNode).Threshold + this->ErrorOffset))*(CurrentActivation - ((*CurrentOutputNode).Threshold + this->ErrorOffset)));
 			ErrorVector.push_back((*CurrentOutputNode).Threshold - CurrentActivation + this->ErrorOffset);			// Error is positive
 			deltaHiddenToOutput.push_back(ErrorVector[OutputNode] * CurrentActivation * (1 - CurrentActivation));
 			for (int Input = 0; Input < (*CurrentOutputNode).Weights.size(); Input++)
@@ -256,11 +235,13 @@ void Network::Backpropagate(int CorrectClassification)
     {
       CurrentOutputNode = &(this->OutputLayer[OutputNode]);
       // Try different braket locations --- not sure exatly what to sum
-      NewDelta += (deltaHiddenToOutput[OutputNode] * (*CurrentOutputNode).Weights[HiddenNode]) * ((*CurrentHiddenNode).ActivationPotential) * (1 - (*CurrentHiddenNode).ActivationPotential);
+      NewDelta += (deltaHiddenToOutput[OutputNode] * (*CurrentOutputNode).Weights[HiddenNode]);
     }
+
+    NewDelta = NewDelta * ((*CurrentHiddenNode).ActivationPotential * (1 - (*CurrentHiddenNode).ActivationPotential));
+
 		for (int HiddenNodeWeight = 0; HiddenNodeWeight < this->HiddenLayer[HiddenNode].Weights.size(); HiddenNodeWeight++)
 		{
-			NewDelta = 0;
 			CurrentInputNode = &(this->InputLayer[HiddenNodeWeight / this->InputLayer.size()][HiddenNodeWeight % this->InputLayer[HiddenNodeWeight / this->InputLayer.size()].size()]);			// I think this un-does the 2D to 1D conversion
 			(*CurrentHiddenNode).Weights[HiddenNodeWeight] += this->LeanringRate * NewDelta * (*CurrentInputNode).ActivationPotential;		// This may need to be (*CurrentInputNode).Input
 		}
@@ -270,7 +251,10 @@ void Network::Backpropagate(int CorrectClassification)
 void Network::Train(ImageData TrainingData)
 {
 	int CurrentEpoch = 0;
+  int EpochsWithoutImprovement = 0;
   double MinMeanSquaredError = 100;     // Some large number to begin comparrison
+  int RandInt;                          // Used to reshuffle the weights if things aren't improving
+  Network BestConfiguredNetwork;
 	while (CurrentEpoch < this->MAX_TRAINGING_EPOCHS)			// Not bothering with IncorrectlyClassified count
 	{
     this->MeanSquaredError = 0;   // Reinitialize for new epoch
@@ -281,18 +265,46 @@ void Network::Train(ImageData TrainingData)
 		}
     this->MeanSquaredError = this->MeanSquaredError / TrainingData.Images.size();
     cout << "Mean-squared-error for epoch " << CurrentEpoch << ": " << this->MeanSquaredError << endl;
-		CurrentEpoch++;
     if (this->MeanSquaredError < MinMeanSquaredError)
     {
+      BestConfiguredNetwork = *this;
       MinMeanSquaredError = this->MeanSquaredError;
+      EpochsWithoutImprovement = 0;
     }
+    else
+      EpochsWithoutImprovement++;
     if (this->MeanSquaredError > MinMeanSquaredError*1.5)
     { // Last epoch made ouput worse
-      cout << "Mean-squared-error worsening occurred after epoch" << CurrentEpoch << ". Ceasing training." << endl;
-      break;
+      cout << "Mean-squared-error worsening occurred after epoch" << CurrentEpoch << ". Perturbing weights." << endl;
+      *this = BestConfiguredNetwork;
+      RandInt = (rand() % TrainingData.Images.size()) - 1;
+      this->Feedworward(TrainingData.Images[RandInt]);
+      this->Backpropagate(TrainingData.CorrectClassifications[RandInt]);
+      EpochsWithoutImprovement = 0;
+      if (this->MeanSquaredError < MinMeanSquaredError)
+      {
+        BestConfiguredNetwork = *this;
+        MinMeanSquaredError = this->MeanSquaredError;
+      }
     }
+    if (EpochsWithoutImprovement > 10)
+    {
+      cout << "Mean-squared-error has worsened for last " << EpochsWithoutImprovement << " epochs. Perturbing weights." << endl;
+      *this = BestConfiguredNetwork;
+      RandInt = (rand() % TrainingData.Images.size()) - 1;
+      this->Feedworward(TrainingData.Images[RandInt]);
+      this->Backpropagate(TrainingData.CorrectClassifications[RandInt]);
+      EpochsWithoutImprovement = 0;
+      if (this->MeanSquaredError < MinMeanSquaredError)
+      {
+        BestConfiguredNetwork = *this;
+        MinMeanSquaredError = this->MeanSquaredError;
+      }
+    }
+    CurrentEpoch++;
 		cout << "Training epoch " << CurrentEpoch << " out of " << this->MAX_TRAINGING_EPOCHS << " complete" << endl;
 	}
+  *this = BestConfiguredNetwork;
 }
 
 void Network::Test(ImageData TestData)
@@ -303,57 +315,19 @@ void Network::Test(ImageData TestData)
 	Node * OtherOutputNode;
 	for (int i = 0; i < TestData.Images.size(); i++)
 	{
-    cout << "Test image #" << i << "  ";
+    cout << "Test image #" << i;
 		this->Feedworward(TestData.Images[i]);
-<<<<<<< HEAD
-    //this->Classify();
+		//this->Classify();
     this->EasyClassify();
-    if (this->Classification < 0)
-    { // Unable to perform classification
-      cout << endl;
-    }
-    else if (this->Classification == TestData.CorrectClassifications[i])
+    if (this->Classification == TestData.CorrectClassifications[i])
     {
       CorrectlyClassified++;
-      cout << "corretly classified as " << TestData.CorrectClassifications[i] << endl;
+      cout << " of class " << TestData.CorrectClassifications[i] << " correctly classified." << endl;
     }
     else
-      cout <<" incorrectly " << TestData.CorrectClassifications[i] << " classified as " << this->Classification << endl;
-=======
-		this->Classify();
-		if (this->Classification == TestData.CorrectClassifications[i])
-			CorrectlyClassified++;
-
+      cout << "of class " << TestData.CorrectClassifications[i] << " incorrectly classified as " << this->Classification << endl;
 	}
 	std::cout << "Correctly classified " << CorrectlyClassified << " images out of " << TestData.Images.size() << " for a classification accuracy of " << ((double)CorrectlyClassified)/(TestData.Images.size()) << endl;
-}
-
-void Network::Classify()
-{
-
-	Node * CurrentOutputNode;
-	Node * CurrentOtherNode;
-	for (int OutputNode = 0; OutputNode < this->OutputLayer.size(); OutputNode++)
-	{	// For all 10 output nodes
-		CurrentOutputNode = (&this->OutputLayer[OutputNode]);
-		if ((*CurrentOutputNode).ActivationPotential > (*CurrentOutputNode).Threshold)
-		{
-			for (int OtherNodes = 0; OtherNodes < this->OutputLayer.size(); OtherNodes++)
-			{
-				CurrentOtherNode = (&this->OutputLayer[OtherNodes]);
-				if (((*CurrentOtherNode).ActivationPotential > (*CurrentOtherNode).Threshold) && OtherNodes != OutputNode)
-				{	// We have more than one active output neuron
-					std::cout << "Multiple output neurons active - classification uncertain - this.Classification not updated" << endl;
-					return;
-				}
-			}
-			this->Classification = OutputNode;
-			return;
-		}
->>>>>>> cab62334720641f8a8ec8048aa4990c60b54b609
-	}
-
-	std::cout << "No output neurons active - classification uncertain - this.Classification not updated" << endl;
 }
 
 void Network::Classify()
@@ -544,6 +518,9 @@ int main()
   BackpropagationNetwork.Train(InputData);
 	BackpropagationNetwork.WriteSelf("2");
 	BackpropagationNetwork.Test(TestData);
+
+  Network TestCopy = BackpropagationNetwork;
+  TestCopy.WriteSelf("test");
 
 
 	cout << "Press enter to end the program." << endl;
