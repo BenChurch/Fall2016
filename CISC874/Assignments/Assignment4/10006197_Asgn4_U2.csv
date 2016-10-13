@@ -31,3 +31,33 @@ Option,100,6,,Correct!
 Option,0,8,,That is incorrect
 Hint," Note that with 3 input variables, input nodes produce planes rather than lines. It may help to draw the input space.",,,
 Feedback,"Such a volume can be found by converting the inputs, combined with their weights, into inequalities. The inequalities can be rearranged to find ranges for each input variable which activate the network. These ranges are bounded by planes which, when combined, partition a volume in input space.",,,
+,,,,
+,,,,
+//SHORT ANSWER QUESTION TYPE,,,,
+//Answers must include text in column3,,,,
+NewQuestion,SA,,,
+ID,U2,,,
+Title,Hidden layer weight updates,,,
+QuestionText,Why are changes in hidden layer weights proportional to output layer weights?,,,
+Points,1,,,
+Difficulty,3,,,
+Answer,100,"Because the error contribution to the output, from a given hidden node is proportional to the weight connection the hidden node to the output node.",regexp,
+Answer,66,Something like: Because the ouput error is proportional to that weight - not mentioning the contribution of the hidden node through that weight,,
+Answer,33,Something like: That reduces the output's error,,
+Feedback,"This is meant to assess familiarity with backpropagation. To reduce error at the output, weights must be adjusted in such a way that the error decreases. That means representing the effects of the hidden nodes, which depened on their connection weights to the output.",,,
+,,,,
+,,,,
+//MULTIPLE CHOICE QUESTION TYPE,,,,
+//Options must include text in column3,,,,
+NewQuestion,MC,,,
+ID,U2,,,
+Title,Generalization insurance,,,
+QuestionText,What is one way to mitigate the problem of a network failing to generalize?,,,
+Points,1,,,
+Difficulty,4,,,
+Option,0,Increase the number of hidden nodes,,That is incorrect
+Option,100,Add random noise to the input data,,Correct!
+Option,0,Decrease the learning rate,,That is incorrect
+Option,0,Increase the training time,,That is incorrect
+Hint,,,,
+Feedback,"Adding random noise can help ensure a network maintains generality. The noise corresponds to the network being presented unfamiliar inputs, corresponding to known classes. It are these unfamiliar inputs which can be excluded from classifiability by the network 'over-learning', as a result of excessive training or too many hidden nodes.",,,
