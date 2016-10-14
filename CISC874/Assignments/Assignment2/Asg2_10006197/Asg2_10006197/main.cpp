@@ -2,7 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <math.h>		// For computation of nodes' sigmoidal-exponential activation function
-#include <stdlib.h>		// For .txt file strings to double representations, and random number generation, and random number generation
+#include <stdlib.h>		// For .txt file strings to int representations, and random number generation
 #include <string>
 #include <time.h>		// Used to seed random number generator
 #include <vector>
@@ -10,7 +10,7 @@
 
 static const int MAX_TRAINING_EPOCHS = 200;
 
-static const int NumHiddenNodes = 32;
+static const int NumHiddenNodes = 24;
 
 static const char * Dir = ".";
 
@@ -83,12 +83,12 @@ class Network
 public:
 
 	Network();
-  int Classification;
-  double MeanSquaredError = 0;    // Used to decide when to stop training
-  static const int MAX_TRAINGING_EPOCHS = MAX_TRAINING_EPOCHS;
-  double ErrorOffset = 0.4;   // Used to aim past the threshold, so we don't sit right on it
+	int Classification;
+	double MeanSquaredError = 0;    // Used to decide when to stop training
+	static const int MAX_TRAINGING_EPOCHS = MAX_TRAINING_EPOCHS;
+	double ErrorOffset = 0.45;   // Used to aim past the threshold, so we don't sit right on it
 	double Momentum = 0.1;			// Used to keep weights from settling on local minima
-	double LeanringRate = 0.5;
+	double LeanringRate = 0.15;
 
 	vector<vector<Node>> InputLayer;// Activation function is identity, serves to pass weighted inputs to hidden node - representing in matrix form analogous to image pixels		
 	vector<Node> HiddenLayer;		// Activation function is sigmoidal
@@ -100,7 +100,7 @@ public:
 	void Train(ImageData TrainingData);
 	void Test(ImageData TestData);
 
-  void EasyClassify();
+	void EasyClassify();
 	void Classify();				// maps state of output neurons to [0-9] integer classification
 
 	void WriteSelf(string FileIdentifier);
