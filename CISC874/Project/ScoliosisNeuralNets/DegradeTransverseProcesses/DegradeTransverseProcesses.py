@@ -46,6 +46,10 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
     # Layout within the dummy collapsible button
     parametersFormLayout = qt.QFormLayout(parametersCollapsibleButton)
 
+    # reload button
+    self.reloadButton = qt.QPushButton('Restart module')
+    self.layout.addWidget(self.reloadButton)
+    
     #
     # input volume selector
     #
@@ -68,9 +72,9 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
     self.StdDevSliderWidget = ctk.ctkSliderWidget()
     self.StdDevSliderWidget.singleStep = 0.01
     self.StdDevSliderWidget.minimum = 0
-    self.StdDevSliderWidget.maximum = 3
+    self.StdDevSliderWidget.maximum = 10
     self.StdDevSliderWidget.value = 1
-    self.StdDevSliderWidget.setToolTip("Set standard deviation of noise to introduce to all points.")
+    self.StdDevSliderWidget.setToolTip("Set standard deviation (mm) of noise to introduce to all points.")
     parametersFormLayout.addRow("Noise standard deviation", self.StdDevSliderWidget)
 
     #
@@ -84,6 +88,17 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
     self.DeletionSliderWidget.setToolTip("Set fraction of points from original sets to delete.")
     parametersFormLayout.addRow("Deletion fraction", self.DeletionSliderWidget)
 
+    #
+    # displacement fraction
+    #
+    self.DisplacementSliderWidget = ctk.ctkSliderWidget()
+    self.DisplacementSliderWidget.singleStep = 0.01
+    self.DisplacementSliderWidget.minimum = 0
+    self.DisplacementSliderWidget.maximum = 1
+    self.DisplacementSliderWidget.value = 0.5767
+    self.DisplacementSliderWidget.setToolTip("Set fraction of points from original data set to misplace.")
+    parametersFormLayout.addRow("Displacement fraction", self.DisplacementSliderWidget)
+    
     #
     # check box to trigger taking screen shots for later use in tutorials
     #
@@ -102,6 +117,7 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
 
     # connections
     self.DegradeButton.connect('clicked(bool)', self.onDegradeButton)
+    self.reloadButton.connect('clicked(bool)',self.onReloadButton)
     #self.inputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect)
     #self.outputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect)
 
@@ -118,10 +134,20 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
    # self.applyButton.enabled = self.inputSelector.currentNode() and self.outputSelector.currentNode()
 
   def onDegradeButton(self):
+    self.NoiseStdDev = self.StdDevSliderWidget.value
+    self.DeletionFraction = self.DeletionSliderWidget.value
+    self.DisplacementFraction = self.DisplacementSliderWidget.value
     logic = DegradeTransverseProcessesLogic()
     #enableScreenshotsFlag = self.enableScreenshotsFlagCheckBox.checked
     #imageThreshold = self.imageThresholdSliderWidget.value
-    logic.run()
+    logic.DegradeInputData(self.NoiseStdDev, self.DeletionFraction, self.DisplacementFraction)
+    
+  def onReloadButton(self):
+    self.MarkupPoints = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
+    for PointSet in range(self.MarkupPoints.__len__()):
+      if (self.MarkupPoints.__getitem__(PointSet).GetNthFiducialLabel(0)[-1] == "~"):
+        slicer.mrmlScene.RemoveNode(self.MarkupPoints.__getitem__(PointSet))
+    slicer.util.reloadScriptedModule('DegradeTransverseProcesses')
 
 #
 # DegradeTransverseProcessesLogic
@@ -131,9 +157,11 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
 
   def __init__(self):
     self.LandmarkPointSets = []      # Will contain all loaded TrXFiducial### point sets
+    self.DeletedLandmarkLabels = []   # Will ensure we don't try to misplace deleted points or vice-versa
+    self.MisplacedLandmarkLabels = []
     
 
-  def run(self):
+  def DegradeInputData(self, NoiseStdDev, DeletionFraction, DisplacementFraction):
     self.InputData = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
     for InputSet in range(self.InputData.__len__()):
       CurrentLandmarkSet = self.InputData.__getitem__(InputSet)
@@ -147,6 +175,47 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
       CurrentLandmarkSet = self.LandmarkPointSets[InputSet]
       for InputPoint in range(CurrentLandmarkSet.__len__()):
         print self.LandmarkPointSets[InputSet][InputPoint]
+    
+    # Randomly select points for deletion and misplacement
+    for InputsSet in range(self.LandmarkPointSets.__len__()):
+      print InputSet
+      DeletionAmount = (int)(self.LandmarkPointSets[InputSet].__len__() * DeletionFraction)
+      DisplacementAmount = (int)(self.LandmarkPointSets[InputSet].__len__() * DisplacementFraction)
+      # could go into infinite loop if there are very few points?
+      while (DeletionAmount > 0 and DisplacementAmount > 0):
+        DeletionIndex = (int)(numpy.random.random_sample() * (self.LandmarkPointSets[InputSet].__len__()))
+        DisplacementIndex = (int)(numpy.random.random_sample() * (self.LandmarkPointSets[InputSet].__len__()))
+        while (DeletionIndex == DisplacementIndex):
+          DisplacementIndex = (int)(numpy.random.random_sample() * (self.LandmarkPointSets[InputSet].__len__()))
+        # need to think about how this affects later point labelling
+        self.LandmarkPointSets[InputSet].__delitem__(DeletionIndex)
+        #self.InputData.__getitem__(InputSet).RemoveMarkup(DeletionIndex)
+        DeletionAmount -= 1
+        # Misplace points
+        DisplacementAmount -= 1
+    
+    # Add noise to point locations  
+    for InputSet in range(self.LandmarkPointSets.__len__()):
+      CurrentLandmarkSet = self.LandmarkPointSets[InputSet]
+      for InputPoint in range(CurrentLandmarkSet.__len__()):
+        CurrentLandmarkPoint = CurrentLandmarkSet[InputPoint]
+        for dim in range(3):      # for each of the point's spatial dimensions
+          CurrentLandmarkPoint[dim] += numpy.random.standard_normal() * NoiseStdDev
+    
+    # Create new FiducialMarkupNodes for Slicer scene
+    for InputSet in range(self.LandmarkPointSets.__len__()):
+      NewMarkupsNode = slicer.vtkMRMLMarkupsFiducialNode()
+      NewMarkupsNode.SetName(self.InputData.__getitem__(InputSet).GetName() + "~")
+      CurrentLandmarkSet = self.LandmarkPointSets[InputSet]
+      for InputPoint in range(CurrentLandmarkSet.__len__()):
+        CurrentLandmarkPoint = CurrentLandmarkSet[InputPoint]
+        NewMarkupsNode.AddFiducial(CurrentLandmarkPoint[0], CurrentLandmarkPoint[1], CurrentLandmarkPoint[2])
+        NewPointLabel = self.InputData.__getitem__(InputSet).GetNthFiducialLabel(InputPoint) + "~"
+        NewMarkupsNode.SetNthFiducialLabel(InputPoint, NewPointLabel)
+      slicer.mrmlScene.AddNode(NewMarkupsNode)
+      
+
+      
     return True
 
 

@@ -1,3 +1,4 @@
+After the 50 allocated training epochs, the network correctly classified 3743 inputs out of 3823 for a classification accuracy of 0.979074
 Test image #: 0
    of class 0 correctly classified.
 Test image #: 1
@@ -37,7 +38,7 @@ Test image #: 17
 Test image #: 18
    of class 8 correctly classified.
 Test image #: 19
-  of class 9 incorrectly classified as 5
+   of class 9 correctly classified.
 Test image #: 20
    of class 0 correctly classified.
 Test image #: 21
@@ -75,7 +76,7 @@ Test image #: 36
 Test image #: 37
   of class 9 incorrectly classified as 5
 Test image #: 38
-  of class 8 incorrectly classified as 5
+   of class 8 correctly classified.
 Test image #: 39
    of class 9 correctly classified.
 Test image #: 40
@@ -107,7 +108,7 @@ Test image #: 52
 Test image #: 53
    of class 8 correctly classified.
 Test image #: 54
-  of class 2 incorrectly classified as 6
+   of class 2 correctly classified.
 Test image #: 55
    of class 0 correctly classified.
 Test image #: 56
@@ -137,7 +138,7 @@ Test image #: 67
 Test image #: 68
    of class 4 correctly classified.
 Test image #: 69
-  of class 9 incorrectly classified as 8
+   of class 9 correctly classified.
 Test image #: 70
    of class 1 correctly classified.
 Test image #: 71
@@ -149,7 +150,7 @@ Test image #: 73
 Test image #: 74
    of class 5 correctly classified.
 Test image #: 75
-   of class 2 correctly classified.
+  of class 2 incorrectly classified as 1
 Test image #: 76
    of class 8 correctly classified.
 Test image #: 77
@@ -173,7 +174,7 @@ Test image #: 85
 Test image #: 86
    of class 7 correctly classified.
 Test image #: 87
-  of class 4 incorrectly classified as 1
+   of class 4 correctly classified.
 Test image #: 88
    of class 6 correctly classified.
 Test image #: 89
@@ -243,7 +244,7 @@ Test image #: 120
 Test image #: 121
    of class 4 correctly classified.
 Test image #: 122
-   of class 8 correctly classified.
+  of class 8 incorrectly classified as 1
 Test image #: 123
    of class 8 correctly classified.
 Test image #: 124
@@ -257,7 +258,7 @@ Test image #: 127
 Test image #: 128
    of class 9 correctly classified.
 Test image #: 129
-   of class 8 correctly classified.
+  of class 8 incorrectly classified as 1
 Test image #: 130
    of class 0 correctly classified.
 Test image #: 131
@@ -315,7 +316,7 @@ Test image #: 156
 Test image #: 157
    of class 7 correctly classified.
 Test image #: 158
-  of class 8 incorrectly classified as 1
+   of class 8 correctly classified.
 Test image #: 159
    of class 9 correctly classified.
 Test image #: 160
@@ -353,7 +354,7 @@ Test image #: 175
 Test image #: 176
    of class 5 correctly classified.
 Test image #: 177
-   of class 1 correctly classified.
+  of class 1 incorrectly classified as 4
 Test image #: 178
    of class 0 correctly classified.
 Test image #: 179
@@ -373,7 +374,7 @@ Test image #: 185
 Test image #: 186
    of class 1 correctly classified.
 Test image #: 187
-  of class 2 incorrectly classified as 1
+   of class 2 correctly classified.
 Test image #: 188
    of class 6 correctly classified.
 Test image #: 189
@@ -411,7 +412,7 @@ Test image #: 204
 Test image #: 205
    of class 2 correctly classified.
 Test image #: 206
-   of class 8 correctly classified.
+  of class 8 incorrectly classified as 1
 Test image #: 207
    of class 2 correctly classified.
 Test image #: 208
@@ -495,9 +496,9 @@ Test image #: 246
 Test image #: 247
    of class 4 correctly classified.
 Test image #: 248
-  of class 8 incorrectly classified as 1
-Test image #: 249
    of class 8 correctly classified.
+Test image #: 249
+  of class 8 incorrectly classified as 1
 Test image #: 250
    of class 4 correctly classified.
 Test image #: 251
@@ -505,7 +506,7 @@ Test image #: 251
 Test image #: 252
    of class 0 correctly classified.
 Test image #: 253
-  of class 8 incorrectly classified as 1
+   of class 8 correctly classified.
 Test image #: 254
    of class 9 correctly classified.
 Test image #: 255
@@ -725,7 +726,7 @@ Test image #: 361
 Test image #: 362
    of class 6 correctly classified.
 Test image #: 363
-   of class 1 correctly classified.
+  of class 1 incorrectly classified as 5
 Test image #: 364
    of class 7 correctly classified.
 Test image #: 365
@@ -805,7 +806,7 @@ Test image #: 401
 Test image #: 402
    of class 6 correctly classified.
 Test image #: 403
-   of class 7 correctly classified.
+  of class 7 incorrectly classified as 9
 Test image #: 404
    of class 8 correctly classified.
 Test image #: 405
@@ -841,7 +842,7 @@ Test image #: 419
 Test image #: 420
    of class 6 correctly classified.
 Test image #: 421
-  of class 5 incorrectly classified as 8
+   of class 5 correctly classified.
 Test image #: 422
    of class 0 correctly classified.
 Test image #: 423
@@ -857,9 +858,9 @@ Test image #: 427
 Test image #: 428
    of class 1 correctly classified.
 Test image #: 429
-   of class 7 correctly classified.
-Test image #: 430
   of class 7 incorrectly classified as 9
+Test image #: 430
+   of class 7 correctly classified.
 Test image #: 431
    of class 3 correctly classified.
 Test image #: 432
@@ -895,7 +896,7 @@ Test image #: 446
 Test image #: 447
   of class 7 incorrectly classified as 5
 Test image #: 448
-   of class 3 correctly classified.
+  of class 3 incorrectly classified as 8
 Test image #: 449
    of class 3 correctly classified.
 Test image #: 450
@@ -913,7 +914,7 @@ Test image #: 455
 Test image #: 456
    of class 1 correctly classified.
 Test image #: 457
-   of class 5 correctly classified.
+  of class 5 incorrectly classified as 9
 Test image #: 458
    of class 0 correctly classified.
 Test image #: 459
@@ -1069,7 +1070,7 @@ Test image #: 533
 Test image #: 534
    of class 8 correctly classified.
 Test image #: 535
-  of class 9 incorrectly classified as 8
+  of class 9 incorrectly classified as 5
 Test image #: 536
    of class 0 correctly classified.
 Test image #: 537
@@ -1077,7 +1078,7 @@ Test image #: 537
 Test image #: 538
    of class 2 correctly classified.
 Test image #: 539
-   of class 3 correctly classified.
+  of class 3 incorrectly classified as 2
 Test image #: 540
    of class 4 correctly classified.
 Test image #: 541
@@ -1125,7 +1126,7 @@ Test image #: 561
 Test image #: 562
    of class 5 correctly classified.
 Test image #: 563
-   of class 1 correctly classified.
+  of class 1 incorrectly classified as 6
 Test image #: 564
    of class 0 correctly classified.
 Test image #: 565
@@ -1149,15 +1150,15 @@ Test image #: 573
 Test image #: 574
    of class 6 correctly classified.
 Test image #: 575
-   of class 3 correctly classified.
+  of class 3 incorrectly classified as 9
 Test image #: 576
    of class 3 correctly classified.
 Test image #: 577
    of class 7 correctly classified.
 Test image #: 578
-  of class 3 incorrectly classified as 9
+  of class 3 incorrectly classified as 5
 Test image #: 579
-  of class 3 incorrectly classified as 9
+   of class 3 correctly classified.
 Test image #: 580
    of class 4 correctly classified.
 Test image #: 581
@@ -1179,7 +1180,7 @@ Test image #: 588
 Test image #: 589
    of class 9 correctly classified.
 Test image #: 590
-  of class 5 incorrectly classified as 9
+   of class 5 correctly classified.
 Test image #: 591
    of class 2 correctly classified.
 Test image #: 592
@@ -1209,11 +1210,11 @@ Test image #: 603
 Test image #: 604
    of class 6 correctly classified.
 Test image #: 605
-  of class 3 incorrectly classified as 9
+  of class 3 incorrectly classified as 8
 Test image #: 606
    of class 1 correctly classified.
 Test image #: 607
-  of class 3 incorrectly classified as 8
+  of class 3 incorrectly classified as 5
 Test image #: 608
    of class 9 correctly classified.
 Test image #: 609
@@ -1265,7 +1266,7 @@ Test image #: 631
 Test image #: 632
    of class 2 correctly classified.
 Test image #: 633
-   of class 5 correctly classified.
+  of class 5 incorrectly classified as 7
 Test image #: 634
    of class 7 correctly classified.
 Test image #: 635
@@ -1275,9 +1276,9 @@ Test image #: 636
 Test image #: 637
    of class 4 correctly classified.
 Test image #: 638
-  of class 8 incorrectly classified as 1
+   of class 8 correctly classified.
 Test image #: 639
-  of class 8 incorrectly classified as 1
+   of class 8 correctly classified.
 Test image #: 640
    of class 4 correctly classified.
 Test image #: 641
@@ -1295,7 +1296,7 @@ Test image #: 646
 Test image #: 647
    of class 1 correctly classified.
 Test image #: 648
-  of class 2 incorrectly classified as 3
+  of class 2 incorrectly classified as 8
 Test image #: 649
    of class 3 correctly classified.
 Test image #: 650
@@ -1353,9 +1354,9 @@ Test image #: 675
 Test image #: 676
    of class 0 correctly classified.
 Test image #: 677
-   of class 9 correctly classified.
+  of class 9 incorrectly classified as 4
 Test image #: 678
-   of class 5 correctly classified.
+  of class 5 incorrectly classified as 7
 Test image #: 679
    of class 5 correctly classified.
 Test image #: 680
@@ -1365,7 +1366,7 @@ Test image #: 681
 Test image #: 682
    of class 0 correctly classified.
 Test image #: 683
-  of class 9 incorrectly classified as 1
+   of class 9 correctly classified.
 Test image #: 684
    of class 8 correctly classified.
 Test image #: 685
@@ -1373,7 +1374,7 @@ Test image #: 685
 Test image #: 686
    of class 8 correctly classified.
 Test image #: 687
-  of class 4 incorrectly classified as 9
+   of class 4 correctly classified.
 Test image #: 688
    of class 1 correctly classified.
 Test image #: 689
@@ -1393,19 +1394,19 @@ Test image #: 695
 Test image #: 696
    of class 2 correctly classified.
 Test image #: 697
-  of class 2 incorrectly classified as 3
+  of class 2 incorrectly classified as 8
 Test image #: 698
    of class 7 correctly classified.
 Test image #: 699
    of class 8 correctly classified.
 Test image #: 700
-  of class 2 incorrectly classified as 3
+   of class 2 correctly classified.
 Test image #: 701
    of class 0 correctly classified.
 Test image #: 702
    of class 1 correctly classified.
 Test image #: 703
-  of class 2 incorrectly classified as 5
+   of class 2 correctly classified.
 Test image #: 704
    of class 6 correctly classified.
 Test image #: 705
@@ -1429,7 +1430,7 @@ Test image #: 713
 Test image #: 714
    of class 4 correctly classified.
 Test image #: 715
-  of class 9 incorrectly classified as 1
+   of class 9 correctly classified.
 Test image #: 716
    of class 1 correctly classified.
 Test image #: 717
@@ -1437,7 +1438,7 @@ Test image #: 717
 Test image #: 718
    of class 0 correctly classified.
 Test image #: 719
-  of class 9 incorrectly classified as 1
+   of class 9 correctly classified.
 Test image #: 720
    of class 5 correctly classified.
 Test image #: 721
@@ -1461,7 +1462,7 @@ Test image #: 729
 Test image #: 730
    of class 2 correctly classified.
 Test image #: 731
-  of class 1 incorrectly classified as 8
+   of class 1 correctly classified.
 Test image #: 732
    of class 7 correctly classified.
 Test image #: 733
@@ -1471,7 +1472,7 @@ Test image #: 734
 Test image #: 735
    of class 3 correctly classified.
 Test image #: 736
-  of class 1 incorrectly classified as 8
+   of class 1 correctly classified.
 Test image #: 737
    of class 3 correctly classified.
 Test image #: 738
@@ -1531,13 +1532,13 @@ Test image #: 764
 Test image #: 765
    of class 9 correctly classified.
 Test image #: 766
-  of class 5 incorrectly classified as 2
+   of class 5 correctly classified.
 Test image #: 767
    of class 4 correctly classified.
 Test image #: 768
    of class 8 correctly classified.
 Test image #: 769
-  of class 8 incorrectly classified as 2
+   of class 8 correctly classified.
 Test image #: 770
    of class 4 correctly classified.
 Test image #: 771
@@ -1627,7 +1628,7 @@ Test image #: 812
 Test image #: 813
    of class 9 correctly classified.
 Test image #: 814
-  of class 8 incorrectly classified as 3
+   of class 8 correctly classified.
 Test image #: 815
    of class 9 correctly classified.
 Test image #: 816
@@ -1657,7 +1658,7 @@ Test image #: 827
 Test image #: 828
    of class 7 correctly classified.
 Test image #: 829
-   of class 8 correctly classified.
+  of class 8 incorrectly classified as 9
 Test image #: 830
    of class 2 correctly classified.
 Test image #: 831
@@ -1685,7 +1686,7 @@ Test image #: 841
 Test image #: 842
    of class 6 correctly classified.
 Test image #: 843
-  of class 6 incorrectly classified as 0
+  of class 6 incorrectly classified as 4
 Test image #: 844
    of class 4 correctly classified.
 Test image #: 845
@@ -1795,7 +1796,7 @@ Test image #: 896
 Test image #: 897
    of class 4 correctly classified.
 Test image #: 898
-  of class 8 incorrectly classified as 9
+   of class 8 correctly classified.
 Test image #: 899
    of class 8 correctly classified.
 Test image #: 900
@@ -1811,7 +1812,7 @@ Test image #: 904
 Test image #: 905
   of class 8 incorrectly classified as 1
 Test image #: 906
-   of class 1 correctly classified.
+  of class 1 incorrectly classified as 2
 Test image #: 907
    of class 2 correctly classified.
 Test image #: 908
@@ -1831,7 +1832,7 @@ Test image #: 914
 Test image #: 915
    of class 0 correctly classified.
 Test image #: 916
-   of class 1 correctly classified.
+  of class 1 incorrectly classified as 2
 Test image #: 917
    of class 2 correctly classified.
 Test image #: 918
@@ -1843,7 +1844,7 @@ Test image #: 920
 Test image #: 921
    of class 6 correctly classified.
 Test image #: 922
-   of class 7 correctly classified.
+  of class 7 incorrectly classified as 8
 Test image #: 923
    of class 8 correctly classified.
 Test image #: 924
@@ -1927,9 +1928,9 @@ Test image #: 962
 Test image #: 963
    of class 7 correctly classified.
 Test image #: 964
-   of class 3 correctly classified.
+  of class 3 incorrectly classified as 8
 Test image #: 965
-   of class 3 correctly classified.
+  of class 3 incorrectly classified as 8
 Test image #: 966
    of class 4 correctly classified.
 Test image #: 967
@@ -1963,13 +1964,13 @@ Test image #: 980
 Test image #: 981
    of class 0 correctly classified.
 Test image #: 982
-   of class 1 correctly classified.
+  of class 1 incorrectly classified as 2
 Test image #: 983
    of class 7 correctly classified.
 Test image #: 984
    of class 6 correctly classified.
 Test image #: 985
-   of class 3 correctly classified.
+  of class 3 incorrectly classified as 2
 Test image #: 986
    of class 2 correctly classified.
 Test image #: 987
@@ -1979,7 +1980,7 @@ Test image #: 988
 Test image #: 989
    of class 6 correctly classified.
 Test image #: 990
-   of class 3 correctly classified.
+  of class 3 incorrectly classified as 8
 Test image #: 991
    of class 1 correctly classified.
 Test image #: 992
@@ -1993,7 +1994,7 @@ Test image #: 995
 Test image #: 996
    of class 6 correctly classified.
 Test image #: 997
-   of class 8 correctly classified.
+  of class 8 incorrectly classified as 5
 Test image #: 998
    of class 4 correctly classified.
 Test image #: 999
@@ -2007,7 +2008,7 @@ Test image #: 1002
 Test image #: 1003
    of class 5 correctly classified.
 Test image #: 1004
-   of class 3 correctly classified.
+  of class 3 incorrectly classified as 8
 Test image #: 1005
    of class 6 correctly classified.
 Test image #: 1006
@@ -2015,7 +2016,7 @@ Test image #: 1006
 Test image #: 1007
    of class 6 correctly classified.
 Test image #: 1008
-   of class 1 correctly classified.
+  of class 1 incorrectly classified as 2
 Test image #: 1009
    of class 7 correctly classified.
 Test image #: 1010
@@ -2049,7 +2050,7 @@ Test image #: 1023
 Test image #: 1024
    of class 9 correctly classified.
 Test image #: 1025
-  of class 0 incorrectly classified as 8
+   of class 0 correctly classified.
 Test image #: 1026
    of class 8 correctly classified.
 Test image #: 1027
@@ -2093,7 +2094,7 @@ Test image #: 1045
 Test image #: 1046
    of class 7 correctly classified.
 Test image #: 1047
-   of class 8 correctly classified.
+  of class 8 incorrectly classified as 9
 Test image #: 1048
    of class 9 correctly classified.
 Test image #: 1049
@@ -2159,7 +2160,7 @@ Test image #: 1078
 Test image #: 1079
    of class 7 correctly classified.
 Test image #: 1080
-   of class 8 correctly classified.
+  of class 8 incorrectly classified as 9
 Test image #: 1081
    of class 2 correctly classified.
 Test image #: 1082
@@ -2393,7 +2394,7 @@ Test image #: 1195
 Test image #: 1196
    of class 9 correctly classified.
 Test image #: 1197
-   of class 8 correctly classified.
+  of class 8 incorrectly classified as 5
 Test image #: 1198
    of class 4 correctly classified.
 Test image #: 1199
@@ -2457,7 +2458,7 @@ Test image #: 1227
 Test image #: 1228
    of class 5 correctly classified.
 Test image #: 1229
-  of class 0 incorrectly classified as 5
+   of class 0 correctly classified.
 Test image #: 1230
    of class 9 correctly classified.
 Test image #: 1231
@@ -2471,7 +2472,7 @@ Test image #: 1234
 Test image #: 1235
    of class 0 correctly classified.
 Test image #: 1236
-   of class 0 correctly classified.
+  of class 0 incorrectly classified as 8
 Test image #: 1237
    of class 1 correctly classified.
 Test image #: 1238
@@ -2505,7 +2506,7 @@ Test image #: 1251
 Test image #: 1252
    of class 6 correctly classified.
 Test image #: 1253
-  of class 8 incorrectly classified as 3
+   of class 8 correctly classified.
 Test image #: 1254
    of class 4 correctly classified.
 Test image #: 1255
@@ -2527,7 +2528,7 @@ Test image #: 1262
 Test image #: 1263
    of class 6 correctly classified.
 Test image #: 1264
-  of class 1 incorrectly classified as 8
+   of class 1 correctly classified.
 Test image #: 1265
    of class 7 correctly classified.
 Test image #: 1266
@@ -2653,7 +2654,7 @@ Test image #: 1325
 Test image #: 1326
    of class 9 correctly classified.
 Test image #: 1327
-  of class 8 incorrectly classified as 1
+   of class 8 correctly classified.
 Test image #: 1328
    of class 4 correctly classified.
 Test image #: 1329
@@ -2845,7 +2846,7 @@ Test image #: 1421
 Test image #: 1422
    of class 7 correctly classified.
 Test image #: 1423
-  of class 8 incorrectly classified as 9
+   of class 8 correctly classified.
 Test image #: 1424
    of class 9 correctly classified.
 Test image #: 1425
@@ -2865,7 +2866,7 @@ Test image #: 1431
 Test image #: 1432
    of class 7 correctly classified.
 Test image #: 1433
-  of class 8 incorrectly classified as 9
+   of class 8 correctly classified.
 Test image #: 1434
    of class 9 correctly classified.
 Test image #: 1435
@@ -2885,7 +2886,7 @@ Test image #: 1441
 Test image #: 1442
    of class 7 correctly classified.
 Test image #: 1443
-  of class 8 incorrectly classified as 3
+   of class 8 correctly classified.
 Test image #: 1444
    of class 9 correctly classified.
 Test image #: 1445
@@ -2917,7 +2918,7 @@ Test image #: 1457
 Test image #: 1458
    of class 7 correctly classified.
 Test image #: 1459
-  of class 7 incorrectly classified as 4
+   of class 7 correctly classified.
 Test image #: 1460
    of class 3 correctly classified.
 Test image #: 1461
@@ -2941,7 +2942,7 @@ Test image #: 1469
 Test image #: 1470
    of class 0 correctly classified.
 Test image #: 1471
-  of class 1 incorrectly classified as 9
+   of class 1 correctly classified.
 Test image #: 1472
    of class 2 correctly classified.
 Test image #: 1473
@@ -2969,7 +2970,7 @@ Test image #: 1483
 Test image #: 1484
    of class 9 correctly classified.
 Test image #: 1485
-  of class 1 incorrectly classified as 9
+   of class 1 correctly classified.
 Test image #: 1486
    of class 5 correctly classified.
 Test image #: 1487
@@ -2991,7 +2992,7 @@ Test image #: 1494
 Test image #: 1495
   of class 1 incorrectly classified as 9
 Test image #: 1496
-  of class 7 incorrectly classified as 9
+   of class 7 correctly classified.
 Test image #: 1497
    of class 6 correctly classified.
 Test image #: 1498
@@ -2999,7 +3000,7 @@ Test image #: 1498
 Test image #: 1499
    of class 2 correctly classified.
 Test image #: 1500
-  of class 1 incorrectly classified as 9
+   of class 1 correctly classified.
 Test image #: 1501
    of class 7 correctly classified.
 Test image #: 1502
@@ -3021,13 +3022,13 @@ Test image #: 1509
 Test image #: 1510
    of class 6 correctly classified.
 Test image #: 1511
-  of class 8 incorrectly classified as 9
+   of class 8 correctly classified.
 Test image #: 1512
    of class 4 correctly classified.
 Test image #: 1513
    of class 3 correctly classified.
 Test image #: 1514
-  of class 1 incorrectly classified as 9
+   of class 1 correctly classified.
 Test image #: 1515
    of class 4 correctly classified.
 Test image #: 1516
@@ -3045,7 +3046,7 @@ Test image #: 1521
 Test image #: 1522
   of class 1 incorrectly classified as 9
 Test image #: 1523
-  of class 7 incorrectly classified as 8
+  of class 7 incorrectly classified as 5
 Test image #: 1524
    of class 5 correctly classified.
 Test image #: 1525
@@ -3075,7 +3076,7 @@ Test image #: 1536
 Test image #: 1537
    of class 8 correctly classified.
 Test image #: 1538
-   of class 8 correctly classified.
+  of class 8 incorrectly classified as 5
 Test image #: 1539
    of class 4 correctly classified.
 Test image #: 1540
@@ -3101,11 +3102,11 @@ Test image #: 1549
 Test image #: 1550
    of class 5 correctly classified.
 Test image #: 1551
-  of class 6 incorrectly classified as 1
+   of class 6 correctly classified.
 Test image #: 1552
-   of class 7 correctly classified.
+  of class 7 incorrectly classified as 1
 Test image #: 1553
-   of class 8 correctly classified.
+  of class 8 incorrectly classified as 1
 Test image #: 1554
    of class 9 correctly classified.
 Test image #: 1555
@@ -3127,7 +3128,7 @@ Test image #: 1562
 Test image #: 1563
    of class 0 correctly classified.
 Test image #: 1564
-  of class 1 incorrectly classified as 4
+   of class 1 correctly classified.
 Test image #: 1565
    of class 2 correctly classified.
 Test image #: 1566
@@ -3137,7 +3138,7 @@ Test image #: 1567
 Test image #: 1568
    of class 5 correctly classified.
 Test image #: 1569
-  of class 6 incorrectly classified as 4
+   of class 6 correctly classified.
 Test image #: 1570
    of class 7 correctly classified.
 Test image #: 1571
@@ -3145,11 +3146,11 @@ Test image #: 1571
 Test image #: 1572
    of class 9 correctly classified.
 Test image #: 1573
-   of class 0 correctly classified.
+  of class 0 incorrectly classified as 4
 Test image #: 1574
    of class 9 correctly classified.
 Test image #: 1575
-  of class 5 incorrectly classified as 1
+   of class 5 correctly classified.
 Test image #: 1576
    of class 5 correctly classified.
 Test image #: 1577
@@ -3181,15 +3182,15 @@ Test image #: 1589
 Test image #: 1590
    of class 1 correctly classified.
 Test image #: 1591
-   of class 0 correctly classified.
+  of class 0 incorrectly classified as 8
 Test image #: 1592
-   of class 0 correctly classified.
+  of class 0 incorrectly classified as 8
 Test image #: 1593
-  of class 2 incorrectly classified as 0
+   of class 2 correctly classified.
 Test image #: 1594
    of class 2 correctly classified.
 Test image #: 1595
-   of class 7 correctly classified.
+  of class 7 incorrectly classified as 4
 Test image #: 1596
    of class 8 correctly classified.
 Test image #: 1597
@@ -3205,11 +3206,11 @@ Test image #: 1601
 Test image #: 1602
    of class 3 correctly classified.
 Test image #: 1603
-   of class 3 correctly classified.
+  of class 3 incorrectly classified as 7
 Test image #: 1604
    of class 7 correctly classified.
 Test image #: 1605
-   of class 3 correctly classified.
+  of class 3 incorrectly classified as 8
 Test image #: 1606
    of class 3 correctly classified.
 Test image #: 1607
@@ -3217,11 +3218,11 @@ Test image #: 1607
 Test image #: 1608
    of class 6 correctly classified.
 Test image #: 1609
-  of class 6 incorrectly classified as 4
+   of class 6 correctly classified.
 Test image #: 1610
    of class 6 correctly classified.
 Test image #: 1611
-   of class 4 correctly classified.
+  of class 4 incorrectly classified as 9
 Test image #: 1612
    of class 9 correctly classified.
 Test image #: 1613
@@ -3237,7 +3238,7 @@ Test image #: 1617
 Test image #: 1618
    of class 2 correctly classified.
 Test image #: 1619
-  of class 8 incorrectly classified as 1
+   of class 8 correctly classified.
 Test image #: 1620
    of class 0 correctly classified.
 Test image #: 1621
@@ -3255,7 +3256,7 @@ Test image #: 1626
 Test image #: 1627
    of class 7 correctly classified.
 Test image #: 1628
-   of class 4 correctly classified.
+  of class 4 incorrectly classified as 9
 Test image #: 1629
    of class 6 correctly classified.
 Test image #: 1630
@@ -3271,7 +3272,7 @@ Test image #: 1634
 Test image #: 1635
    of class 7 correctly classified.
 Test image #: 1636
-   of class 6 correctly classified.
+  of class 6 incorrectly classified as 4
 Test image #: 1637
    of class 8 correctly classified.
 Test image #: 1638
@@ -3315,7 +3316,7 @@ Test image #: 1656
 Test image #: 1657
    of class 7 correctly classified.
 Test image #: 1658
-  of class 9 incorrectly classified as 5
+  of class 9 incorrectly classified as 8
 Test image #: 1659
    of class 5 correctly classified.
 Test image #: 1660
@@ -3453,11 +3454,11 @@ Test image #: 1725
 Test image #: 1726
    of class 3 correctly classified.
 Test image #: 1727
-  of class 3 incorrectly classified as 2
+  of class 3 incorrectly classified as 8
 Test image #: 1728
    of class 7 correctly classified.
 Test image #: 1729
-  of class 3 incorrectly classified as 5
+  of class 3 incorrectly classified as 1
 Test image #: 1730
    of class 3 correctly classified.
 Test image #: 1731
@@ -3473,15 +3474,15 @@ Test image #: 1735
 Test image #: 1736
    of class 9 correctly classified.
 Test image #: 1737
-   of class 1 correctly classified.
+  of class 1 incorrectly classified as 8
 Test image #: 1738
-   of class 5 correctly classified.
+  of class 5 incorrectly classified as 9
 Test image #: 1739
    of class 0 correctly classified.
 Test image #: 1740
    of class 9 correctly classified.
 Test image #: 1741
-   of class 5 correctly classified.
+  of class 5 incorrectly classified as 8
 Test image #: 1742
    of class 2 correctly classified.
 Test image #: 1743
@@ -3493,9 +3494,9 @@ Test image #: 1745
 Test image #: 1746
    of class 0 correctly classified.
 Test image #: 1747
-  of class 1 incorrectly classified as 8
+   of class 1 correctly classified.
 Test image #: 1748
-  of class 7 incorrectly classified as 4
+   of class 7 correctly classified.
 Test image #: 1749
    of class 6 correctly classified.
 Test image #: 1750
@@ -3577,7 +3578,7 @@ Test image #: 1787
 Test image #: 1788
    of class 4 correctly classified.
 Test image #: 1789
-  of class 8 incorrectly classified as 1
+   of class 8 correctly classified.
 Test image #: 1790
   of class 8 incorrectly classified as 1
 Test image #: 1791
@@ -3592,4 +3593,4 @@ Test image #: 1795
    of class 9 correctly classified.
 Test image #: 1796
    of class 8 correctly classified.
-Correctly classified 1684images out of 1797 for a classification accuracy of 0.937117
+Correctly classified 1688images out of 1797 for a classification accuracy of 0.939343

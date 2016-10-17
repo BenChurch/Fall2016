@@ -132,7 +132,7 @@ public:
 	void ConstructNodes(vector<vector<int>> TemplateImage);
 	void Feedworward(vector<vector<int>> Image);
 	void Backpropagate(int CorrectClassification);
-	void Train(ImageData TrainingData);
+	void Train(ImageData TrainingData, OutputWriter &Writer);
 	void Test(ImageData TestData, OutputWriter &Writer);
 
 	void EasyClassify();
@@ -282,63 +282,70 @@ void Network::Backpropagate(int CorrectClassification)
 	}
 }
 
-void Network::Train(ImageData TrainingData)
+void Network::Train(ImageData TrainingData, OutputWriter &Writer)
 {
-	int CurrentEpoch = 0;
+  int CurrentEpoch = 0;
+  int CorrectlyClassified;
   int EpochsWithoutImprovement = 0;
   double MinMeanSquaredError = 100;     // Some large number to begin comparrison
   int RandInt;                          // Used to perturb the weights if things aren't improving
   Network BestConfiguredNetwork;
 	while (CurrentEpoch < this->MAX_TRAINGING_EPOCHS)			// Not bothering with IncorrectlyClassified count
 	{
-    this->MeanSquaredError = 0;   // Reinitialize for new epoch
+		CorrectlyClassified = 0;
+		this->MeanSquaredError = 0;   // Reinitialize for new epoch
 		for (int i = 0; i < TrainingData.Images.size(); i++)
 		{
 			this->Feedworward(TrainingData.Images[i]);
 			this->Backpropagate(TrainingData.CorrectClassifications[i]);
+			this->EasyClassify();
+			if (this->Classification == TrainingData.CorrectClassifications[i])
+				CorrectlyClassified++;
 		}
-    this->MeanSquaredError = this->MeanSquaredError / TrainingData.Images.size();
-    cout << "Mean-squared-error for epoch " << CurrentEpoch << ": " << this->MeanSquaredError << endl;
-    if (this->MeanSquaredError < MinMeanSquaredError)
-    {
-      BestConfiguredNetwork = *this;
-      MinMeanSquaredError = this->MeanSquaredError;
-      EpochsWithoutImprovement = 0;
-    }
-    else
-      EpochsWithoutImprovement++;
-    if (this->MeanSquaredError > MinMeanSquaredError*1.5)
-    { // Last epoch made ouput worse
-      cout << "Mean-squared-error worsening occurred after epoch" << CurrentEpoch << ". Perturbing weights." << endl;
-      *this = BestConfiguredNetwork;
-      RandInt = (rand() % TrainingData.Images.size()) - 1;
-      this->Feedworward(TrainingData.Images[RandInt]);
-      this->Backpropagate(TrainingData.CorrectClassifications[RandInt]);
-      EpochsWithoutImprovement = 0;
-      if (this->MeanSquaredError < MinMeanSquaredError)
-      {
-        BestConfiguredNetwork = *this;
-        MinMeanSquaredError = this->MeanSquaredError;
-      }
-    }
-    if (EpochsWithoutImprovement > 10)
-    {
-      cout << "Mean-squared-error has worsened for last " << EpochsWithoutImprovement << " epochs. Perturbing weights." << endl;
-      *this = BestConfiguredNetwork;
-      RandInt = (rand() % TrainingData.Images.size()) - 1;
-      this->Feedworward(TrainingData.Images[RandInt]);
-      this->Backpropagate(TrainingData.CorrectClassifications[RandInt]);
-      EpochsWithoutImprovement = 0;
-      if (this->MeanSquaredError < MinMeanSquaredError)
-      {
-        BestConfiguredNetwork = *this;
-        MinMeanSquaredError = this->MeanSquaredError;
-      }
-    }
-    CurrentEpoch++;
+		this->MeanSquaredError = this->MeanSquaredError / TrainingData.Images.size();
+		cout << "Mean-squared-error for epoch " << CurrentEpoch << ": " << this->MeanSquaredError << endl;
+		if (this->MeanSquaredError < MinMeanSquaredError)
+		{
+		  BestConfiguredNetwork = *this;
+		  MinMeanSquaredError = this->MeanSquaredError;
+		  EpochsWithoutImprovement = 0;
+		}
+		else
+		  EpochsWithoutImprovement++;
+		if (this->MeanSquaredError > MinMeanSquaredError*1.5)
+		{ // Last epoch made ouput worse
+		  cout << "Mean-squared-error worsening occurred after epoch" << CurrentEpoch << ". Perturbing weights." << endl;
+		  *this = BestConfiguredNetwork;
+		  RandInt = (rand() % TrainingData.Images.size()) - 1;
+		  this->Feedworward(TrainingData.Images[RandInt]);
+		  this->Backpropagate(TrainingData.CorrectClassifications[RandInt]);
+		  EpochsWithoutImprovement = 0;
+		  if (this->MeanSquaredError < MinMeanSquaredError)
+		  {
+			BestConfiguredNetwork = *this;
+			MinMeanSquaredError = this->MeanSquaredError;
+		  }
+		}
+		if (EpochsWithoutImprovement > 10)
+		{
+		  cout << "Mean-squared-error has worsened for last " << EpochsWithoutImprovement << " epochs. Perturbing weights." << endl;
+		  *this = BestConfiguredNetwork;
+		  RandInt = (rand() % TrainingData.Images.size()) - 1;
+		  this->Feedworward(TrainingData.Images[RandInt]);
+		  this->Backpropagate(TrainingData.CorrectClassifications[RandInt]);
+		  EpochsWithoutImprovement = 0;
+		  if (this->MeanSquaredError < MinMeanSquaredError)
+		  {
+			BestConfiguredNetwork = *this;
+			MinMeanSquaredError = this->MeanSquaredError;
+		  }
+		}
+		CurrentEpoch++;
 		cout << "Training epoch " << CurrentEpoch << " out of " << this->MAX_TRAINGING_EPOCHS << " complete" << endl;
 	}
-  *this = BestConfiguredNetwork;
+	cout << "After the " << CurrentEpoch << " allocated training epochs, the network correctly classified " << CorrectlyClassified << " inputs out of " << TrainingData.Images.size() << " for a classification accuracy of " << ((double)CorrectlyClassified) / (TrainingData.Images.size()) << endl;
+	(&Writer)->WriteOutput("After the " + to_string(CurrentEpoch) + " allocated training epochs, the network correctly classified " + to_string(CorrectlyClassified) + " inputs out of " + to_string(TrainingData.Images.size()) + " for a classification accuracy of " + to_string(((double)CorrectlyClassified) / (TrainingData.Images.size())));
+	*this = BestConfiguredNetwork;
 }
 
 void Network::Test(ImageData TestData, OutputWriter &Writer)
@@ -550,17 +557,17 @@ int main()
 	InputData = ReadInputs("training.txt");
 	ImageData TestData;
 	TestData = ReadInputs("testing.txt");
-  OutputWriter Writer;
+	OutputWriter Writer;
   //WriteDataForMatlab(InputData, TestData);
   //InputData.PrintAllData();
 	Network BackpropagationNetwork;
 	BackpropagationNetwork.ConstructNodes(InputData.Images[0]);
 	//BackpropagationNetwork.WriteSelf("1");
-  BackpropagationNetwork.Train(InputData);
+	BackpropagationNetwork.Train(InputData, Writer);
 	//BackpropagationNetwork.WriteSelf("2");
 	BackpropagationNetwork.Test(TestData, Writer);
 
-  Writer.Output.close();
+	Writer.Output.close();
 
 	cout << "Press enter to end the program." << endl;
 	cin.ignore();
