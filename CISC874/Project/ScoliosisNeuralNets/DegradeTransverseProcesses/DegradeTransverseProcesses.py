@@ -1,6 +1,6 @@
 import os
 import unittest
-import vtk, qt, ctk, slicer
+import vtk, qt, ctk, slicer, numpy
 from slicer.ScriptedLoadableModule import *
 import logging
 
@@ -129,12 +129,24 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
 
 class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
 
-  def __init__(self,parent):
-    self.LandmarkSets = []      # Will contain all loaded TrXFiducial### point sets
+  def __init__(self):
+    self.LandmarkPointSets = []      # Will contain all loaded TrXFiducial### point sets
     
 
   def run(self):
     self.InputData = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
+    for InputSet in range(self.InputData.__len__()):
+      CurrentLandmarkSet = self.InputData.__getitem__(InputSet)
+      self.LandmarkPointSets.append([])
+      for InputPoint in range(CurrentLandmarkSet.GetNumberOfFiducials()):
+        self.LandmarkPointSets[InputSet].append(CurrentLandmarkSet.GetMarkupPointVector(InputPoint,0))
+        
+    for InputSet in range(self.LandmarkPointSets.__len__()):
+      print " "   #empty line
+      print "Landmark set #" + str(InputSet)
+      CurrentLandmarkSet = self.LandmarkPointSets[InputSet]
+      for InputPoint in range(CurrentLandmarkSet.__len__()):
+        print self.LandmarkPointSets[InputSet][InputPoint]
     return True
 
 

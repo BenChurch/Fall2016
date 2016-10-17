@@ -8,9 +8,9 @@
 #include <vector>
 #include <Windows.h>
 
-static const int MAX_TRAINING_EPOCHS = 200;
+static const int MAX_TRAINING_EPOCHS = 500;
 
-static const int NumHiddenNodes = 24;
+static const int NumHiddenNodes = 64;
 
 static const char * Dir = ".";
 
@@ -28,6 +28,22 @@ public:
 ImageData ReadInputs(const char * FileName);
 
 void WriteDataForMatlab(ImageData TrainingData, ImageData TestData);
+
+class OutputWriter
+{
+public:
+  void WriteOutput(string OutputString);
+  ofstream Output;
+};
+
+void OutputWriter::WriteOutput(string OutputString)
+{
+  if (!((this->Output).is_open()))
+  {
+    (this->Output).open("output.txt");
+  }
+  (this->Output) << OutputString << endl;
+}
 
 class Node
 {
@@ -83,8 +99,11 @@ class Network
 public:
 
 	Network();
+
+  void WriteOutput(string OutputString);
+
 	int Classification;
-	double MeanSquaredError = 0;    // Used to decide when to stop training
+	double MeanSquaredError = 0;    // Used to decide when to direct training
 	static const int MAX_TRAINGING_EPOCHS = MAX_TRAINING_EPOCHS;
 	double ErrorOffset = 0.45;   // Used to aim past the threshold, so we don't sit right on it
 	double Momentum = 0.1;			// Used to keep weights from settling on local minima
@@ -98,7 +117,7 @@ public:
 	void Feedworward(vector<vector<int>> Image);
 	void Backpropagate(int CorrectClassification);
 	void Train(ImageData TrainingData);
-	void Test(ImageData TestData);
+	void Test(ImageData TestData, OutputWriter &Writer);
 
 	void EasyClassify();
 	void Classify();				// maps state of output neurons to [0-9] integer classification
@@ -107,6 +126,7 @@ public:
 };
 Network::Network()
 {
+  SetCurrentDirectoryA(Dir);
 	srand(time(NULL));			// Provide random number seed for random weight initialization
 }
 
@@ -225,7 +245,6 @@ void Network::Backpropagate(int CorrectClassification)
 		}
 	}
 	// ASSERT that all output nodes' weights have been adjusted
-	//vector<double> deltaInputToHidden;
 	double NewDelta;
 	for (int HiddenNode = 0; HiddenNode < this->HiddenLayer.size(); HiddenNode++)
 	{
@@ -234,7 +253,6 @@ void Network::Backpropagate(int CorrectClassification)
     for (int OutputNode = 0; OutputNode < this->OutputLayer.size(); OutputNode++)
     {
       CurrentOutputNode = &(this->OutputLayer[OutputNode]);
-      // Try different braket locations --- not sure exatly what to sum
       NewDelta += (deltaHiddenToOutput[OutputNode] * (*CurrentOutputNode).Weights[HiddenNode]);
     }
 
@@ -243,7 +261,7 @@ void Network::Backpropagate(int CorrectClassification)
 		for (int HiddenNodeWeight = 0; HiddenNodeWeight < this->HiddenLayer[HiddenNode].Weights.size(); HiddenNodeWeight++)
 		{
 			CurrentInputNode = &(this->InputLayer[HiddenNodeWeight / this->InputLayer.size()][HiddenNodeWeight % this->InputLayer[HiddenNodeWeight / this->InputLayer.size()].size()]);			// I think this un-does the 2D to 1D conversion
-			(*CurrentHiddenNode).Weights[HiddenNodeWeight] += this->LeanringRate * NewDelta * (*CurrentInputNode).ActivationPotential;		// This may need to be (*CurrentInputNode).Input
+			(*CurrentHiddenNode).Weights[HiddenNodeWeight] += this->LeanringRate * NewDelta * (*CurrentInputNode).ActivationPotential;		
 		}
 	}
 }
@@ -253,7 +271,7 @@ void Network::Train(ImageData TrainingData)
 	int CurrentEpoch = 0;
   int EpochsWithoutImprovement = 0;
   double MinMeanSquaredError = 100;     // Some large number to begin comparrison
-  int RandInt;                          // Used to reshuffle the weights if things aren't improving
+  int RandInt;                          // Used to perturb the weights if things aren't improving
   Network BestConfiguredNetwork;
 	while (CurrentEpoch < this->MAX_TRAINGING_EPOCHS)			// Not bothering with IncorrectlyClassified count
 	{
@@ -307,7 +325,7 @@ void Network::Train(ImageData TrainingData)
   *this = BestConfiguredNetwork;
 }
 
-void Network::Test(ImageData TestData)
+void Network::Test(ImageData TestData, OutputWriter &Writer)
 {
 	int CorrectlyClassified = 0;
 
@@ -316,6 +334,7 @@ void Network::Test(ImageData TestData)
 	for (int i = 0; i < TestData.Images.size(); i++)
 	{
     cout << "Test image #" << i;
+    (&Writer)->WriteOutput(("Test image #: " + to_string(i)));
 		this->Feedworward(TestData.Images[i]);
 		//this->Classify();
     this->EasyClassify();
@@ -323,10 +342,15 @@ void Network::Test(ImageData TestData)
     {
       CorrectlyClassified++;
       cout << " of class " << TestData.CorrectClassifications[i] << " correctly classified." << endl;
+      (&Writer)->WriteOutput("   of class " + to_string(TestData.CorrectClassifications[i]) + " correctly classified.");
     }
     else
+    {
       cout << "of class " << TestData.CorrectClassifications[i] << " incorrectly classified as " << this->Classification << endl;
-	}
+      (&Writer)->WriteOutput("  of class " + to_string(TestData.CorrectClassifications[i]) + " incorrectly classified as " + to_string(this->Classification));
+    }
+  }
+  (&Writer)->WriteOutput("Correctly classified " + to_string(CorrectlyClassified) + "images out of " + to_string(TestData.Images.size()) + " for a classification accuracy of " + to_string(((double)CorrectlyClassified) / (TestData.Images.size())));
 	std::cout << "Correctly classified " << CorrectlyClassified << " images out of " << TestData.Images.size() << " for a classification accuracy of " << ((double)CorrectlyClassified)/(TestData.Images.size()) << endl;
 }
 
@@ -510,18 +534,17 @@ int main()
 	InputData = ReadInputs("training.txt");
 	ImageData TestData;
 	TestData = ReadInputs("testing.txt");
-  WriteDataForMatlab(InputData, TestData);
+  OutputWriter Writer;
+  //WriteDataForMatlab(InputData, TestData);
   //InputData.PrintAllData();
 	Network BackpropagationNetwork;
 	BackpropagationNetwork.ConstructNodes(InputData.Images[0]);
-	BackpropagationNetwork.WriteSelf("1");
+	//BackpropagationNetwork.WriteSelf("1");
   BackpropagationNetwork.Train(InputData);
-	BackpropagationNetwork.WriteSelf("2");
-	BackpropagationNetwork.Test(TestData);
+	//BackpropagationNetwork.WriteSelf("2");
+	BackpropagationNetwork.Test(TestData, Writer);
 
-  Network TestCopy = BackpropagationNetwork;
-  TestCopy.WriteSelf("test");
-
+  Writer.Output.close();
 
 	cout << "Press enter to end the program." << endl;
 	cin.ignore();
@@ -543,6 +566,7 @@ void ImageData::PrintAllData()
 	}
 }
 
+// Wanted to say what MATLAB did
 void WriteDataForMatlab(ImageData TrainingData, ImageData TestData)
 {
   SetCurrentDirectoryA;
