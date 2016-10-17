@@ -1,3 +1,19 @@
+/*	CISC 874 Assignment #2, by Ben Church - 10006197
+
+This program reads both training and test data into class structures convienient for then training and testing a neural network
+described in "Assignment2ProgramDescription.docx", and defined below.
+
+Training epochs are repeated until a limit is exceeded. Each training epoch constitutes bringing the netork into equilibrium with
+a new input image, and then backpropagating error information to correct the weight values for that image. Mean-squarred-error is
+tracked throughout training so that if perormance is not improving, the network is restored to the best known configuration. The
+a random image is then used to perturb the network's weights in an unpredictable way, and training is resumed.
+
+After training, the network is tested. Testing means iterating through each image in the test data, and comparing the network's
+classification to the provided classifications. The number of correct classifications is tracked so a classification accuracy
+for the test data can be computed. The network writes its classifications, with the correct ones, to 'output.txt'.
+
+*/
+
 #include <array>
 #include <fstream>
 #include <iostream>
@@ -8,9 +24,9 @@
 #include <vector>
 #include <Windows.h>
 
-static const int MAX_TRAINING_EPOCHS = 500;
+static const int MAX_TRAINING_EPOCHS = 50;
 
-static const int NumHiddenNodes = 64;
+static const int NumHiddenNodes = 32;
 
 static const char * Dir = ".";
 
