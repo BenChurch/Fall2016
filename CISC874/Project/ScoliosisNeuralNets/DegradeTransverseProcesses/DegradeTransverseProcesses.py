@@ -156,7 +156,7 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
 class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
 
   def __init__(self):
-    self.LandmarkPointSets = []      # Will contain all loaded TrXFiducial### point sets
+    self.LandmarkPointSets = []      # Will contain tuples: (TrXFiducial point labels, TrXFiducial### point sets)
     self.DeletedLandmarkLabels = []   # Will ensure we don't try to misplace deleted points or vice-versa
     self.MisplacedLandmarkLabels = []
     
@@ -167,7 +167,7 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
       CurrentLandmarkSet = self.InputData.__getitem__(InputSet)
       self.LandmarkPointSets.append([])
       for InputPoint in range(CurrentLandmarkSet.GetNumberOfFiducials()):
-        self.LandmarkPointSets[InputSet].append(CurrentLandmarkSet.GetMarkupPointVector(InputPoint,0))
+        self.LandmarkPointSets[InputSet].append((CurrentLandmarkSet.GetNthFiducialLabel(InputPoint),CurrentLandmarkSet.GetMarkupPointVector(InputPoint,0)))
         
     for InputSet in range(self.LandmarkPointSets.__len__()):
       print " "   #empty line
@@ -177,7 +177,7 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
         print self.LandmarkPointSets[InputSet][InputPoint]
     
     # Randomly select points for deletion and misplacement
-    for InputsSet in range(self.LandmarkPointSets.__len__()):
+    for InputSet in range(self.LandmarkPointSets.__len__()):
       print InputSet
       DeletionAmount = (int)(self.LandmarkPointSets[InputSet].__len__() * DeletionFraction)
       DisplacementAmount = (int)(self.LandmarkPointSets[InputSet].__len__() * DisplacementFraction)
@@ -198,7 +198,7 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
     for InputSet in range(self.LandmarkPointSets.__len__()):
       CurrentLandmarkSet = self.LandmarkPointSets[InputSet]
       for InputPoint in range(CurrentLandmarkSet.__len__()):
-        CurrentLandmarkPoint = CurrentLandmarkSet[InputPoint]
+        CurrentLandmarkPoint = CurrentLandmarkSet[InputPoint][1]
         for dim in range(3):      # for each of the point's spatial dimensions
           CurrentLandmarkPoint[dim] += numpy.random.standard_normal() * NoiseStdDev
     
@@ -208,9 +208,10 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
       NewMarkupsNode.SetName(self.InputData.__getitem__(InputSet).GetName() + "~")
       CurrentLandmarkSet = self.LandmarkPointSets[InputSet]
       for InputPoint in range(CurrentLandmarkSet.__len__()):
-        CurrentLandmarkPoint = CurrentLandmarkSet[InputPoint]
+        CurrentLandmarkPoint = CurrentLandmarkSet[InputPoint][1]
         NewMarkupsNode.AddFiducial(CurrentLandmarkPoint[0], CurrentLandmarkPoint[1], CurrentLandmarkPoint[2])
-        NewPointLabel = self.InputData.__getitem__(InputSet).GetNthFiducialLabel(InputPoint) + "~"
+        #NewPointLabel = self.InputData.__getitem__(InputSet).GetNthFiducialLabel(InputPoint) + "~"
+        NewPointLabel = self.LandmarkPointSets[InputSet][InputPoint][0] + "~"
         NewMarkupsNode.SetNthFiducialLabel(InputPoint, NewPointLabel)
       slicer.mrmlScene.AddNode(NewMarkupsNode)
       
