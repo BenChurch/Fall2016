@@ -95,7 +95,7 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
     self.DisplacementSliderWidget.singleStep = 0.01
     self.DisplacementSliderWidget.minimum = 0
     self.DisplacementSliderWidget.maximum = 1
-    self.DisplacementSliderWidget.value = 0.5767
+    self.DisplacementSliderWidget.value = 0.5
     self.DisplacementSliderWidget.setToolTip("Set fraction of points from original data set to misplace.")
     parametersFormLayout.addRow("Displacement fraction", self.DisplacementSliderWidget)
     
@@ -159,6 +159,8 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
     self.LandmarkPointSets = []      # Will contain tuples: (TrXFiducial point labels, TrXFiducial### point sets)
     self.DeletedLandmarkLabels = []   # Will ensure we don't try to misplace deleted points or vice-versa
     self.MisplacedLandmarkLabels = []
+    self.RightLeftScale = 1000          # Length of vector in coronal plane used to misplace point to behind a rib
+    self.AteriorPosteriorScale = 20   # Length of vector in parasagital plane used to misplace point from behind rib onto rib
     
 
   def DegradeInputData(self, NoiseStdDev, DeletionFraction, DisplacementFraction):
@@ -176,27 +178,34 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
       for InputPoint in range(CurrentLandmarkSet.__len__()):
         print self.LandmarkPointSets[InputSet][InputPoint]
     
-    # Randomly select points for deletion and misplacement
+    # Randomly select points for deletion and displacement
     for InputSet in range(self.LandmarkPointSets.__len__()):
-      print InputSet
       DeletionAmount = (int)(self.LandmarkPointSets[InputSet].__len__() * DeletionFraction)
       DisplacementAmount = (int)(self.LandmarkPointSets[InputSet].__len__() * DisplacementFraction)
+      # Must keep track of already displaced points to not get them again
+      # '-> Means previously displaced points can still be deleted
+      AlreadyDisplaced = []
       # could go into infinite loop if there are very few points?
-      while (DeletionAmount > 0 and DisplacementAmount > 0):
-        DeletionIndex = (int)(numpy.random.random_sample() * (self.LandmarkPointSets[InputSet].__len__()))
-        self.LandmarkPointSets[InputSet].__delitem__(DeletionIndex)
-        DeletionAmount -= 1
-        # Misplace points
-        DisplacementIndex = (int)(numpy.random.random_sample() * (self.LandmarkPointSets[InputSet].__len__()))
-        DisplacementPoint = self.LandmarkPointSets[InputSet][DisplacementIndex]
-        # Need to estimate direction of symmetric neighbor to this, and extrapolate
-        # '-> use point labels? Lax assumption?
-        RightLeftVector = self.EstimateRightLeftVector(DisplacementPoint,self.LandmarkPointSets[InputSet])
-        DisplacementAmount -= 1
-    
-    # Displace points systematically away from symmetric neighbor plus anterior offset, simulating misplacing a landmark on a rib
-    for InputSet in range(self.LandmarkPointSets.__len__()):
-      CurrentLandmarkSet = self.LandmarkPointSets[InputSet]
+      while (DeletionAmount > 0 or DisplacementAmount > 0):
+        if(DeletionAmount > 0):
+          print "DELETING"
+          DeletionIndex = (int)(numpy.random.random_sample() * (self.LandmarkPointSets[InputSet].__len__()))
+          self.LandmarkPointSets[InputSet].__delitem__(DeletionIndex)
+          DeletionAmount -= 1
+        if(DisplacementAmount > 0):
+          # Misplace points
+          DisplacementIndex = (int)(numpy.random.random_sample() * (self.LandmarkPointSets[InputSet].__len__()))
+          # This search is blind - pretty slow
+          while(self.LandmarkPointSets[InputSet][DisplacementIndex][0] in AlreadyDisplaced):
+            DisplacementIndex = (int)(numpy.random.random_sample() * (self.LandmarkPointSets[InputSet].__len__()))
+          DisplacementPoint = self.LandmarkPointSets[InputSet][DisplacementIndex]
+          # Need to estimate direction of symmetric neighbor to this, and extrapolate
+          # '-> use point labels? Lax assumption?
+          RightLeftVector = self.EstimateRightLeftVector(DisplacementPoint, self.LandmarkPointSets[InputSet], self.RightLeftScale)
+          for dim in range(3):
+            self.LandmarkPointSets[InputSet][DisplacementIndex][1][dim] += RightLeftVector[dim]
+          AlreadyDisplaced.append(self.LandmarkPointSets[InputSet][DisplacementIndex][0])
+          DisplacementAmount -= 1
     
     # Add noise to point locations  
     for InputSet in range(self.LandmarkPointSets.__len__()):
@@ -221,13 +230,24 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
     return True
 
   # returns vector pointing from symmetric neighbor to DisplacementPoint, estimates it from nearby points if symmetric neighbor is missing
-  def EstimateRightLeftVector(self, DisplacementPoint, LandmarkSet):
+  def EstimateRightLeftVector(self, DisplacementPoint, LandmarkSet, RightLeftScale):
     for LabelPoint in LandmarkSet:
+      print DisplacementPoint[0]
+      print LabelPoint[0]
+      print " "
       if((DisplacementPoint[0][:-1] == LabelPoint[0][:-1]) and (DisplacementPoint[0] != LabelPoint[0])):
         # The DisplacementPoint has a symmetric partner
+        
+        RightLeftVector = [0,0,0]
+        RightLeftVectorNorm = 0
         for dim in range(3):
-          LeftRightVector[dim] = DisplacementPoint[1][dim] - LabelPoint[1][dim]
-        return LeftRightVector
+          RightLeftVector[dim] = DisplacementPoint[1][dim] - LabelPoint[1][dim]
+          RightLeftVectorNorm += (RightLeftVector[dim]) ** 2
+        LeftRightVectorNorm = numpy.sqrt(RightLeftVectorNorm)
+        for dim in range(3):
+          RightLeftVector[dim] = RightLeftScale * (RightLeftVector[dim] / RightLeftVectorNorm)
+        #print RightLeftVector
+        return RightLeftVector
     # ASSERT that DisplacementPoint has no symmetric neighbor
       
         
