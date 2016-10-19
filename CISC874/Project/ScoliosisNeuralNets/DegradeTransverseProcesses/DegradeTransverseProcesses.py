@@ -184,15 +184,19 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
       # could go into infinite loop if there are very few points?
       while (DeletionAmount > 0 and DisplacementAmount > 0):
         DeletionIndex = (int)(numpy.random.random_sample() * (self.LandmarkPointSets[InputSet].__len__()))
-        DisplacementIndex = (int)(numpy.random.random_sample() * (self.LandmarkPointSets[InputSet].__len__()))
-        while (DeletionIndex == DisplacementIndex):
-          DisplacementIndex = (int)(numpy.random.random_sample() * (self.LandmarkPointSets[InputSet].__len__()))
-        # need to think about how this affects later point labelling
         self.LandmarkPointSets[InputSet].__delitem__(DeletionIndex)
-        #self.InputData.__getitem__(InputSet).RemoveMarkup(DeletionIndex)
         DeletionAmount -= 1
         # Misplace points
+        DisplacementIndex = (int)(numpy.random.random_sample() * (self.LandmarkPointSets[InputSet].__len__()))
+        DisplacementPoint = self.LandmarkPointSets[InputSet][DisplacementIndex]
+        # Need to estimate direction of symmetric neighbor to this, and extrapolate
+        # '-> use point labels? Lax assumption?
+        RightLeftVector = self.EstimateRightLeftVector(DisplacementPoint,self.LandmarkPointSets[InputSet])
         DisplacementAmount -= 1
+    
+    # Displace points systematically away from symmetric neighbor plus anterior offset, simulating misplacing a landmark on a rib
+    for InputSet in range(self.LandmarkPointSets.__len__()):
+      CurrentLandmarkSet = self.LandmarkPointSets[InputSet]
     
     # Add noise to point locations  
     for InputSet in range(self.LandmarkPointSets.__len__()):
@@ -210,16 +214,23 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
       for InputPoint in range(CurrentLandmarkSet.__len__()):
         CurrentLandmarkPoint = CurrentLandmarkSet[InputPoint][1]
         NewMarkupsNode.AddFiducial(CurrentLandmarkPoint[0], CurrentLandmarkPoint[1], CurrentLandmarkPoint[2])
-        #NewPointLabel = self.InputData.__getitem__(InputSet).GetNthFiducialLabel(InputPoint) + "~"
         NewPointLabel = self.LandmarkPointSets[InputSet][InputPoint][0] + "~"
         NewMarkupsNode.SetNthFiducialLabel(InputPoint, NewPointLabel)
       slicer.mrmlScene.AddNode(NewMarkupsNode)
-      
-
-      
+           
     return True
 
-
+  # returns vector pointing from symmetric neighbor to DisplacementPoint, estimates it from nearby points if symmetric neighbor is missing
+  def EstimateRightLeftVector(self, DisplacementPoint, LandmarkSet):
+    for LabelPoint in LandmarkSet:
+      if((DisplacementPoint[0][:-1] == LabelPoint[0][:-1]) and (DisplacementPoint[0] != LabelPoint[0])):
+        # The DisplacementPoint has a symmetric partner
+        for dim in range(3):
+          LeftRightVector[dim] = DisplacementPoint[1][dim] - LabelPoint[1][dim]
+        return LeftRightVector
+    # ASSERT that DisplacementPoint has no symmetric neighbor
+      
+        
 class DegradeTransverseProcessesTest(ScriptedLoadableModuleTest):
   """
   This is the test case for your scripted module.
