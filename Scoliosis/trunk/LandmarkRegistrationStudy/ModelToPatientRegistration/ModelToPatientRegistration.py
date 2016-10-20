@@ -328,6 +328,8 @@ class ModelToPatientRegistrationLogic:
   def ComputeAnatomicScaleFactorsLocally(self):
     import math
     
+    # When this is called, self.ModelRegistrationPoints contain no anchor points
+    
     # Top most point is a special boundary condition
     ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsLeft[0][1][0] - self.ModelRegistrationPointsLeft[1][1][0])**2 + \
       (self.ModelRegistrationPointsLeft[0][1][1] - self.ModelRegistrationPointsLeft[1][1][1])**2 + \
@@ -475,8 +477,8 @@ class ModelToPatientRegistrationLogic:
         OffsetNorm = math.sqrt(OffsetVector[0]**2 + OffsetVector[1]**2 + OffsetVector[2]**2)
         if(self.UseVertebraWiseScaling):
           for dim in range(3):
-            #OffsetVector[dim] = self.LocalVertebralScalingFactorsLeft[RightIterator]*(self.AnatomicScalingFactor)*OffsetVector[dim]/OffsetNorm
-            OffsetVector[dim] = (AnatomicScalingFactor)*OffsetVector[dim]/OffsetNorm
+            OffsetVector[dim] = self.LocalVertebralScalingFactorsLeft[RightIterator]*(self.AnatomicScalingFactor)*OffsetVector[dim]/OffsetNorm
+            #OffsetVector[dim] = (AnatomicScalingFactor)*OffsetVector[dim]/OffsetNorm
         else:
           for dim in range(3):
             OffsetVector[dim] = self.scale*self.GlobalVertebralScalingFactor*OffsetVector[dim]/OffsetNorm

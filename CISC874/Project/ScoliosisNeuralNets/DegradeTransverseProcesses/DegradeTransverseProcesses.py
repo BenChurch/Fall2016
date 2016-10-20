@@ -160,7 +160,7 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
     self.DeletedLandmarkLabels = []   # Will ensure we don't try to misplace deleted points or vice-versa
     self.MisplacedLandmarkLabels = []
     self.RightLeftScale = 1000          # Length of vector in coronal plane used to misplace point to behind a rib
-    self.AteriorPosteriorScale = 20   # Length of vector in parasagital plane used to misplace point from behind rib onto rib
+    self.AntPostScale = 20   # Length of vector in parasagital plane used to misplace point from behind rib onto rib
     
 
   def DegradeInputData(self, NoiseStdDev, DeletionFraction, DisplacementFraction):
@@ -189,6 +189,7 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
       while (DeletionAmount > 0 or DisplacementAmount > 0):
         if(DeletionAmount > 0):
           print "DELETING"
+          # ** As it stands, displaced points CAN be deleted **
           DeletionIndex = (int)(numpy.random.random_sample() * (self.LandmarkPointSets[InputSet].__len__()))
           self.LandmarkPointSets[InputSet].__delitem__(DeletionIndex)
           DeletionAmount -= 1
@@ -202,8 +203,9 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
           # Need to estimate direction of symmetric neighbor to this, and extrapolate
           # '-> use point labels? Lax assumption?
           RightLeftVector = self.EstimateRightLeftVector(DisplacementPoint, self.LandmarkPointSets[InputSet], self.RightLeftScale)
+          AntPostVector = self.EstimateAntPostVector(DisplacementPoint, self.LandmarkPointSets[InputSet], self.AntPostScale)
           for dim in range(3):
-            self.LandmarkPointSets[InputSet][DisplacementIndex][1][dim] += RightLeftVector[dim]
+            self.LandmarkPointSets[InputSet][DisplacementIndex][1][dim] += RightLeftVector[dim] + AntPostVector[dim]
           AlreadyDisplaced.append(self.LandmarkPointSets[InputSet][DisplacementIndex][0])
           DisplacementAmount -= 1
     
@@ -232,9 +234,9 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
   # returns vector pointing from symmetric neighbor to DisplacementPoint, estimates it from nearby points if symmetric neighbor is missing
   def EstimateRightLeftVector(self, DisplacementPoint, LandmarkSet, RightLeftScale):
     for LabelPoint in LandmarkSet:
-      print DisplacementPoint[0]
-      print LabelPoint[0]
-      print " "
+      #print DisplacementPoint[0]
+      #print LabelPoint[0]
+      #print " "
       if((DisplacementPoint[0][:-1] == LabelPoint[0][:-1]) and (DisplacementPoint[0] != LabelPoint[0])):
         # The DisplacementPoint has a symmetric partner
         
@@ -249,7 +251,128 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
         #print RightLeftVector
         return RightLeftVector
     # ASSERT that DisplacementPoint has no symmetric neighbor
-      
+  
+  def EstimateAntPostVector(self, DisplacementPoint, LandmarkSet, AntPostScale):
+    # Need normalized RightLeftVector for cross-product
+    RightLeftVector = self.EstimateRightLeftVector(DisplacementPoint, LandmarkSet, 1)
+    print " "
+    print DisplacementPoint[0]
+    #print " "
+    LandmarkLabels = []
+    for LandmarkPoint in range(LandmarkSet.__len__()):
+      LandmarkLabels.append(LandmarkSet[LandmarkPoint][0]) 
+    DisplacementPointIndex = LandmarkLabels.index(DisplacementPoint[0])
+    AntPostVector = [0, 0, 0]
+    InfSupVector = [0, 0, 0]
+    if (not self.IsTopPoint(DisplacementPoint, LandmarkSet)):
+      AbovePoint = self.ReturnNeighborAbove(DisplacementPoint, LandmarkSet)
+      SupVector = [DisplacementPoint[1][0] - AbovePoint[1][0], DisplacementPoint[1][1] - AbovePoint[1][1], DisplacementPoint[1][2] - AbovePoint[1][2]]
+      LengthSupVector = self.FindVectorLength(SupVector)
+      for dim in range(3):
+        SupVector[dim] = SupVector[dim] / LengthSupVector
+      if(not self.IsBottomPoint(DisplacementPoint, LandmarkSet)):
+        BelowPoint = self.ReturnNeighborBelow(DisplacementPoint, LandmarkSet)
+        InfVector = [BelowPoint[1][0] - DisplacementPoint[1][0], BelowPoint[1][1] - DisplacementPoint[1][1], BelowPoint[1][2] - DisplacementPoint[1][2]]
+        LengthInfVector = self.FindVectorLength(InfVector)
+        for dim in range(3):
+          InfVector[dim] = InfVector[dim] / LengthInfVector
+          InfSupVector[dim] = (SupVector[dim] + InfVector[dim]) / 2
+        AntPostVector = numpy.cross(RightLeftVector, InfSupVector)
+        if(AntPostVector[1] < 0):   # if the offset is into the posterior direction (RAS = 012)
+          for dim in range(3):
+            AntPostVector[dim] = (-1) * AntPostVector[dim]  # Reflect the vector
+        # Ensure normalization
+        LengthAntPostVector = self.FindVectorLength(AntPostVector)
+        for dim in range(3):
+          AntPostVector[dim] = AntPostVector[dim] / LengthAntPostVector
+        return AntPostVector * AntPostScale
+      else:   # Displacement point is at bottom, but not top
+        AntPostVector = numpy.cross(RightLeftVector, SupVector)
+        if(AntPostVector[1] < 0):   # if the offset is into the posterior direction (RAS = 012)
+          for dim in range(3):
+            AntPostVector[dim] = (-1) * AntPostVector[dim]  # Reflect the vector
+        # Ensure normalization
+        LengthAntPostVector = self.FindVectorLength(AntPostVector)
+        for dim in range(3):
+          AntPostVector[dim] = AntPostVector[dim] / LengthAntPostVector
+        return AntPostVector * AntPostScale
+    else:   # Displacement point is at top, not necessarily bottom
+      if(self.IsBottomPoint(DisplacementPoint, LandmarkSet)):  # DisplacementPoint is only one on its side
+        print "ERROR - only one point on one side of spine, cannot compute anterior direction"
+        print "   returning zero-AntPostVector"
+        return [0,0,0]
+      else: # DisplacementPoint is top point and not bottom point
+        BelowPoint = self.ReturnNeighborBelow(DisplacementPoint, LandmarkSet)
+        InfVector = [BelowPoint[1][0] - DisplacementPoint[1][0], BelowPoint[1][1] - DisplacementPoint[1][1], BelowPoint[1][2] - DisplacementPoint[1][2]]
+        LengthInfVector = self.FindVectorLength(InfVector)
+        for dim in range(3):
+          InfVector[dim] = InfVector[dim] / LengthInfVector
+        AntPostVector = numpy.cross(RightLeftVector, InfVector)
+        if(AntPostVector[1] < 0):   # if the offset is into the posterior direction (RAS = 012)
+          for dim in range(3):
+            AntPostVector[dim] = (-1) * AntPostVector[dim]  # Reflect the vector
+        # Ensure normalization
+        LengthAntPostVector = self.FindVectorLength(AntPostVector)
+        for dim in range(3):
+          AntPostVector[dim] = AntPostVector[dim] / LengthAntPostVector
+        return AntPostVector * AntPostScale
+    
+  def FindVectorLength(self, Vector):
+    VectorNorm = 0 # initially
+    for Elem in range(Vector.__len__()):
+      VectorNorm += (Vector[Elem]) ** 2
+    VectorNorm = numpy.sqrt(VectorNorm)
+    return VectorNorm
+    
+    
+  # Is___Point functions used to check for boundary conditions, to avoid referencing non-existent points in creating vectors  
+  def IsTopPoint(self, Point, PointSet):
+    LandmarkLabels = []
+    for LandmarkPoint in range(PointSet.__len__()):
+      LandmarkLabels.append(PointSet[LandmarkPoint][0]) 
+    PointIndex = LandmarkLabels.index(Point[0])
+    for PotentialNeighbor in range(0,PointIndex):
+      if(PointSet[PotentialNeighbor][0][-1] == Point[0][-1]):   # If 'L' == 'L' or 'R' == 'R'
+        return False
+    return True
+        
+  def IsBottomPoint(self, Point, PointSet):
+    LandmarkLabels = []
+    for LandmarkPoint in range(PointSet.__len__()):
+      LandmarkLabels.append(PointSet[LandmarkPoint][0]) 
+    PointIndex = LandmarkLabels.index(Point[0])
+    for PotentialNeighbor in range(PointIndex+1,PointSet.__len__()):
+      if(PointSet[PotentialNeighbor][0][-1] == Point[0][-1]):   # If 'L' == 'L' or 'R' == 'R'
+        return False
+    return True
+     
+
+  # It is assumed that Point is known to have this neighbor if these functions are called
+  def ReturnNeighborAbove(self, Point, PointSet):
+    LandmarkLabels = []
+    for LandmarkPoint in range(PointSet.__len__()):
+      LandmarkLabels.append(PointSet[LandmarkPoint][0]) 
+    PointIndex = LandmarkLabels.index(Point[0])
+    PotentialNeighbor = PointSet[PointIndex-1]
+    PotentialNeighborIndex = PointIndex - 1
+    while(PotentialNeighbor[0][-1] != Point[0][-1]):
+      PotentialNeighborIndex -= 1
+      PotentialNeighbor = PointSet[PotentialNeighborIndex]
+    # ASSERT PotentialNeighbor.label[-1] == Point.label[-1]
+    return PotentialNeighbor
+    
+  def ReturnNeighborBelow(self, Point, PointSet):
+    LandmarkLabels = []
+    for LandmarkPoint in range(PointSet.__len__()):
+      LandmarkLabels.append(PointSet[LandmarkPoint][0]) 
+    PointIndex = LandmarkLabels.index(Point[0])
+    PotentialNeighbor = PointSet[PointIndex + 1]
+    PotentialNeighborIndex = PointIndex + 1
+    while(PotentialNeighbor[0][-1] != Point[0][-1]):
+      PotentialNeighborIndex += 1
+      PotentialNeighbor = PointSet[PotentialNeighborIndex]
+    # ASSERT PotentialNeighbor.label[-1] == Point.label[-1]
+    return PotentialNeighbor
         
 class DegradeTransverseProcessesTest(ScriptedLoadableModuleTest):
   """
