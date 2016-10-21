@@ -1,0 +1,1 @@
+Scan is grainy at threshold of 180; used threshold of 260 instead. This erroded the TrX processes somewhat, particularly in lumbar region.

@@ -122,8 +122,9 @@ class ModelToPatientRegistrationWidget:
     self.reloadButton.connect('clicked(bool)', self.onReloadButton)
     
   def onSelect(self, ComboBox):
+    print ComboBox
     ComboBox.setMRMLScene(slicer.mrmlScene)
-    logic = ModelToPatientRegistrationLogic(self.FromInputSelector.currentNode, self.ToInputSelector.currentNode, self.FromOutputSelector.currentNode, self.ToOutputSelector.currentNode)
+    #logic = ModelToPatientRegistrationLogic(self.FromInputSelector.currentNode, self.ToInputSelector.currentNode, self.FromOutputSelector.currentNode, self.ToOutputSelector.currentNode)
     
   def onGeneratePoints(self):
     logic = ModelToPatientRegistrationLogic(self.FromInputSelector.currentNode, self.ToInputSelector.currentNode, self.FromOutputSelector.currentNode, self.ToOutputSelector.currentNode)
@@ -172,7 +173,7 @@ class ModelToPatientRegistrationLogic:
     
   def AnchorPointSets(self):
     import math, numpy
-    
+    print self.OriginalPatientPoints
     self.nOriginalPatientPoints = self.OriginalPatientPoints.GetNumberOfFiducials()
     
     for i in range(self.nOriginalPatientPoints):
