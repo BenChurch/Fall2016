@@ -369,7 +369,6 @@ class ModelToPatientRegistrationLogic:
       CurrentScalingFactor = CurrentScalingFactor + math.sqrt((self.PatientRegistrationPointsLeft[i+1][1][0] - PatientPointLeft[1][0])**2 + \
         (self.PatientRegistrationPointsLeft[i+1][1][1] - PatientPointLeft[1][1])**2 + \
         (self.PatientRegistrationPointsLeft[i+1][1][2] - PatientPointLeft[1][2])**2)/ModelDistanceMetric
-      CurrentScalingFactor = 1.0 / CurrentScalingFactor
       self.LocalVertebralScalingFactorsLeft.append(CurrentScalingFactor)
    
     # Then with the right-sided points
@@ -386,7 +385,6 @@ class ModelToPatientRegistrationLogic:
       CurrentScalingFactor = CurrentScalingFactor + math.sqrt((self.PatientRegistrationPointsRight[i+1][1][0] - PatientPointRight[1][0])**2 + \
         (self.PatientRegistrationPointsRight[i+1][1][1] - PatientPointRight[1][1])**2 + \
         (self.PatientRegistrationPointsRight[i+1][1][2] - PatientPointRight[1][2])**2)/ModelDistanceMetric
-      CurrentScalingFactor = 1.0 / CurrentScalingFactor
       self.LocalVertebralScalingFactorsRight.append(CurrentScalingFactor)
       
     # Bottom most point is a special boundary condition
@@ -403,7 +401,6 @@ class ModelToPatientRegistrationLogic:
     CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsRight[-2][1][0] - self.PatientRegistrationPointsRight[-1][1][0])**2 + \
       (self.PatientRegistrationPointsRight[-2][1][1] - self.PatientRegistrationPointsRight[-1][1][1])**2 + \
       (self.PatientRegistrationPointsRight[-2][1][2] - self.PatientRegistrationPointsRight[-1][1][2])**2)/ModelDistanceMetric
-    CurrentScalingFactor = 1.0 / CurrentScalingFactor
     self.LocalVertebralScalingFactorsRight.append(CurrentScalingFactor)
   
   def AnchorPatientSpine(self):
