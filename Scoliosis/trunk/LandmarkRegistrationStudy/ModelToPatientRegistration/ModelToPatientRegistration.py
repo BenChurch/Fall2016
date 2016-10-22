@@ -42,7 +42,7 @@ class ModelToPatientRegistrationWidget:
     
     # Input data dropdown list selector
     self.FromInputSelector = slicer.qMRMLNodeComboBox()
-    self.FromInputSelector.nodeTypes = ["vtkMRMLMarkupsFiducialNode"]
+    self.FromInputSelector.nodeTypes = ["vtkMRMLMarkupsFiducialNode",]
     self.FromInputSelector.selectNodeUponCreation = True
     self.FromInputSelector.enabled  = True
     self.FromInputSelector.addEnabled = True
@@ -55,7 +55,7 @@ class ModelToPatientRegistrationWidget:
 
     # Input data dropdown list selector
     self.ToInputSelector = slicer.qMRMLNodeComboBox()
-    self.ToInputSelector.nodeTypes = ["vtkMRMLMarkupsFiducialNode"]
+    self.ToInputSelector.nodeTypes = ["vtkMRMLMarkupsFiducialNode",]
     self.ToInputSelector.selectNodeUponCreation = True
     self.ToInputSelector.enabled  = True
     self.ToInputSelector.addEnabled = True
@@ -68,7 +68,7 @@ class ModelToPatientRegistrationWidget:
 
     # Output continer storage selector
     self.FromOutputSelector = slicer.qMRMLNodeComboBox()
-    self.FromOutputSelector.nodeTypes = ["vtkMRMLMarkupsFiducialNode"]
+    self.FromOutputSelector.nodeTypes = ["vtkMRMLMarkupsFiducialNode",]
     self.FromOutputSelector.selectNodeUponCreation = True
     self.FromOutputSelector.enabled  = True
     self.FromOutputSelector.addEnabled = True
@@ -81,7 +81,7 @@ class ModelToPatientRegistrationWidget:
     
     # Output continer storage selector
     self.ToOutputSelector = slicer.qMRMLNodeComboBox()
-    self.ToOutputSelector.nodeTypes = ["vtkMRMLMarkupsFiducialNode"]
+    self.ToOutputSelector.nodeTypes = ["vtkMRMLMarkupsFiducialNode",]
     self.ToOutputSelector.selectNodeUponCreation = True
     self.ToOutputSelector.enabled  = True
     self.ToOutputSelector.addEnabled = True
@@ -110,10 +110,10 @@ class ModelToPatientRegistrationWidget:
       self.GeneratePoints.enabled = False
     moduleInterfaceLayout.addRow(self.GeneratePoints)
     
-    self.FromInputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect(self.FromInputSelector))
-    self.ToInputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect(self.ToInputSelector))
-    self.FromOutputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect(self.FromOutputSelector))
-    self.ToOutputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect(self.ToOutputSelector))
+    self.FromInputSelector.connect("currentNodeChanged(vtkMRMLMarkupsFiducialNode*)", self.onSelect(self.FromInputSelector))
+    self.ToInputSelector.connect("currentNodeChanged(vtkMRMLMarkupsFiducialNode*)", self.onSelect(self.ToInputSelector))
+    self.FromOutputSelector.connect("currentNodeChanged(vtkMRMLMarkupsFiducialNode*)", self.onSelect(self.FromOutputSelector))
+    self.ToOutputSelector.connect("currentNodeChanged(vtkMRMLMarkupsFiducialNode*)", self.onSelect(self.ToOutputSelector))
     
     # Reload module button
     self.reloadButton = qt.QPushButton('Reload module')
@@ -122,12 +122,11 @@ class ModelToPatientRegistrationWidget:
     self.reloadButton.connect('clicked(bool)', self.onReloadButton)
     
   def onSelect(self, ComboBox):
-    print ComboBox
     ComboBox.setMRMLScene(slicer.mrmlScene)
     #logic = ModelToPatientRegistrationLogic(self.FromInputSelector.currentNode, self.ToInputSelector.currentNode, self.FromOutputSelector.currentNode, self.ToOutputSelector.currentNode)
     
   def onGeneratePoints(self):
-    logic = ModelToPatientRegistrationLogic(self.FromInputSelector.currentNode, self.ToInputSelector.currentNode, self.FromOutputSelector.currentNode, self.ToOutputSelector.currentNode)
+    logic = ModelToPatientRegistrationLogic(self.FromInputSelector.currentNode(), self.ToInputSelector.currentNode(), self.FromOutputSelector.currentNode(), self.ToOutputSelector.currentNode())
     #Reanme run and pass parameters
     logic.AnchorPointSets()
   
@@ -158,12 +157,20 @@ class ModelToPatientRegistrationLogic:
     self.PatientRegistrationPointsLeft = []
     self.PatientRegistrationPointsRight = []
     self.NamesIntersection = []
-    #self.ModelRegistrationPointsNode = slicer.vtkMRMLMarkupsFiducialNode()
-    #self.ModelRegistrationPointsNode.SetName('ModelRegistrationPointsNode')
+
+    # Reinitialize
+    ModelRegistrationNodeLabel = ModelRegistrationPointsNode.GetName()
+    slicer.mrmlScene.RemoveNode(ModelRegistrationPointsNode)
+    ModelRegistrationPointsNode = slicer.vtkMRMLMarkupsFiducialNode()   
     self.ModelRegistrationPointsNode = ModelRegistrationPointsNode
-    #self.PatientRegistrationPointsNode = slicer.vtkMRMLMarkupsFiducialNode()
-    #self.PatientRegistrationPointsNode.SetName('PatientRegistrationPointsNode')
+    self.ModelRegistrationPointsNode.SetName(ModelRegistrationNodeLabel)
+
+    PatientRegistrationNodeLabel = PatientRegistrationPointsNode.GetName()
+    slicer.mrmlScene.RemoveNode(PatientRegistrationPointsNode)
+    PatientRegistrationPointsNode = slicer.vtkMRMLMarkupsFiducialNode()
     self.PatientRegistrationPointsNode = PatientRegistrationPointsNode
+    self.PatientRegistrationPointsNode.SetName(PatientRegistrationNodeLabel)
+    
     self.UseVertebraWiseScaling = slicer.modules.ModelToPatientRegistrationWidget.UseLocalFactors.isChecked()
     self.GlobalVertebralScalingFactor = 30       # Distance (mm) in anterior direction to duplicate fiducial points for registration accuracy
     self.LocalVertebralScalingFactorsLeft = []
@@ -173,7 +180,7 @@ class ModelToPatientRegistrationLogic:
     
   def AnchorPointSets(self):
     import math, numpy
-    print self.OriginalPatientPoints
+   # print self.OriginalPatientPoints
     self.nOriginalPatientPoints = self.OriginalPatientPoints.GetNumberOfFiducials()
     
     for i in range(self.nOriginalPatientPoints):
@@ -345,6 +352,7 @@ class ModelToPatientRegistrationLogic:
     CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsRight[0][1][0] - self.PatientRegistrationPointsRight[1][1][0])**2 + \
       (self.PatientRegistrationPointsRight[0][1][1] - self.PatientRegistrationPointsRight[1][1][1])**2 + \
       (self.PatientRegistrationPointsRight[0][1][2] - self.PatientRegistrationPointsRight[1][1][2])**2)/ModelDistanceMetric
+    CurrentScalingFactor = 1.0 / CurrentScalingFactor
     self.LocalVertebralScalingFactorsRight.append(CurrentScalingFactor)
     
     # Deal with the left-sided points
@@ -361,6 +369,7 @@ class ModelToPatientRegistrationLogic:
       CurrentScalingFactor = CurrentScalingFactor + math.sqrt((self.PatientRegistrationPointsLeft[i+1][1][0] - PatientPointLeft[1][0])**2 + \
         (self.PatientRegistrationPointsLeft[i+1][1][1] - PatientPointLeft[1][1])**2 + \
         (self.PatientRegistrationPointsLeft[i+1][1][2] - PatientPointLeft[1][2])**2)/ModelDistanceMetric
+      CurrentScalingFactor = 1.0 / CurrentScalingFactor
       self.LocalVertebralScalingFactorsLeft.append(CurrentScalingFactor)
    
     # Then with the right-sided points
@@ -377,6 +386,7 @@ class ModelToPatientRegistrationLogic:
       CurrentScalingFactor = CurrentScalingFactor + math.sqrt((self.PatientRegistrationPointsRight[i+1][1][0] - PatientPointRight[1][0])**2 + \
         (self.PatientRegistrationPointsRight[i+1][1][1] - PatientPointRight[1][1])**2 + \
         (self.PatientRegistrationPointsRight[i+1][1][2] - PatientPointRight[1][2])**2)/ModelDistanceMetric
+      CurrentScalingFactor = 1.0 / CurrentScalingFactor
       self.LocalVertebralScalingFactorsRight.append(CurrentScalingFactor)
       
     # Bottom most point is a special boundary condition
@@ -393,6 +403,7 @@ class ModelToPatientRegistrationLogic:
     CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsRight[-2][1][0] - self.PatientRegistrationPointsRight[-1][1][0])**2 + \
       (self.PatientRegistrationPointsRight[-2][1][1] - self.PatientRegistrationPointsRight[-1][1][1])**2 + \
       (self.PatientRegistrationPointsRight[-2][1][2] - self.PatientRegistrationPointsRight[-1][1][2])**2)/ModelDistanceMetric
+    CurrentScalingFactor = 1.0 / CurrentScalingFactor
     self.LocalVertebralScalingFactorsRight.append(CurrentScalingFactor)
   
   def AnchorPatientSpine(self):
@@ -478,7 +489,7 @@ class ModelToPatientRegistrationLogic:
         OffsetNorm = math.sqrt(OffsetVector[0]**2 + OffsetVector[1]**2 + OffsetVector[2]**2)
         if(self.UseVertebraWiseScaling):
           for dim in range(3):
-            OffsetVector[dim] = self.LocalVertebralScalingFactorsLeft[RightIterator]*(self.AnatomicScalingFactor)*OffsetVector[dim]/OffsetNorm
+            OffsetVector[dim] = self.LocalVertebralScalingFactorsLeft[RightIterator]*(AnatomicScalingFactor)*OffsetVector[dim]/OffsetNorm
             #OffsetVector[dim] = (AnatomicScalingFactor)*OffsetVector[dim]/OffsetNorm
         else:
           for dim in range(3):
