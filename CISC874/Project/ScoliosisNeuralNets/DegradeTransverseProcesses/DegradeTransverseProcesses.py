@@ -193,9 +193,9 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
         CurrentLandmarkSet = self.MarkupNodes.__getitem__(MarkupsNode)
         if(CurrentLandmarkSet.GetName()[-1] != "~"):
           # If the landmark set is not a modified one
-          writer.writerow(['', '', '', ''])
-          writer.writerow([CurrentLandmarkSet.GetName(), '', 'Max angle:', str(self.MaxAngles[MarkupsNode])])
-          writer.writerow(['', '', '', ''])
+          #writer.writerow(['', '', '', ''])
+          writer.writerow([CurrentLandmarkSet.GetName(), 'Max angle:', str(self.MaxAngles[MarkupsNode]), ''])
+          #writer.writerow(['', '', '', ''])
           for LandmarkPoint in range(CurrentLandmarkSet.GetNumberOfFiducials()):
             CurrentPoint = CurrentLandmarkSet.GetMarkupPointVector(LandmarkPoint, 0)
             writer.writerow([CurrentLandmarkSet.GetNthFiducialLabel(LandmarkPoint), str(CurrentPoint[0]), str(CurrentPoint[1]), str(CurrentPoint[2])])
@@ -207,9 +207,9 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
         CurrentLandmarkSet = self.MarkupNodes.__getitem__(MarkupsNode)
         if(CurrentLandmarkSet.GetName()[-1] == "~"):
           # If the landmark set is a modified one
-          writer.writerow(['', '', '', ''])
-          writer.writerow([CurrentLandmarkSet.GetName(), '', 'Max angle:', str(self.MaxAngles[MarkupsNode])])
-          writer.writerow(['', '', '', ''])
+          #writer.writerow(['', '', '', ''])
+          writer.writerow([CurrentLandmarkSet.GetName(), 'Max angle:', str(self.MaxAngles[MarkupsNode]), ''])
+          #writer.writerow(['', '', '', ''])
           for LandmarkPoint in range(CurrentLandmarkSet.GetNumberOfFiducials()):
             CurrentPoint = CurrentLandmarkSet.GetMarkupPointVector(LandmarkPoint, 0)
             writer.writerow([CurrentLandmarkSet.GetNthFiducialLabel(LandmarkPoint), str(CurrentPoint[0]), str(CurrentPoint[1]), str(CurrentPoint[2])])
