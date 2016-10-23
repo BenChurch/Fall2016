@@ -32,6 +32,7 @@ class DegradeTransverseProcesses(ScriptedLoadableModule):
 class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
 
   def setup(self):
+    
     ScriptedLoadableModuleWidget.setup(self)
 
     # Instantiate and connect widgets ...
@@ -118,7 +119,7 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
     outputVerticalLayout = qt.QGridLayout(anglePanel)
 
     TableHeaders = ["Landmark set", "Max angle", "Vertebra 1", "Vertebra 2"]
-    self.angleTable = qt.QTableWidget((slicer.mrmlScene.GetNodesByClass('vtkMRMLMarkupsFiducialNode').GetNumberOfItems()), 4)
+    self.angleTable = qt.QTableWidget((slicer.mrmlScene.GetNodesByClass('vtkMRMLMarkupsFiducialNode').GetNumberOfItems() * 2), 4)
     self.angleTable.sortingEnabled = False
     self.angleTable.setEditTriggers(0)
     self.angleTable.setMinimumHeight(self.angleTable.verticalHeader().length() + 25)
@@ -139,6 +140,7 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
     self.DegradeButton.connect('clicked(bool)', self.onDegradeButton)
     self.CalculateAnglesButton.connect('clicked(bool)', self.onCalculateAnglesButton)
     self.reloadButton.connect('clicked(bool)',self.onReloadButton)
+    self.savePointsWithAnglesButton.connect('clicked(bool)', self.onSaveButton)
     #self.inputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect)
     #self.outputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect)
 
@@ -164,19 +166,56 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
     logic.DegradeInputData(self.NoiseStdDev, self.DeletionFraction, self.DisplacementFraction)
     
   def onCalculateAnglesButton(self):
-    MarkupPoints = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
+    self.MarkupNodes = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
     logic = CalculateAnglesLogic()
-    Angles = logic.CalculateAngles()
-    (MaxAngles, MaxVertebrae) = logic.FindMaxCoronalAngles()
-    self.PopulateAnglesTable(MaxAngles, MaxVertebrae, MarkupPoints)
+    self.Angles = logic.CalculateAngles()
+    (self.MaxAngles, self.MaxVertebrae) = logic.FindMaxCoronalAngles()
+    self.PopulateAnglesTable(self.MaxAngles, self.MaxVertebrae, self.MarkupNodes)
     
   def onReloadButton(self):
-    self.MarkupPoints = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
-    for PointSet in range(self.MarkupPoints.__len__()):
-      if (self.MarkupPoints.__getitem__(PointSet).GetNthFiducialLabel(0)[-1] == "~"):
-        slicer.mrmlScene.RemoveNode(self.MarkupPoints.__getitem__(PointSet))
+    self.MarkupNodes = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
+    for PointSet in range(self.MarkupNodes.__len__()):
+      if (self.MarkupNodes.__getitem__(PointSet).GetNthFiducialLabel(0)[-1] == "~"):
+        slicer.mrmlScene.RemoveNode(self.MarkupNodes.__getitem__(PointSet))
     slicer.util.reloadScriptedModule('DegradeTransverseProcesses')
-
+    
+  # Assumes CalculateAngles has been done
+  def onSaveButton(self):
+    import csv
+    OriginalDataOutput = qt.QFileDialog.getSaveFileName(0, "Unmodified point data", "", "CSV File (*.csv)")
+    ModifiedDataOutput = qt.QFileDialog.getSaveFileName(0, "Modified point data", "", "CSV File (*.csv)")
+    self.MarkupNodes = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
+    
+    with open(OriginalDataOutput, 'wb') as csvfile:
+      writer = csv.writer(csvfile, delimiter=',', quotechar='|')
+      writer.writerow(['Landmark', 'RL', 'AP', 'SI'])
+      for MarkupsNode in range(self.MarkupNodes.__len__()):
+        CurrentLandmarkSet = self.MarkupNodes.__getitem__(MarkupsNode)
+        if(CurrentLandmarkSet.GetName()[-1] != "~"):
+          # If the landmark set is not a modified one
+          writer.writerow(['', '', '', ''])
+          writer.writerow([CurrentLandmarkSet.GetName(), '', 'Max angle:', str(self.MaxAngles[MarkupsNode])])
+          writer.writerow(['', '', '', ''])
+          for LandmarkPoint in range(CurrentLandmarkSet.GetNumberOfFiducials()):
+            CurrentPoint = CurrentLandmarkSet.GetMarkupPointVector(LandmarkPoint, 0)
+            writer.writerow([CurrentLandmarkSet.GetNthFiducialLabel(LandmarkPoint), str(CurrentPoint[0]), str(CurrentPoint[1]), str(CurrentPoint[2])])
+            
+    with open(ModifiedDataOutput, 'wb') as csvfile:
+      writer = csv.writer(csvfile, delimiter=',', quotechar='|')
+      writer.writerow(['Landmark', 'RL', 'AP', 'SI'])
+      for MarkupsNode in range(self.MarkupNodes.__len__()):
+        CurrentLandmarkSet = self.MarkupNodes.__getitem__(MarkupsNode)
+        if(CurrentLandmarkSet.GetName()[-1] == "~"):
+          # If the landmark set is a modified one
+          writer.writerow(['', '', '', ''])
+          writer.writerow([CurrentLandmarkSet.GetName(), '', 'Max angle:', str(self.MaxAngles[MarkupsNode])])
+          writer.writerow(['', '', '', ''])
+          for LandmarkPoint in range(CurrentLandmarkSet.GetNumberOfFiducials()):
+            CurrentPoint = CurrentLandmarkSet.GetMarkupPointVector(LandmarkPoint, 0)
+            writer.writerow([CurrentLandmarkSet.GetNthFiducialLabel(LandmarkPoint), str(CurrentPoint[0]), str(CurrentPoint[1]), str(CurrentPoint[2])])
+        
+    
+    
   def PopulateAnglesTable(self, MaxAngles, MaxVertebrae, MarkupPoints):
     for i, Angle in enumerate(MaxAngles):
       CurrentLandmarkSet = MarkupPoints.__getitem__(i)
@@ -273,9 +312,6 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
   # returns vector pointing from symmetric neighbor to DisplacementPoint, estimates it from nearby points if symmetric neighbor is missing
   def EstimateRightLeftVector(self, DisplacementPoint, LandmarkSet, RightLeftScale):
     for LabelPoint in LandmarkSet:
-      #print DisplacementPoint[0]
-      #print LabelPoint[0]
-      #print " "
       if((DisplacementPoint[0][:-1] == LabelPoint[0][:-1]) and (DisplacementPoint[0] != LabelPoint[0])):
         # The DisplacementPoint has a symmetric partner
         
@@ -294,9 +330,6 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
   def EstimateAntPostVector(self, DisplacementPoint, LandmarkSet, AntPostScale):
     # Need normalized RightLeftVector for cross-product
     RightLeftVector = self.EstimateRightLeftVector(DisplacementPoint, LandmarkSet, 1)
-    print " "
-    print DisplacementPoint[0]
-    #print " "
     LandmarkLabels = []
     for LandmarkPoint in range(LandmarkSet.__len__()):
       LandmarkLabels.append(LandmarkSet[LandmarkPoint][0]) 
@@ -436,7 +469,6 @@ class CalculateAnglesLogic(ScriptedLoadableModuleLogic):
     for LandmarkSet in range(self.MarkupsNodes.__len__()):
       CurrentLandmarkSet = self.MarkupsNodes.__getitem__(LandmarkSet)
       self.Angles.append([])
-      print LandmarkSet
       for Vertebra in range(0, CurrentLandmarkSet.GetNumberOfFiducials(), 2):
         VertebraLeft = CurrentLandmarkSet.GetMarkupPointVector(Vertebra, 0)
         VertebraRight = CurrentLandmarkSet.GetMarkupPointVector(Vertebra + 1, 0)
@@ -447,7 +479,6 @@ class CalculateAnglesLogic(ScriptedLoadableModuleLogic):
         Angle = numpy.arccos(numpy.dot(LtoRVector,[1,0,0])) * (180/numpy.pi)
         if(VertebraLeft[2] > VertebraRight[2]):
           Angle = -Angle  
-        print Angle
         self.Angles[LandmarkSet].append(Angle)
     return self.Angles
       
