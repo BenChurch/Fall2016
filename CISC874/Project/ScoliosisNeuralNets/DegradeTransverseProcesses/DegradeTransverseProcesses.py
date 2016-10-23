@@ -46,10 +46,6 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
     # Layout within the dummy collapsible button
     parametersFormLayout = qt.QFormLayout(parametersCollapsibleButton)
 
-    # reload button
-    self.reloadButton = qt.QPushButton('Restart module')
-    self.layout.addWidget(self.reloadButton)
-    
     #
     # input volume selector
     #
@@ -114,9 +110,34 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
     self.DegradeButton.toolTip = "Apply noise, delete fraction of random points, and misplace fraction of random points."
     self.DegradeButton.enabled = True
     parametersFormLayout.addRow(self.DegradeButton)
+    
+    anglePanel = ctk.ctkCollapsibleButton()
+    anglePanel.text = "Angle measurement"
+    self.layout.addWidget(anglePanel)
+    
+    outputVerticalLayout = qt.QGridLayout(anglePanel)
 
+    TableHeaders = ["Landmark set", "Max angle", "Vertebra 1", "Vertebra 2"]
+    self.angleTable = qt.QTableWidget((slicer.mrmlScene.GetNodesByClass('vtkMRMLMarkupsFiducialNode').GetNumberOfItems()), 4)
+    self.angleTable.sortingEnabled = False
+    self.angleTable.setEditTriggers(0)
+    self.angleTable.setMinimumHeight(self.angleTable.verticalHeader().length() + 25)
+    self.angleTable.horizontalHeader().setResizeMode(qt.QHeaderView.Stretch)
+    outputVerticalLayout.addWidget(self.angleTable, 2, 0, 1, 5)
+    self.angleTable.setHorizontalHeaderLabels(TableHeaders)
+    
+    self.CalculateAnglesButton = qt.QPushButton("Calculate angles")
+    self.savePointsWithAnglesButton = qt.QPushButton("Save altered data + angles")
+    outputVerticalLayout.addWidget(self.CalculateAnglesButton, 0, 0, 1, 3)
+    outputVerticalLayout.addWidget(self.savePointsWithAnglesButton, 0, 3, 1, 3)
+
+    # reload button
+    self.reloadButton = qt.QPushButton('Restart module')
+    self.layout.addWidget(self.reloadButton)
+    
     # connections
     self.DegradeButton.connect('clicked(bool)', self.onDegradeButton)
+    self.CalculateAnglesButton.connect('clicked(bool)', self.onCalculateAnglesButton)
     self.reloadButton.connect('clicked(bool)',self.onReloadButton)
     #self.inputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect)
     #self.outputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect)
@@ -142,6 +163,13 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
     #imageThreshold = self.imageThresholdSliderWidget.value
     logic.DegradeInputData(self.NoiseStdDev, self.DeletionFraction, self.DisplacementFraction)
     
+  def onCalculateAnglesButton(self):
+    MarkupPoints = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
+    logic = CalculateAnglesLogic()
+    Angles = logic.CalculateAngles()
+    (MaxAngles, MaxVertebrae) = logic.FindMaxCoronalAngles()
+    self.PopulateAnglesTable(MaxAngles, MaxVertebrae, MarkupPoints)
+    
   def onReloadButton(self):
     self.MarkupPoints = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
     for PointSet in range(self.MarkupPoints.__len__()):
@@ -149,6 +177,17 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
         slicer.mrmlScene.RemoveNode(self.MarkupPoints.__getitem__(PointSet))
     slicer.util.reloadScriptedModule('DegradeTransverseProcesses')
 
+  def PopulateAnglesTable(self, MaxAngles, MaxVertebrae, MarkupPoints):
+    for i, Angle in enumerate(MaxAngles):
+      CurrentLandmarkSet = MarkupPoints.__getitem__(i)
+      self.angleTable.setItem(i, 0, qt.QTableWidgetItem())
+      self.angleTable.setItem(i, 1, qt.QTableWidgetItem())
+      self.angleTable.setItem(i, 2, qt.QTableWidgetItem())
+      self.angleTable.setItem(i, 3, qt.QTableWidgetItem())
+      self.angleTable.item(i, 0).setText(CurrentLandmarkSet.GetName())
+      self.angleTable.item(i, 1).setText(str(Angle))
+      self.angleTable.item(i, 2).setText(MaxVertebrae[0][i])
+      self.angleTable.item(i, 3).setText(MaxVertebrae[1][i])
 #
 # DegradeTransverseProcessesLogic
 #
@@ -230,7 +269,7 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
       slicer.mrmlScene.AddNode(NewMarkupsNode)
            
     return True
-
+    
   # returns vector pointing from symmetric neighbor to DisplacementPoint, estimates it from nearby points if symmetric neighbor is missing
   def EstimateRightLeftVector(self, DisplacementPoint, LandmarkSet, RightLeftScale):
     for LabelPoint in LandmarkSet:
@@ -373,7 +412,75 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
       PotentialNeighbor = PointSet[PotentialNeighborIndex]
     # ASSERT PotentialNeighbor.label[-1] == Point.label[-1]
     return PotentialNeighbor
-        
+
+# Assumed to be used on undegraded LandmarkSet    
+class CalculateAnglesLogic(ScriptedLoadableModuleLogic):
+  import numpy
+  
+  def __init__(self):
+    self.MarkupsNodes = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
+    self.LandmarkLabels = []
+    self.LandmarkPoints = []
+    for LandmarkSet in range(self.MarkupsNodes.__len__()):
+      CurrentLandmarkSet = self.MarkupsNodes.__getitem__(LandmarkSet)
+      self.LandmarkLabels.append([])
+      self.LandmarkPoints.append([])
+      for LandmarkPoint in range(CurrentLandmarkSet.GetNumberOfFiducials()):
+        self.LandmarkLabels[LandmarkSet].append(CurrentLandmarkSet.GetNthFiducialLabel(LandmarkPoint))
+        self.LandmarkPoints[LandmarkSet].append(CurrentLandmarkSet.GetMarkupPointVector(LandmarkPoint,0))
+    self.Angles = []
+    self.MaxAngles = []
+    self.MaxVertebrae = ""
+      
+  def CalculateAngles(self):
+    for LandmarkSet in range(self.MarkupsNodes.__len__()):
+      CurrentLandmarkSet = self.MarkupsNodes.__getitem__(LandmarkSet)
+      self.Angles.append([])
+      print LandmarkSet
+      for Vertebra in range(0, CurrentLandmarkSet.GetNumberOfFiducials(), 2):
+        VertebraLeft = CurrentLandmarkSet.GetMarkupPointVector(Vertebra, 0)
+        VertebraRight = CurrentLandmarkSet.GetMarkupPointVector(Vertebra + 1, 0)
+        LtoRVector = [VertebraRight[0] - VertebraLeft[0], 0,VertebraRight[2] - VertebraLeft[2]]
+        LtoRVectorLength = self.FindVectorLength(LtoRVector)
+        for dim in range(3):
+          LtoRVector[dim] = LtoRVector[dim] / LtoRVectorLength
+        Angle = numpy.arccos(numpy.dot(LtoRVector,[1,0,0])) * (180/numpy.pi)
+        if(VertebraLeft[2] > VertebraRight[2]):
+          Angle = -Angle  
+        print Angle
+        self.Angles[LandmarkSet].append(Angle)
+    return self.Angles
+      
+  # returns maximum angle between any two vertbrae, measured from the left transvserse process 
+  def FindMaxCoronalAngles(self):
+    self.MinVertebra = []
+    self.MaxVertebra = []
+    self.MaxAngles = []
+    for LandmarkSet in range(self.MarkupsNodes.__len__()):
+      CurrentLandmarkSet = self.MarkupsNodes.__getitem__(LandmarkSet)
+      MinAngle = 180
+      MaxAngle = -180
+      for Vertebra in range(0, CurrentLandmarkSet.GetNumberOfFiducials(), 2):
+        if(self.Angles[LandmarkSet][Vertebra/2] < MinAngle):
+          MinVertebra = self.LandmarkLabels[LandmarkSet][Vertebra][:-1]
+          MinAngle = self.Angles[LandmarkSet][Vertebra/2]
+        if(self.Angles[LandmarkSet][Vertebra/2] > MaxAngle):
+          MaxVertebra = self.LandmarkLabels[LandmarkSet][Vertebra][:-1]
+          MaxAngle = self.Angles[LandmarkSet][Vertebra/2]
+      self.MinVertebra.append(MinVertebra)
+      self.MaxVertebra.append(MaxVertebra)
+      self.MaxAngle = MaxAngle - MinAngle
+      self.MaxAngles.append(self.MaxAngle)
+    self.MaxVertebrae = (self.MinVertebra, self.MaxVertebra)
+    return (self.MaxAngles, self.MaxVertebrae)
+  
+  def FindVectorLength(self, Vector):
+    VectorNorm = 0 # initially
+    for Elem in range(Vector.__len__()):
+      VectorNorm += (Vector[Elem]) ** 2
+    VectorNorm = numpy.sqrt(VectorNorm)
+    return VectorNorm
+    
 class DegradeTransverseProcessesTest(ScriptedLoadableModuleTest):
   """
   This is the test case for your scripted module.
