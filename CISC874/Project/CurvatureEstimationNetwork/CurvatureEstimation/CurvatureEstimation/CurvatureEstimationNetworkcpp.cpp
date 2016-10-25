@@ -21,9 +21,11 @@ static const int NUMS_HIDDEN_NODES[1] = {10};
 static const double LEARNING_RATE = 0.15;
 static const double MOMENTUM = 0.1;
 
-class LandmarkSets
+class LandmarkPoint
 {
-	vector<LandmarksNode> MarkupNodes;
+public:
+	string Name;
+	double Position[3];
 };
 
 class LandmarksNode
@@ -34,11 +36,12 @@ public:
 	vector<LandmarkPoint> LandmarkPoints;
 };
 
-class LandmarkPoint
+class LandmarkSets
 {
 public:
-	string Name;
-	double Position[3];
+	vector<LandmarksNode> MarkupNodes;
+	
+	void ReadInputData(const char * FileName);
 };
 
 class Node
@@ -120,31 +123,95 @@ void FeedforwardLayeredNetwork::ConstructNetwork()
 
 int main()
 {
-	LandmarkSets InputLandmarkSets = ReadInputData(INPUT_FILE_NAME);
+	LandmarkSets InputLandmarkSets;
+	InputLandmarkSets.ReadInputData(INPUT_FILE_NAME);
 
 	cout << "Press enter to end the program." << endl;
 	cin.ignore();
 	return 0;
 }
 
-LandmarkSets ReadInputData(const char * FileName)
+void LandmarkSets::ReadInputData(const char * FileName)
 {
-	LandmarkSets InputLandmarkSets;
 	SetCurrentDirectoryA(Dir);
 	ifstream InputData(FileName);
 	string Line;
-	while (getline(InputData, Line))
+	if (InputData.is_open())
 	{
+		if (!getline(InputData, Line))
+		{
+			cout << "Input data file contains no recognizable data sets." << endl;
+			cout << "	Data read returning empty data structure." << endl;
+			InputData.close();
+			return;
+		}
+		//cout << Line << endl;
 		stringstream LineStream(Line);
 		string Cell;
-		while (getline(LineStream, Cell, ','))
-		{
-			if (Cell == "Max angle:")
-			{	// We've found the start of one set's data
-				LandmarksNode CurrentLandmarkSet;
+		getline(LineStream, Cell, ',');
+		while ((Cell != "MaxAngle:") > 0)
+		{	// Iterate through headers
+			Cell.clear();
+			if (!getline(InputData, Line))
+			{	
+				cout << "Input data file contains no recognizable data sets." << endl;
+				cout << "	Data read returning empty data structure." << endl;
+				InputData.close();
+				return;
+			}
+			LineStream.ignore();
+			stringstream LineStream(Line);
+			getline(LineStream, Cell, ',');
+		}
+		// ASSERT we are at the first landmark set and the input set is not empty
+		LineStream.str(Line);
+		getline(LineStream, Cell, ',');
+		Cell.clear();
+		getline(LineStream, Cell, ',');
+		LandmarksNode CurrentLandmarkSet;
+		CurrentLandmarkSet.TrueCurvature = atof(Cell.c_str());
+		getline(LineStream, Cell, ',');
+		CurrentLandmarkSet.Name = Cell;
+
+		while (getline(InputData, Line))
+		{	// The structure of the rest of the document is known
+			while (Cell != "MaxAngle:" && Cell != "EOF")
+			{
+				stringstream LineStream(Line);
+				Cell.clear();
+				getline(LineStream, Cell, ',');
+				LandmarkPoint CurrentLandmarkPoint;
+				CurrentLandmarkPoint.Name = Cell;
+				for (int dim = 0; dim < 3; dim++)
+				{
+					getline(LineStream, Cell, ',');
+					CurrentLandmarkPoint.Position[dim] = atof(Cell.c_str());
+				}
+				CurrentLandmarkSet.LandmarkPoints.push_back(CurrentLandmarkPoint);
+				getline(InputData, Line);
+				LineStream.ignore();
+				LineStream.str(Line);
+				Cell = Line.substr(0, Line.find_first_of(','));
+			}
+			this->MarkupNodes.push_back(CurrentLandmarkSet);
+			CurrentLandmarkSet.LandmarkPoints.clear();
+			if (Cell == "EOF")
+			{
+				InputData.close();
+				return;
+			}
+			else
+			{	// Cell == "Max angle"
+				stringstream LineStream(Line);
+				getline(LineStream, Cell, ',');
+				Cell.clear();
 				getline(LineStream, Cell, ',');
 				CurrentLandmarkSet.TrueCurvature = atof(Cell.c_str());
+				getline(LineStream, Cell, ',');
+				CurrentLandmarkSet.Name = Cell;
 			}
 		}
+		InputData.close();
 	}
+	
 }

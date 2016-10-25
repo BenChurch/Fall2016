@@ -194,11 +194,12 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
         if(CurrentLandmarkSet.GetName()[-1] != "~"):
           # If the landmark set is not a modified one
           #writer.writerow(['', '', '', ''])
-          writer.writerow([CurrentLandmarkSet.GetName(), 'Max angle:', str(self.MaxAngles[MarkupsNode]), ''])
+          writer.writerow(['MaxAngle:', str(self.MaxAngles[MarkupsNode]), CurrentLandmarkSet.GetName(), ''])
           #writer.writerow(['', '', '', ''])
           for LandmarkPoint in range(CurrentLandmarkSet.GetNumberOfFiducials()):
             CurrentPoint = CurrentLandmarkSet.GetMarkupPointVector(LandmarkPoint, 0)
             writer.writerow([CurrentLandmarkSet.GetNthFiducialLabel(LandmarkPoint), str(CurrentPoint[0]), str(CurrentPoint[1]), str(CurrentPoint[2])])
+      writer.writerow(['EOF', '', '', ''])
             
     with open(ModifiedDataOutput, 'wb') as csvfile:
       writer = csv.writer(csvfile, delimiter=',', quotechar='|')
@@ -208,12 +209,12 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
         if(CurrentLandmarkSet.GetName()[-1] == "~"):
           # If the landmark set is a modified one
           #writer.writerow(['', '', '', ''])
-          writer.writerow([CurrentLandmarkSet.GetName(), 'Max angle:', str(self.MaxAngles[MarkupsNode]), ''])
+          writer.writerow(['MaxAngle:', str(self.MaxAngles[MarkupsNode]), CurrentLandmarkSet.GetName(), '']) 
           #writer.writerow(['', '', '', ''])
           for LandmarkPoint in range(CurrentLandmarkSet.GetNumberOfFiducials()):
             CurrentPoint = CurrentLandmarkSet.GetMarkupPointVector(LandmarkPoint, 0)
             writer.writerow([CurrentLandmarkSet.GetNthFiducialLabel(LandmarkPoint), str(CurrentPoint[0]), str(CurrentPoint[1]), str(CurrentPoint[2])])
-        
+      writer.writerow(['EOF', '', '', ''])
     
     
   def PopulateAnglesTable(self, MaxAngles, MaxVertebrae, MarkupPoints):
