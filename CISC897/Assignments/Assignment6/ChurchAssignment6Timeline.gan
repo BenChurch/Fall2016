@@ -1,9 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?><project name="ChurchAssignment6" company="" webLink="http://" view-date="2016-09-01" view-index="0" gantt-divider-location="528" resource-divider-location="300" version="2.8.1" locale="en_CA">
+<?xml version="1.0" encoding="UTF-8"?><project name="ChurchAssignment6" company="" webLink="http://" view-date="2016-06-01" view-index="0" gantt-divider-location="522" resource-divider-location="300" version="2.8.1" locale="en_CA">
     <description/>
-    <view zooming-state="default:8" id="gantt-chart">
-        <field id="tpd3" name="Name" width="383" order="0"/>
-        <field id="tpd4" name="Begin date" width="76" order="1"/>
+    <view zooming-state="default:9" id="gantt-chart">
+        <field id="tpd3" name="Name" width="378" order="0"/>
+        <field id="tpd4" name="Begin date" width="75" order="1"/>
         <field id="tpd5" name="End date" width="65" order="2"/>
+        <option id="color.recent"><![CDATA[#00b700 #000000]]></option>
     </view>
     <view id="resource-table">
         <field id="0" name="Name" width="210" order="0"/>
@@ -35,9 +36,13 @@
         </taskproperties>
         <task id="0" name="Write data degradation program" meeting="false" start="2016-10-01" duration="62" complete="0" expand="true"/>
         <task id="2" name="Write preprocessing program to rectify input" meeting="false" start="2016-10-01" duration="62" complete="0" expand="true"/>
-        <task id="3" name="Write curvature estimation program" meeting="false" start="2016-10-01" duration="62" complete="0" expand="true"/>
-        <task id="4" name="Write paper for SPIE conference" meeting="false" start="2016-11-01" duration="31" complete="0" expand="true"/>
-        <task id="6" name="Write paper for MICCAI IPMI conference" meeting="false" start="2016-11-01" duration="45" complete="0" expand="true"/>
+        <task id="3" name="Write curvature estimation neural net" meeting="false" start="2016-10-01" duration="62" complete="0" expand="true"/>
+        <task id="4" name="Finish paper for SPIE conference on spinal visualization work" meeting="false" start="2016-11-01" duration="31" complete="0" expand="true"/>
+        <task id="6" name="Write paper for MICCAI IPMI conference on neural net work" meeting="false" start="2016-11-01" duration="45" complete="0" expand="true"/>
+        <task id="10" name="Rollback point" meeting="false" start="2016-12-01" duration="14" complete="0" expand="true"/>
+        <task id="8" name="Christmas break!" meeting="false" start="2016-12-14" duration="19" complete="0" expand="true"/>
+        <task id="9" name="Discuss research progress with supervisor" meeting="false" start="2017-01-07" duration="8" complete="0" expand="true"/>
+        <task id="7" name="Investigate alternative network structures/functionalities" meeting="false" start="2017-01-07" duration="207" complete="0" expand="true"/>
     </tasks>
     <resources/>
     <allocations/>
