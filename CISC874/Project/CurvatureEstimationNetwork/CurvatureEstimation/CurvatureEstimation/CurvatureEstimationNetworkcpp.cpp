@@ -20,6 +20,7 @@ static const int NUM_HIDDEN_LAYERS = 1;
 static const int NUMS_HIDDEN_NODES[1] = {10};
 static const double LEARNING_RATE = 0.15;
 static const double MOMENTUM = 0.1;
+static const double INITIAL_THRESHOLDS = 0.5;   // Initial threshold value for NON-INPUT nodes
 
 class LandmarkPoint
 {
@@ -95,7 +96,7 @@ class FeedforwardLayeredNetwork
 public:
 	FeedforwardLayeredNetwork();
 
-	vector<Node> InputLayer;
+	vector<Node[2]> InputLayer;     // Try organizing input analogously to spinal geometry    InputLayer[Vertebra][0] == Left     InputLayer[Vertebra][1] == Right
 	vector<vector<Node>> HiddenLayers;
 	vector<Node> OutputLayer;
 
@@ -118,7 +119,40 @@ FeedforwardLayeredNetwork::FeedforwardLayeredNetwork()
 
 void FeedforwardLayeredNetwork::ConstructNetwork()
 {
-	// Need way to read data in first
+	// Currently assuming that all input points contain the same number of points
+  int RandomIntLeft;
+  double RandomDoubleLeft;
+  int RandomIntRight;
+  double RandomDoubleRight;
+  vector<double> InitialInputWeightLeft;
+  vector<double> InitialInputWeightRight;
+  for (int LandmarkPoint = 0; LandmarkPoint < 34; LandmarkPoint++) // 34 being 2 * numberOfVertebrae           
+  {
+    RandomIntLeft = (rand() % 100);     // Random number in the range of [0,100]
+    RandomDoubleLeft = (double)(RandomIntLeft) / 100.0;
+    RandomIntRight = (rand() % 100);     // Random number in the range of [0,100]
+    RandomDoubleRight = (double)(RandomIntRight) / 100.0;
+    InitialInputWeightLeft.push_back(RandomDoubleLeft);
+    InitialInputWeightRight.push_back(RandomDoubleRight);
+    // This should be adding a pair of triples, one point for each landmark's dimension
+    this->InputLayer.push_back({ Node(InitialInputWeightLeft, 0), Node(InitialInputWeightRight, 0) });
+    InitialInputWeightLeft.clear();
+    InitialInputWeightRight.clear();
+  }
+
+  vector<vector<Node>> HiddenLayers;
+  vector<Node> CurrentHiddenLayer;
+  int RandomInt;
+  double RandomDouble;
+  vector<double> CurrentNodeInitialWeights;
+  for (int HiddenLayer = 0; HiddenLayer < NUM_HIDDEN_LAYERS; HiddenLayer++)
+  {
+    for (int LayerNode = 0; LayerNode < NUMS_HIDDEN_NODES[HiddenLayer]; LayerNode++)
+    {
+      for (int InputNode = 0; InputNode < this->InputLayer.size() * 6; InputNode++)
+    }
+  }
+
 }
 
 int main()
