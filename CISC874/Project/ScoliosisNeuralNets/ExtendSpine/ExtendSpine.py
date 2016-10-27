@@ -56,6 +56,14 @@ class ExtendSpineWidget(ScriptedLoadableModuleWidget):
     parametersFormLayout.addRow(self.ExtendButton)
     
     #
+    # Combine Button
+    #
+    self.CombineButton = qt.QPushButton("Combine degraded and extended data")
+    self.CombineButton.toolTip = "Replaces ideal points from extended set with degraded data where the correspond"
+    self.CombineButton.enabled = True
+    parametersFormLayout.addRow(self.CombineButton)
+    
+    #
     # Save Button
     #
     self.saveExtendedPointSets = qt.QPushButton("Save extended point sets")
@@ -69,6 +77,7 @@ class ExtendSpineWidget(ScriptedLoadableModuleWidget):
     
     # connections
     self.ExtendButton.connect('clicked(bool)', self.onExtendButton)
+    self.CombineButton.connect('clicked(bool)', self.onCombineButton)
     self.reloadButton.connect('clicked(bool)',self.onReloadButton)
     self.saveExtendedPointSets.connect('clicked(bool)', self.onSaveButton)
 
@@ -88,10 +97,16 @@ class ExtendSpineWidget(ScriptedLoadableModuleWidget):
     logic = ExtendSpineLogic()
     logic.ExtendSpines()
     
+  def onCombineButton(self):
+    logic = CombineSetsLogic()
+    logic.CombineDataSets()
+    
   def onReloadButton(self):
     self.MarkupNodes = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
     for PointSet in range(self.MarkupNodes.__len__()):
       if (self.MarkupNodes.__getitem__(PointSet).GetNthFiducialLabel(0)[-1] == "*"):
+        slicer.mrmlScene.RemoveNode(self.MarkupNodes.__getitem__(PointSet))
+      if (self.MarkupNodes.__getitem__(PointSet).GetNthFiducialLabel(0)[-1] == "+"):
         slicer.mrmlScene.RemoveNode(self.MarkupNodes.__getitem__(PointSet))
     slicer.util.reloadScriptedModule('ExtendSpine')
     
@@ -100,6 +115,7 @@ class ExtendSpineWidget(ScriptedLoadableModuleWidget):
     import csv
     OriginalDataOutput = qt.QFileDialog.getSaveFileName(0, "Unextended point sets", "", "CSV File (*.csv)")
     ModifiedDataOutput = qt.QFileDialog.getSaveFileName(0, "Extended point sets", "", "CSV File (*.csv)")
+    CombinedDataOutput = qt.QFileDialog.getSaveFileName(0, "Combined point sets", "", "CSV File (*.csv)")
     self.MarkupNodes = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
     
     with open(OriginalDataOutput, 'wb') as csvfile:
@@ -127,6 +143,19 @@ class ExtendSpineWidget(ScriptedLoadableModuleWidget):
             CurrentPoint = CurrentLandmarkSet.GetMarkupPointVector(LandmarkPoint, 0)
             writer.writerow([CurrentLandmarkSet.GetNthFiducialLabel(LandmarkPoint), str(CurrentPoint[0]), str(CurrentPoint[1]), str(CurrentPoint[2])])
       writer.writerow(['EOF', '', '', ''])
+      
+    with open(CombinedDataOutput, 'wb') as csvfile:
+      writer = csv.writer(csvfile, delimiter=',', quotechar='|')
+      writer.writerow(['Landmark', 'RL', 'AP', 'SI'])
+      for MarkupsNode in range(self.MarkupNodes.__len__()):
+        CurrentLandmarkSet = self.MarkupNodes.__getitem__(MarkupsNode)
+        if(CurrentLandmarkSet.GetName()[-1] == "+"):
+          # If the landmark set is a modified one
+          writer.writerow([CurrentLandmarkSet.GetName(), '', '', '']) 
+          for LandmarkPoint in range(CurrentLandmarkSet.GetNumberOfFiducials()):
+            CurrentPoint = CurrentLandmarkSet.GetMarkupPointVector(LandmarkPoint, 0)
+            writer.writerow([CurrentLandmarkSet.GetNthFiducialLabel(LandmarkPoint), str(CurrentPoint[0]), str(CurrentPoint[1]), str(CurrentPoint[2])])
+      writer.writerow(['EOF', '', '', ''])
     
 #
 # ExtendSpineLogic
@@ -144,13 +173,14 @@ class ExtendSpineLogic(ScriptedLoadableModuleLogic):
   def ExtendSpines(self):
     self.InputData = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
     for InputSet in range(self.InputData.__len__()):
-      CurrentLandmarkSet = self.InputData.__getitem__(InputSet)
-      self.LandmarkPointSets.append([])
-      print " "   #empty line
-      print "Landmark set #" + str(InputSet)
-      for InputPoint in range(CurrentLandmarkSet.GetNumberOfFiducials()):
-        self.LandmarkPointSets[InputSet].append((CurrentLandmarkSet.GetNthFiducialLabel(InputPoint),CurrentLandmarkSet.GetMarkupPointVector(InputPoint,0)))
-        print self.LandmarkPointSets[InputSet][InputPoint]
+      if self.InputData.__getitem__(InputSet).GetName()[-1] != "~" and self.InputData.__getitem__(InputSet).GetName()[-1] != "+":
+        CurrentLandmarkSet = self.InputData.__getitem__(InputSet)
+        self.LandmarkPointSets.append([])
+        print " "   #empty line
+        print "Landmark set #" + str(InputSet)
+        for InputPoint in range(CurrentLandmarkSet.GetNumberOfFiducials()):
+          self.LandmarkPointSets[InputSet].append((CurrentLandmarkSet.GetNthFiducialLabel(InputPoint),CurrentLandmarkSet.GetMarkupPointVector(InputPoint,0)))
+          print self.LandmarkPointSets[InputSet][InputPoint]
         
     self.ExtendSuperiorSpines()
     self.ExtendInferiorSpines()
@@ -175,6 +205,14 @@ class ExtendSpineLogic(ScriptedLoadableModuleLogic):
       if(TopLeftLabel != 'T1L'):
         TopLeftLabel = self.LandmarkPointSets[i][0][0]
         TopLeftIndex = self.CompleteLabelList.index(TopLeftLabel)  
+        if TopLeftIndex == 2:
+          for dim in range(3):
+            InfSupVector[dim] = (CurrentLandmarkSet[1][1][dim] - CurrentLandmarkSet[3][1][dim])/2
+            InfSupVector[dim] += (CurrentLandmarkSet[0][1][dim] - CurrentLandmarkSet[2][1][dim])/2
+            NewRightPoint[dim] = CurrentLandmarkSet[1][1][dim] + InfSupVector[dim]
+            NewLeftPoint[dim] = CurrentLandmarkSet[0][1][dim] + InfSupVector[dim]
+          self.LandmarkPointSets[i].insert(0,(self.CompleteLabelList[TopLeftIndex-1], NewRightPoint))
+          self.LandmarkPointSets[i].insert(0,(self.CompleteLabelList[TopLeftIndex-2], NewLeftPoint))
         while(TopLeftIndex > 2):
           TopLeftLabel = self.LandmarkPointSets[i][0][0]
           TopLeftIndex = self.CompleteLabelList.index(TopLeftLabel)  
@@ -195,6 +233,17 @@ class ExtendSpineLogic(ScriptedLoadableModuleLogic):
       if(BottomRightLabel != "L5R"):
         BottomRightLabel = self.LandmarkPointSets[i][-1][0]
         BottomRightIndex = self.CompleteLabelList.index(BottomRightLabel) 
+        if BottomRightIndex == 31:
+          InfSupVector = [0,0,0]
+          NewRightPoint = [0,0,0]
+          NewLeftPoint = [0,0,0]
+          for dim in range(3):
+            InfSupVector[dim] = (CurrentLandmarkSet[-1][1][dim] - CurrentLandmarkSet[-3][1][dim])/2
+            InfSupVector[dim] += (CurrentLandmarkSet[-2][1][dim] - CurrentLandmarkSet[-4][1][dim])/2
+            NewRightPoint[dim] = CurrentLandmarkSet[-1][1][dim] + InfSupVector[dim]
+            NewLeftPoint[dim] = CurrentLandmarkSet[-2][1][dim] + InfSupVector[dim]
+          self.LandmarkPointSets[i].append((self.CompleteLabelList[BottomRightIndex+1], NewLeftPoint))
+          self.LandmarkPointSets[i].append((self.CompleteLabelList[BottomRightIndex+2], NewRightPoint))
         while(BottomRightIndex < 31):
           BottomRightLabel = self.LandmarkPointSets[i][-1][0]
           BottomRightIndex = self.CompleteLabelList.index(BottomRightLabel)  
@@ -347,7 +396,42 @@ class ExtendSpineLogic(ScriptedLoadableModuleLogic):
     # ASSERT PotentialNeighbor.label[-1] == Point.label[-1]
     return PotentialNeighbor
 
-   
+class CombineSetsLogic(ScriptedLoadableModuleLogic):
+  def __init__(self):
+    self.CompleteLabelList = ['T1L','T1R','T2L','T2R','T3L','T3R','T4L','T4R','T5L','T5R','T6L','T6R','T7L','T7R','T8L','T8R','T9L','T9R','T10L','T10R','T11L','T11R','T12L','T12R','L1L','L1R','L2L','L2R','L3L','L3R','L4L','L4R','L5L','L5R']
+    self.ExtendedDataSets = []
+    self.DegradedDataSets = []
+    self.CombinedDataSets = []
+    self.AllDataSets = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
+    for DataSet in range(self.AllDataSets.__len__()):
+      if self.AllDataSets.__getitem__(DataSet).GetName()[-1] == "*":
+        self.ExtendedDataSets.append(self.AllDataSets.__getitem__(DataSet))
+      elif self.AllDataSets.__getitem__(DataSet).GetName()[-1] == "~":
+        self.DegradedDataSets.append(self.AllDataSets.__getitem__(DataSet))
+        
+  def CombineDataSets(self):
+    for PatientDataSet in range(self.ExtendedDataSets.__len__()):   # Assumes there is a degraded set for each extended one
+      NewMarkupsNode = slicer.vtkMRMLMarkupsFiducialNode()
+      NewMarkupsNode.SetName(self.ExtendedDataSets.__getitem__(PatientDataSet).GetName()[:-1] + "+")
+      CurrentExtendedLandmarkNode = self.ExtendedDataSets.__getitem__(PatientDataSet)
+      CurrentDegradedLandmarkNode = self.DegradedDataSets.__getitem__(PatientDataSet)
+      
+      TopOffset = self.CompleteLabelList.index(CurrentDegradedLandmarkNode.GetNthFiducialLabel(0)[:-1])
+      BottomOffset = self.CompleteLabelList.index(CurrentDegradedLandmarkNode.GetNthFiducialLabel(CurrentDegradedLandmarkNode.GetNumberOfFiducials() - 1)[:-1])
+      for ExtendedLandmark in range(TopOffset):
+        CurrentExtendedLandmarkPoint = CurrentExtendedLandmarkNode.GetMarkupPointVector(ExtendedLandmark,0)
+        NewMarkupsNode.AddFiducial(CurrentExtendedLandmarkPoint[0], CurrentExtendedLandmarkPoint[1], CurrentExtendedLandmarkPoint[2])
+        NewMarkupsNode.SetNthFiducialLabel(ExtendedLandmark, CurrentExtendedLandmarkNode.GetNthFiducialLabel(ExtendedLandmark)[:-1] + "+")
+      for DegradedLandmark in range(CurrentDegradedLandmarkNode.GetNumberOfFiducials()):
+        CurrentDegradedLandmarkPoint = CurrentDegradedLandmarkNode.GetMarkupPointVector(DegradedLandmark,0)
+        NewMarkupsNode.AddFiducial(CurrentDegradedLandmarkPoint[0], CurrentDegradedLandmarkPoint[1], CurrentDegradedLandmarkPoint[2])
+        NewMarkupsNode.SetNthFiducialLabel(TopOffset + DegradedLandmark, CurrentDegradedLandmarkNode.GetNthFiducialLabel(DegradedLandmark)[:-1] + "+")
+      for ExtendedLandmark in range(BottomOffset+1, CurrentExtendedLandmarkNode.GetNumberOfFiducials()):
+        CurrentExtendedLandmarkPoint = CurrentExtendedLandmarkNode.GetMarkupPointVector(ExtendedLandmark,0)
+        NewMarkupsNode.AddFiducial(CurrentExtendedLandmarkPoint[0], CurrentExtendedLandmarkPoint[1], CurrentExtendedLandmarkPoint[2])
+        NewMarkupsNode.SetNthFiducialLabel(ExtendedLandmark, CurrentExtendedLandmarkNode.GetNthFiducialLabel(ExtendedLandmark)[:-1] + "+")
+      slicer.mrmlScene.AddNode(NewMarkupsNode)
+ 
 class ExtendSpineTest(ScriptedLoadableModuleTest):
   """
   This is the test case for your scripted module.
