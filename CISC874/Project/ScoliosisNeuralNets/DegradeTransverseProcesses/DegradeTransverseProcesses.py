@@ -237,16 +237,23 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
   def __init__(self):
     
     self.LandmarkPointSets = []      # Will contain tuples: (TrXFiducial point labels, TrXFiducial### point sets)
-    self.DeletedLandmarkLabels = []   # Will ensure we don't try to misplace deleted points or vice-versa
+    self.DeletionLandmarkLabels = []   # Will ensure we don't try to misplace deleted points or vice-versa
+    self.SortedDeletionLandmarkLabels = []
     self.MisplacedLandmarkLabels = []
     self.RightLeftScale = 1000          # Length of vector in coronal plane used to misplace point to behind a rib
     self.AntPostScale = 20   # Length of vector in parasagital plane used to misplace point from behind rib onto rib
     
   def DegradeInputData(self, NoiseStdDev, DeletionFraction, DisplacementFraction):
+    
+    if(DeletionFraction + DisplacementFraction > 1):
+      print "Error - DeletionFraction + DisplacementFraction > 1"
+      return False
+      
     self.InputData = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
     self.NoiseStdDev = NoiseStdDev
     self.DeletionFraction = DeletionFraction
     self.DisplacementFraction = DisplacementFraction
+    
     for InputSet in range(self.InputData.__len__()):
       CurrentLandmarkSet = self.InputData.__getitem__(InputSet)
       self.LandmarkPointSets.append([])
@@ -258,8 +265,9 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
     
     # Initialize these lists here so their functions can be called in either order
     for InputSet in range(self.LandmarkPointSets.__len__()):
-      self.DeletedLandmarkLabels.append([])
-      self.MisplacedLandmarkLabels.append([])
+      self.SortedDeletionLandmarkLabels.append(([],[]))
+      self.DeletionLandmarkLabels.append(([],[]))
+      self.MisplacedLandmarkLabels.append(([],[]))
     
     self.SelectDisplacementPoints()
     self.SelectDeletionPoints()
@@ -288,16 +296,16 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
       DisplacementAmount = (int)(self.LandmarkPointSets[InputSet].__len__() * self.DisplacementFraction)
       # could go into infinite loop if there are very few points?
       while (DisplacementAmount > 0):
-        DisplacementIndex = (int)(random.uniform(0,DisplacementAmount))
+        DisplacementIndex = (int)(random.uniform(0,self.LandmarkPointSets[InputSet].__len__()))
         DisplacementLabel = self.LandmarkPointSets[InputSet][DisplacementIndex][0]
-        while(DisplacementLabel in self.DeletedLandmarkLabels[InputSet]):
-          DisplacementIndex = (int)(random.uniform(0,DisplacementAmount))
+        while((DisplacementIndex in self.MisplacedLandmarkLabels[InputSet][1]) or (DisplacementIndex in self.DeletionLandmarkLabels[InputSet][1])):
+          DisplacementIndex = (int)(random.uniform(0,self.LandmarkPointSets[InputSet].__len__()))
           DisplacementLabel = self.LandmarkPointSets[InputSet][DisplacementIndex][0]
         # This search is blind - pretty slow
-        self.MisplacedLandmarkLabels[InputSet].append(DisplacementLabel)
-        DisplacementPoint = self.LandmarkPointSets[InputSet][DisplacementIndex]
+        self.MisplacedLandmarkLabels[InputSet][0].append(DisplacementLabel)
+        self.MisplacedLandmarkLabels[InputSet][1].append(DisplacementIndex)
         DisplacementAmount -= 1
-        print 'SelectDisplacementPoints'
+        
   
   def SelectDeletionPoints(self):
     import random
@@ -305,46 +313,46 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
       DeletionAmount = (int)(self.LandmarkPointSets[InputSet].__len__() * self.DeletionFraction)
       # could go into infinite loop if there are very few points?
       while (DeletionAmount > 0):
-        DeletionIndex = (int)(random.uniform(0,DeletionAmount))
+        DeletionIndex = (int)(random.uniform(0,self.LandmarkPointSets[InputSet].__len__()))
         DeletionLabel = self.LandmarkPointSets[InputSet][DeletionIndex][0]
-        while(DeletionLabel in self.MisplacedLandmarkLabels[InputSet]):
-          DeletionIndex = (int)(random.uniform(0,DeletionAmount))
+        while((DeletionIndex in self.DeletionLandmarkLabels[InputSet][1]) or (DeletionIndex in self.MisplacedLandmarkLabels[InputSet][1])):
+          DeletionIndex = (int)(random.uniform(0,self.LandmarkPointSets[InputSet].__len__()))
           DeletionLabel = self.LandmarkPointSets[InputSet][DeletionIndex][0]
         # This search is blind - pretty slow
-        self.DeletedLandmarkLabels[InputSet].append(DeletionLabel)
-        DeletionPoint = self.LandmarkPointSets[InputSet][DeletionIndex]
+        self.DeletionLandmarkLabels[InputSet][0].append(DeletionLabel)
+        self.DeletionLandmarkLabels[InputSet][1].append(DeletionIndex)
         DeletionAmount -= 1
-        print 'SelectDeletionPoints'
+      SortingList = zip(self.DeletionLandmarkLabels[InputSet][0], self.DeletionLandmarkLabels[InputSet][1])
+      SortingList.sort()
+      for DeletedPoint in range(self.DeletionLandmarkLabels[InputSet][0].__len__()):
+        self.SortedDeletionLandmarkLabels[InputSet][0].append(SortingList[DeletedPoint][0]) 
+        self.SortedDeletionLandmarkLabels[InputSet][1].append(SortingList[DeletedPoint][1])
+        
         
   def DisplacePoints(self):
     for InputSet in range(self.LandmarkPointSets.__len__()):
       CurrentLandmarkSet = self.LandmarkPointSets[InputSet]
-      DisplacementAmount = CurrentLandmarkSet.__len__()
-      while(DisplacementAmount > 0):
-        for DisplacementLabel in self.MisplacedLandmarkLabels[InputSet]:
-          for i, ActualPoint in enumerate(CurrentLandmarkSet):
-            if DisplacementLabel == ActualPoint[0]:   # Infinite loop if a DisplacementLabel cannot be found in the LandmarkPointSet
-              # Need to estimate direction of symmetric neighbor to this, and extrapolate
-              # '-> use point labels? Lax assumption?
-              RightLeftVector = self.EstimateRightLeftVector(ActualPoint, CurrentLandmarkSet, self.RightLeftScale)
-              AntPostVector = self.EstimateAntPostVector(ActualPoint, CurrentLandmarkSet, self.AntPostScale)
-              for dim in range(3):
-                self.LandmarkPointSets[InputSet][i][1][dim] += RightLeftVector[dim] + AntPostVector[dim]
-              DisplacementAmount -= 1
-        print 'DisplacePoints'
-              #self.MisplacedLandmarkLabels.append(self.LandmarkPointSets[InputSet][DisplacementIndex][0])
+      for i, DisplacementLabel in enumerate(self.MisplacedLandmarkLabels[InputSet][0]):
+        DisplacementPoint =(CurrentLandmarkSet[self.MisplacedLandmarkLabels[InputSet][1][(self.MisplacedLandmarkLabels[InputSet][0]).index(DisplacementLabel)]])
+        DisplacementIndex = CurrentLandmarkSet.index(DisplacementPoint)
+        RightLeftVector = self.EstimateRightLeftVector(DisplacementPoint, CurrentLandmarkSet, self.RightLeftScale)
+        if(DisplacementPoint[0][-1] == "L" and RightLeftVector[0] > 0):
+          for dim in range(3):
+            RightLeftVector[dim] = (-1) * RightLeftVector[dim]
+        if(DisplacementPoint[0][-1] == "R" and RightLeftVector[0] < 0):
+          for dim in range(3):
+            RightLeftVector[dim] = (-1) * RightLeftVector[dim]
+        AntPostVector = self.EstimateAntPostVector(DisplacementPoint, CurrentLandmarkSet, self.AntPostScale)
+        for dim in range(3):
+          self.LandmarkPointSets[InputSet][DisplacementIndex][1][dim] += RightLeftVector[dim] + AntPostVector[dim]
     
   def DeletePoints(self):
     for InputSet in range(self.LandmarkPointSets.__len__()):
       CurrentLandmarkSet = self.LandmarkPointSets[InputSet]
-      DeletionAmount = CurrentLandmarkSet.__len__()
-      while(DeletionAmount > 0):
-        for DeletionLabel in self.DeletedLandmarkLabels[InputSet]:
-          for i, ActualPoint in enumerate(CurrentLandmarkSet):
-            if DeletionLabel == ActualPoint[0]: # Infinite loop if a DeletionLabel cannot be found in the LandmarkPointSet
-              self.LandmarkPointSets.__delitem__(i)
-              DeletionAmount -= 1
-        print 'DeletePoints'
+      for i, DeletionLabel in enumerate(self.SortedDeletionLandmarkLabels[InputSet][0]): 
+        DeletionPoint = self.LandmarkPointSets[InputSet][self.SortedDeletionLandmarkLabels[InputSet][1][(self.SortedDeletionLandmarkLabels[InputSet][0]).index(DeletionLabel)] - i]
+        DeletionIndex = CurrentLandmarkSet.index(DeletionPoint)
+        self.LandmarkPointSets[InputSet].__delitem__(DeletionIndex)
     
   # Add noise to point locations 
   #
