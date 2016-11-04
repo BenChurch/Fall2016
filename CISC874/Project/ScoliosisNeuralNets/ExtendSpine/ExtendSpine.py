@@ -117,7 +117,11 @@ class ExtendSpineWidget(ScriptedLoadableModuleWidget):
     ModifiedDataOutput = qt.QFileDialog.getSaveFileName(0, "Extended point sets", "", "CSV File (*.csv)")
     CombinedDataOutput = qt.QFileDialog.getSaveFileName(0, "Combined point sets", "", "CSV File (*.csv)")
     self.MarkupNodes = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
-    
+    AnglesTable = slicer.util.getModuleGui('DegradeTransverseProcesses').children()[3].children()[1]
+    #print (AnglesTable.item(0,1)[0])
+    MaxAngles = []
+    for InputSet in range(AnglesTable.rowCount):
+      MaxAngles.append(float(AnglesTable.item(InputSet,1).data(0)))
     with open(OriginalDataOutput, 'wb') as csvfile:
       writer = csv.writer(csvfile, delimiter=',', quotechar='|')
       writer.writerow(['Landmark', 'RL', 'AP', 'SI'])
@@ -125,6 +129,7 @@ class ExtendSpineWidget(ScriptedLoadableModuleWidget):
         CurrentLandmarkSet = self.MarkupNodes.__getitem__(MarkupsNode)
         if(CurrentLandmarkSet.GetName()[-1] != "*"):
           # If the landmark set is not an extended one
+          #writer.writerow(['Max angle:', str(MaxAngles[MarkupsNode]), CurrentLandmarkSet.GetName(), '']) 
           writer.writerow([CurrentLandmarkSet.GetName(), '', '', '']) 
           for LandmarkPoint in range(CurrentLandmarkSet.GetNumberOfFiducials()):
             CurrentPoint = CurrentLandmarkSet.GetMarkupPointVector(LandmarkPoint, 0)
@@ -138,6 +143,7 @@ class ExtendSpineWidget(ScriptedLoadableModuleWidget):
         CurrentLandmarkSet = self.MarkupNodes.__getitem__(MarkupsNode)
         if(CurrentLandmarkSet.GetName()[-1] == "*"):
           # If the landmark set is a modified one
+          #writer.writerow(['Max angle:', str(MaxAngles[MarkupsNode]), CurrentLandmarkSet.GetName(), '']) 
           writer.writerow([CurrentLandmarkSet.GetName(), '', '', '']) 
           for LandmarkPoint in range(CurrentLandmarkSet.GetNumberOfFiducials()):
             CurrentPoint = CurrentLandmarkSet.GetMarkupPointVector(LandmarkPoint, 0)
@@ -147,11 +153,13 @@ class ExtendSpineWidget(ScriptedLoadableModuleWidget):
     with open(CombinedDataOutput, 'wb') as csvfile:
       writer = csv.writer(csvfile, delimiter=',', quotechar='|')
       writer.writerow(['Landmark', 'RL', 'AP', 'SI'])
+      CompleteSetNum = 0
       for MarkupsNode in range(self.MarkupNodes.__len__()):
         CurrentLandmarkSet = self.MarkupNodes.__getitem__(MarkupsNode)
         if(CurrentLandmarkSet.GetName()[-1] == "+"):
           # If the landmark set is a modified one
-          writer.writerow([CurrentLandmarkSet.GetName(), '', '', '']) 
+          writer.writerow(['Max angle:', str(MaxAngles[CompleteSetNum]), CurrentLandmarkSet.GetName(), '']) 
+          CompleteSetNum += 1
           for LandmarkPoint in range(CurrentLandmarkSet.GetNumberOfFiducials()):
             CurrentPoint = CurrentLandmarkSet.GetMarkupPointVector(LandmarkPoint, 0)
             writer.writerow([CurrentLandmarkSet.GetNthFiducialLabel(LandmarkPoint), str(CurrentPoint[0]), str(CurrentPoint[1]), str(CurrentPoint[2])])
