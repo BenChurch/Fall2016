@@ -38,14 +38,14 @@ class ExtendSpineWidget(ScriptedLoadableModuleWidget):
     # Instantiate and connect widgets ...
 
     #
-    # Parameters Area
+    # Interface Area
     #
-    parametersCollapsibleButton = ctk.ctkCollapsibleButton()
-    parametersCollapsibleButton.text = "Parameters"
-    self.layout.addWidget(parametersCollapsibleButton)
+    InterfaceCollapsibleButton = ctk.ctkCollapsibleButton()
+    InterfaceCollapsibleButton.text = "Interface"
+    self.layout.addWidget(InterfaceCollapsibleButton)
 
     # Layout within the dummy collapsible button
-    parametersFormLayout = qt.QFormLayout(parametersCollapsibleButton)
+    parametersFormLayout = qt.QFormLayout(InterfaceCollapsibleButton)
 
     #
     # Extend Button
@@ -110,7 +110,7 @@ class ExtendSpineWidget(ScriptedLoadableModuleWidget):
         slicer.mrmlScene.RemoveNode(self.MarkupNodes.__getitem__(PointSet))
     slicer.util.reloadScriptedModule('ExtendSpine')
     
-  # Assumes CalculateAngles has been done
+  # Assumes CalculateAngles of DegradeTransverseProcesses has been done
   def onSaveButton(self):
     import csv
     OriginalDataOutput = qt.QFileDialog.getSaveFileName(0, "Unextended point sets", "", "CSV File (*.csv)")
@@ -139,11 +139,13 @@ class ExtendSpineWidget(ScriptedLoadableModuleWidget):
     with open(ModifiedDataOutput, 'wb') as csvfile:
       writer = csv.writer(csvfile, delimiter=',', quotechar='|')
       writer.writerow(['Landmark', 'RL', 'AP', 'SI'])
+      CompleteSetNum = 0
       for MarkupsNode in range(self.MarkupNodes.__len__()):
         CurrentLandmarkSet = self.MarkupNodes.__getitem__(MarkupsNode)
         if(CurrentLandmarkSet.GetName()[-1] == "*"):
           # If the landmark set is a modified one
-          #writer.writerow(['Max angle:', str(MaxAngles[MarkupsNode]), CurrentLandmarkSet.GetName(), '']) 
+          #writer.writerow(['Max angle:', str(MaxAngles[CompleteSetNum]), CurrentLandmarkSet.GetName(), '']) 
+          CompleteSetNum += 1
           writer.writerow([CurrentLandmarkSet.GetName(), '', '', '']) 
           for LandmarkPoint in range(CurrentLandmarkSet.GetNumberOfFiducials()):
             CurrentPoint = CurrentLandmarkSet.GetMarkupPointVector(LandmarkPoint, 0)
@@ -214,6 +216,9 @@ class ExtendSpineLogic(ScriptedLoadableModuleLogic):
         TopLeftLabel = self.LandmarkPointSets[i][0][0]
         TopLeftIndex = self.CompleteLabelList.index(TopLeftLabel)  
         if TopLeftIndex == 2:
+          InfSupVector = [0,0,0]
+          NewRightPoint = [0,0,0]
+          NewLeftPoint = [0,0,0]
           for dim in range(3):
             InfSupVector[dim] = (CurrentLandmarkSet[1][1][dim] - CurrentLandmarkSet[3][1][dim])/2
             InfSupVector[dim] += (CurrentLandmarkSet[0][1][dim] - CurrentLandmarkSet[2][1][dim])/2

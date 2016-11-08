@@ -19,6 +19,7 @@ include(${Slicer_USE_FILE})
 
 #-----------------------------------------------------------------------------
 # Extension modules
+add_subdirectory(CenterAndNormalizeLandmarks)
 add_subdirectory(DegradeTransverseProcesses)
 add_subdirectory(ExtendSpine)
 ## NEXT_MODULE
