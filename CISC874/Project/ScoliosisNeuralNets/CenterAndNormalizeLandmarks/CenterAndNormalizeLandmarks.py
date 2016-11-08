@@ -230,7 +230,7 @@ class NormalizeDataLogic(ScriptedLoadableModuleLogic):
     for i, CurrentLandmarkSet in enumerate(self.LandmarkPointSets):
       for LandmarkPoint in CurrentLandmarkSet:
         for dim in range(3):
-          LandmarkPoint[1][dim] = LandmarkPoint[1][dim] / self.MaxAbsValCoordinates[i][dim]
+          LandmarkPoint[1][dim] = LandmarkPoint[1][dim] / max(self.MaxAbsValCoordinates[i])
           
     # Create new FiducialMarkupNodes for Slicer scene
     for InputSet in range(self.LandmarkPointSets.__len__()):
