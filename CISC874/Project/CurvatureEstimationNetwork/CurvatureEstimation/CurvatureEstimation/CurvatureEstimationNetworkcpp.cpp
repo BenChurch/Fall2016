@@ -341,8 +341,8 @@ public:
 
 	void ConstructNetwork();
 
-	void Feedforward();
-	void Backpropagate();
+	void Feedforward(vector<LandmarkPoint> PatientLandmarks);
+	void Backpropagate(double CorrectAngle);
 
 	void WriteSelf(string FileIdentifier);
 private:
@@ -419,12 +419,53 @@ void FeedforwardLayeredNetwork::ConstructNetwork()
 
 }
 
-void FeedforwardLayeredNetwork::Feedforward()
+void FeedforwardLayeredNetwork::Feedforward(vector<LandmarkPoint> PatientLandmarks)
 {
+	LandmarkPoint * CurrentLandmarkPoint;
+	for (int Landmark = 0; Landmark < PatientLandmarks.size(); Landmark++)
+	{
+		// We will assume that Landmarks are ordered properly, L-R-L-R-etc...
+		for (int dim = 0; dim < 3; dim++)
+		{
+			this->InputLayer[Landmark][dim].Inputs[0] = PatientLandmarks[Landmark].Position[dim];
+			this->InputLayer[Landmark][dim].ComputeIdentityActivation();
+			for (int HiddenNode = 0; HiddenNode < this->HiddenLayers[0].size(); HiddenNode++)
+			{	// Seems a little odd to put this here, but makes looping through hidden layers easier
+				this->HiddenLayers[0][HiddenNode].Inputs[(Landmark * 3) + dim] += this->HiddenLayers[0][HiddenNode].Weights[(Landmark * 3) + dim] * this->InputLayer[Landmark][dim].ActivationPotential;
+			}
+		}
+	}	// ASSERT all InputNodes are at equilibrium with input
 
+	Node * CurrentInputNode;
+	Node * CurrentHiddenNode;
+	for (int HiddenLayer = 0; HiddenLayer < this->HiddenLayers.size() - 1; HiddenLayer++)
+	{	// Minus one to deal with the boundary condition of the output layer, as was done with odd hidden input initialization
+		for (int HiddenNode = 0; HiddenNode < this->HiddenLayers[HiddenLayer].size(); HiddenNode++)
+		{	
+			this->HiddenLayers[HiddenLayer][HiddenNode].ComputeSigmoidalActivation();
+			for (int NextLayerNode = 0; NextLayerNode < this->HiddenLayers[HiddenLayer + 1].size(); NextLayerNode++)
+			{
+				this->HiddenLayers[HiddenLayer + 1][NextLayerNode].Inputs[HiddenNode] += this->HiddenLayers[HiddenLayer + 1][NextLayerNode].Weights[HiddenNode] * this->HiddenLayers[HiddenLayer][HiddenNode].ActivationPotential;
+			}
+		}
+	}	// ASSERT all HiddenLayers Node's inputs are at equilibrium, and all HiddenLayers Node's Activations at equilibrium except last layer
+
+	for (int HiddenNode = 0; HiddenNode < this->HiddenLayers[this->HiddenLayers.size() - 1].size(); HiddenNode++)
+	{
+		this->HiddenLayers[this->HiddenLayers.size() - 1][HiddenNode].ComputeSigmoidalActivation();
+		for (int OutputNode = 0; OutputNode < this->OutputLayer.size(); OutputNode++)
+		{	// Should only contain one node for one angle
+			this->OutputLayer[OutputNode].Inputs[HiddenNode] += this->OutputLayer[OutputNode].Weights[HiddenNode] * this->HiddenLayers[this->HiddenLayers.size() - 1][HiddenNode].ActivationPotential;
+		}
+	}	// ASSERT all HiddenLayers Nodes inputs and activations and OutputLayer's inputs in equilibrium
+
+	for (int OutputNode = 0; OutputNode < this->OutputLayer.size(); OutputNode++)
+	{
+		this->OutputLayer[OutputNode].ComputeSigmoidalActivation();
+	}	// ASSERT entire network in equilibrium
 }
 
-void FeedforwardLayeredNetwork::Backpropagate()
+void FeedforwardLayeredNetwork::Backpropagate(double CorrectAngle)
 {
 
 }
@@ -644,7 +685,9 @@ int main()
 
 	FeedforwardLayeredNetwork AngleEstimator;
 	AngleEstimator.ConstructNetwork();
-	AngleEstimator.WriteSelf("123");
+	AngleEstimator.WriteSelf("1");
+	AngleEstimator.Feedforward(InputLandmarkSets.MarkupNodes[0].LandmarkPoints);
+	AngleEstimator.WriteSelf("2");
 
 	cout << "Press enter to end the program." << endl;
 	cin.ignore();
