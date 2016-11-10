@@ -297,10 +297,10 @@ public:
 
 Node::Node(vector<double> InitialWeights, double InitialThreshold)
 {
-	for (int Weight = 0; Weight < this->Weights.size(); Weight++)
+	for (int Weight = 0; Weight < InitialWeights.size(); Weight++)
 	{
-		this->Inputs[Weight] = 0;	// Initialize inputs while we're at it
-		this->Weights[Weight] = InitialWeights[Weight];
+		this->Inputs.push_back(0);	// Initialize inputs while we're at it
+		this->Weights.push_back(InitialWeights[Weight]);
 	}
 	this->Threshold = InitialThreshold;
 }
@@ -344,6 +344,7 @@ public:
 	void Feedforward();
 	void Backpropagate();
 
+	void WriteSelf(string FileIdentifier);
 private:
 
 };
@@ -403,9 +404,9 @@ void FeedforwardLayeredNetwork::ConstructNetwork()
 	this->HiddenLayers.push_back(CurrentHiddenLayer);
   }
 
-  for (int OutputNode = 0; OutputNode < this->OutputLayer.size(); OutputNode++)
+  for (int OutputNode = 0; OutputNode < 1; OutputNode++)		// Hack - just need one output node
   {
-	  for (int HiddenNode = 0; HiddenNode < this->HiddenLayers[this->HiddenLayers.size()].size(); HiddenNode++)
+	  for (int HiddenNode = 0; HiddenNode < this->HiddenLayers[this->HiddenLayers.size()-1].size(); HiddenNode++)
 	  {
 		  RandomInt = (rand() % 100);
 		  RandomDouble = (double)(RandomInt) / 100.0;
@@ -418,11 +419,232 @@ void FeedforwardLayeredNetwork::ConstructNetwork()
 
 }
 
+void FeedforwardLayeredNetwork::Feedforward()
+{
+
+}
+
+void FeedforwardLayeredNetwork::Backpropagate()
+{
+
+}
+
+void FeedforwardLayeredNetwork::WriteSelf(string FileIdentifier)						// Just used for my debugging purposes. Output doesn't necessarily line up - can be confusing
+{
+	ofstream SelfOutput;
+	SelfOutput.open("NetworkState" + FileIdentifier + ".txt");
+
+	vector<string> Dims = { "RL", "AP", "SI" };
+	vector<string> Vertebrae = { "T1L", "T1R", "T2L", "T2R", "T3L", "T3R", "T4L", "T4R", "T5L", "T5R", "T6L", "T6R", "T7L", "T7R", "T8L", "T8R", "T9L", "T9R",
+		"T10L", "T10R", "T11L", "T11R", "T12L", "T12R", "L1L", "L1R", "L2L", "L2R", "L3L", "L3R", "L4L", "L4R", "L5L", "L5R" };
+
+	vector<Node> * CurrentNodeTrio;
+	Node * CurrentNode;
+
+	SelfOutput << "Input layer(s):" << endl;
+
+	// Write input array
+	SelfOutput << endl << "Vertebra:" << endl << "	";
+	for (int Vertebra = 0; Vertebra < Vertebrae.size(); Vertebra += 2)
+	{
+		SelfOutput << "		" << Vertebrae[Vertebra] << "		";
+	}
+
+	SelfOutput << endl;
+	SelfOutput << "InputL:		";
+	for (int LeftInputPoint = 0; LeftInputPoint < this->InputLayer.size(); LeftInputPoint+=2)
+	{	// Inputs
+		(CurrentNodeTrio) = &(this->InputLayer[LeftInputPoint]);
+		
+		for (int InputNode = 0; InputNode < (*CurrentNodeTrio).size(); InputNode++)
+		{	
+			(CurrentNode) = &(*CurrentNodeTrio)[InputNode];
+			SelfOutput << (*CurrentNode).Inputs[0] << "	";		// Input nodes having always 1 input
+		}
+		SelfOutput << "	";
+	}
+
+	SelfOutput << endl;
+	SelfOutput << "WeightL:	";
+	for (int LeftInputPoint = 0; LeftInputPoint < this->InputLayer.size(); LeftInputPoint += 2)
+	{	// Weights
+		(CurrentNodeTrio) = &(this->InputLayer[LeftInputPoint]);
+		for (int InputNode = 0; InputNode < (*CurrentNodeTrio).size(); InputNode++)
+		{
+			(CurrentNode) = &(*CurrentNodeTrio)[InputNode];
+			SelfOutput << (*CurrentNode).Weights[0] << "	";		// Input nodes having always 1 input
+		}
+		SelfOutput << "	";
+	}
+
+	SelfOutput << endl;
+	SelfOutput << "ThresholdL:	";
+	for (int LeftInputPoint = 0; LeftInputPoint < this->InputLayer.size(); LeftInputPoint += 2)
+	{	// Threshold
+		(CurrentNodeTrio) = &(this->InputLayer[LeftInputPoint]);
+		for (int InputNode = 0; InputNode < (*CurrentNodeTrio).size(); InputNode++)
+		{
+			(CurrentNode) = &(*CurrentNodeTrio)[InputNode];
+			SelfOutput << (*CurrentNode).Threshold << "	";		// Input nodes having always 1 input
+		}
+		SelfOutput << "	";
+	}
+
+	SelfOutput << endl;
+	SelfOutput << "ActivationL:	";
+	for (int LeftInputPoint = 0; LeftInputPoint < this->InputLayer.size(); LeftInputPoint += 2)
+	{	// Activation
+		(CurrentNodeTrio) = &(this->InputLayer[LeftInputPoint]);
+		for (int InputNode = 0; InputNode < (*CurrentNodeTrio).size(); InputNode++)
+		{
+			(CurrentNode) = &(*CurrentNodeTrio)[InputNode];
+			SelfOutput << (*CurrentNode).ActivationPotential << "	";		// Input nodes having always 1 input
+		}
+		SelfOutput << "	";
+	}
+
+	SelfOutput << endl << endl;
+	SelfOutput << "InputR:		";
+	for (int RightInputPoint = 1; RightInputPoint < this->InputLayer.size(); RightInputPoint += 2)
+	{	// Inputs
+		(CurrentNodeTrio) = &(this->InputLayer[RightInputPoint]);
+		for (int InputNode = 0; InputNode < (*CurrentNodeTrio).size(); InputNode++)
+		{
+			(CurrentNode) = &(*CurrentNodeTrio)[InputNode];
+			SelfOutput << (*CurrentNode).Inputs[0] << "	";		// Input nodes having always 1 input
+		}
+		SelfOutput << "	";
+	}
+
+	SelfOutput << endl;
+	SelfOutput << "WeightR:	";
+	for (int RightInputPoint = 0; RightInputPoint < this->InputLayer.size(); RightInputPoint += 2)
+	{	// Weights
+		(CurrentNodeTrio) = &(this->InputLayer[RightInputPoint]);
+		for (int InputNode = 0; InputNode < (*CurrentNodeTrio).size(); InputNode++)
+		{
+			(CurrentNode) = &(*CurrentNodeTrio)[InputNode];
+			SelfOutput << (*CurrentNode).Weights[0] << "	";		// Input nodes having always 1 input
+		}
+		SelfOutput << "	";
+	}
+
+	SelfOutput << endl;
+	SelfOutput << "ThresholdR:	";
+	for (int RightInputPoint = 0; RightInputPoint < this->InputLayer.size(); RightInputPoint += 2)
+	{	// Threshold
+		(CurrentNodeTrio) = &(this->InputLayer[RightInputPoint]);
+		for (int InputNode = 0; InputNode < (*CurrentNodeTrio).size(); InputNode++)
+		{
+			(CurrentNode) = &(*CurrentNodeTrio)[InputNode];
+			SelfOutput << (*CurrentNode).Threshold << "	";		// Input nodes having always 1 input
+		}
+		SelfOutput << "	";
+	}
+
+	SelfOutput << endl;
+	SelfOutput << "ActivationR:	";
+	for (int RightInputPoint = 0; RightInputPoint < this->InputLayer.size(); RightInputPoint += 2)
+	{	// Activation
+		(CurrentNodeTrio) = &(this->InputLayer[RightInputPoint]);
+		for (int InputNode = 0; InputNode < (*CurrentNodeTrio).size(); InputNode++)
+		{
+			(CurrentNode) = &(*CurrentNodeTrio)[InputNode];
+			SelfOutput << (*CurrentNode).ActivationPotential << "	";		// Input nodes having always 1 input
+		}
+		SelfOutput << "	";
+	}
+
+	SelfOutput << endl;
+
+	// Write hidden layer
+	SelfOutput << endl << "Hidden layer(s): " << endl;
+	SelfOutput << endl;
+	
+	for (int HiddenLayer = 0; HiddenLayer < this->HiddenLayers.size(); HiddenLayer++)
+	{
+		SelfOutput << "Hidden layer #" << HiddenLayer << endl;
+		SelfOutput << "Inputs:	" << endl;
+		for (int InputNode = 0; InputNode < this->InputLayer.size() * this->InputLayer[0].size(); InputNode++)
+		{	// Inputs:
+			SelfOutput << InputNode << "		";
+			for (int HiddenNode = 0; HiddenNode < this->HiddenLayers[HiddenLayer].size(); HiddenNode++)
+			{
+				(CurrentNode) = &(this->HiddenLayers[HiddenLayer][HiddenNode]);
+				SelfOutput << (*CurrentNode).Inputs[InputNode] << "	";
+			}
+			SelfOutput << endl;
+		}
+
+		SelfOutput << endl;
+		SelfOutput << "Weights:	" << endl;
+		for (int InputNode = 0; InputNode < this->InputLayer.size() * this->InputLayer[0].size(); InputNode++)
+		{	// Weights:
+			SelfOutput << InputNode << "		";
+			for (int HiddenNode = 0; HiddenNode < this->HiddenLayers[HiddenLayer].size(); HiddenNode++)
+			{
+				(CurrentNode) = &(this->HiddenLayers[HiddenLayer][HiddenNode]);
+				SelfOutput << (*CurrentNode).Weights[InputNode] << "	";
+			}
+			SelfOutput << endl;
+		}
+		SelfOutput << endl;
+		SelfOutput << "Threshold:	";
+
+		for (int HiddenNode = 0; HiddenNode < this->HiddenLayers[HiddenLayer].size(); HiddenNode++)
+		{
+			(CurrentNode) = &(this->HiddenLayers[HiddenLayer][HiddenNode]);
+			SelfOutput << (*CurrentNode).Threshold << "	";
+		}
+
+		SelfOutput << endl;
+		SelfOutput << "Activation:	";
+		for (int HiddenNode = 0; HiddenNode < this->HiddenLayers[HiddenLayer].size(); HiddenNode++)
+		{
+			(CurrentNode) = &(this->HiddenLayers[HiddenLayer][HiddenNode]);
+			SelfOutput << (*CurrentNode).ActivationPotential << "	";
+		}
+	}
+	
+
+	// Write output layer
+	SelfOutput << endl;
+	SelfOutput << endl << "Output layer: " << endl;
+	SelfOutput << endl;
+
+	SelfOutput << "Inputs:	" << endl;
+	for (int HiddenNode = 0; HiddenNode < this->HiddenLayers[this->HiddenLayers.size()-1].size(); HiddenNode++)
+	{	// Inputs:
+		SelfOutput << HiddenNode << "		";
+		SelfOutput << this->OutputLayer[0].Inputs[HiddenNode] << endl;		// Hack it to OutputLayer[0] for now, only the one output angle
+	}
+
+	SelfOutput << endl;
+	SelfOutput << "Weights:	" << endl;
+	for (int HiddenNode = 0; HiddenNode < this->HiddenLayers[this->HiddenLayers.size()-1].size(); HiddenNode++)
+	{	// Weights:
+		SelfOutput << HiddenNode << "		";
+		SelfOutput << this->OutputLayer[0].Weights[HiddenNode] << endl;		// Hack it to OutputLayer[0] for now, only the one output angle
+	}
+	SelfOutput << endl;
+	SelfOutput << "Threshold:	" << this->OutputLayer[0].Threshold;
+
+	SelfOutput << endl;
+	SelfOutput << "Activation:	" << this->OutputLayer[0].ActivationPotential;
+	SelfOutput << endl;
+
+	SelfOutput.close();
+}
+
 int main()
 {
 	LandmarkSets InputLandmarkSets;
 	InputLandmarkSets.ReadInputData(INPUT_FILE_NAME);
 	InputLandmarkSets.SeperateTestAndTrainData(0.2);
+
+	FeedforwardLayeredNetwork AngleEstimator;
+	AngleEstimator.ConstructNetwork();
+	AngleEstimator.WriteSelf("123");
 
 	cout << "Press enter to end the program." << endl;
 	cin.ignore();

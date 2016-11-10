@@ -117,7 +117,7 @@ class CenterAndNormalizeLandmarksWidget(ScriptedLoadableModuleWidget):
     AnglesTable = slicer.util.getModuleGui('DegradeTransverseProcesses').children()[3].children()[1]
     #print (AnglesTable.item(0,1)[0])
     MaxAngles = []
-    for InputSet in range(AnglesTable.rowCount):
+    for InputSet in range(AnglesTable.rowCount/2):
       MaxAngles.append(float(AnglesTable.item(InputSet,1).data(0)))
             
     with open(CenteredDataOutput, 'wb') as csvfile:
