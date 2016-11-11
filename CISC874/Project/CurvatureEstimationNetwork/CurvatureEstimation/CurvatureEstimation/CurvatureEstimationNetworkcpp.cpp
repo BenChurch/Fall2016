@@ -831,11 +831,12 @@ int main()
 	LandmarkSets InputLandmarkSets;
 	InputLandmarkSets.ReadInputData(INPUT_FILE_NAME);
 
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 5; i++)
 	{	// Use a for-loop to write data to MATLAB csv files - DANGEROUS - make sure terminates - includes user input continuation
-		cout << "Press enter to generate file set " << i << " or press crtl + c to terminate program." << endl;
+		cout << "Press enter to generate file set " << i+1 << " or press crtl + c to terminate program." << endl;
 		cin.ignore();
-
+		InputLandmarkSets.TestingData.clear();
+		InputLandmarkSets.TrainingData.clear();
 		InputLandmarkSets.SeperateTestAndTrainData(0.2);
 		InputLandmarkSets.WriteTestingData(to_string(i));
 		InputLandmarkSets.WriteTrainingData(to_string(i));
