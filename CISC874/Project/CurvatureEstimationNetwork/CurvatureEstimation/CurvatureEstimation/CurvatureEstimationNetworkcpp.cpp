@@ -53,6 +53,10 @@ public:
 	void ShuffleTrainingData();
 	void PrintTestingData();
 	void PrintTrainingData();
+
+	// Each of these writes 2 .csv files, one for coords, one for angles, in a fashion suitable for MATLAB use 
+	void WriteTestingData(string FileID);
+	void WriteTrainingData(string FileID);
 };
 
 void LandmarkSets::ReadInputData(const char * FileName)
@@ -281,6 +285,66 @@ void LandmarkSets::PrintTrainingData()
 	}
 }
 
+void LandmarkSets::WriteTestingData(string FileID)
+{
+	ofstream CoordsOutput, AnglesOutput;
+	CoordsOutput.open("TestingCoords_" + FileID + ".txt");
+	AnglesOutput.open("TestingAngles_" + FileID + ".txt");
+	string line;
+
+	LandmarksNode CurrentSetNode;
+	LandmarkPoint CurrentLandmarkPoint;
+	for (int TestSet = 0; TestSet < this->TestingData.size(); TestSet++)
+	{
+		CurrentSetNode = this->TestingData[TestSet];
+		//cout << CurrentSetNode.Name << " (testing set)	" << "True curvature: " << CurrentSetNode.TrueCurvature << endl;
+		//cout << "		" << "RL" << "		" << "AP" << "		" << "SI" << endl;
+		for (int LandmarkPoint = 0; LandmarkPoint < CurrentSetNode.LandmarkPoints.size(); LandmarkPoint++)
+		{
+			CurrentLandmarkPoint = CurrentSetNode.LandmarkPoints[LandmarkPoint];
+			//cout << CurrentLandmarkPoint.Name << "	";
+			line += to_string((CurrentLandmarkPoint).Position[0]) + ", ";
+			line += to_string((CurrentLandmarkPoint).Position[1]) + ", ";
+			line += to_string((CurrentLandmarkPoint).Position[0]);
+			CoordsOutput << line << endl;
+			line.clear();		
+		}
+		AnglesOutput << CurrentSetNode.TrueCurvature << endl;
+	}
+	CoordsOutput.close();
+	AnglesOutput.close();
+}
+
+void LandmarkSets::WriteTrainingData(string FileID)
+{
+	ofstream CoordsOutput, AnglesOutput;
+	CoordsOutput.open("TrainingCoords_" + FileID + ".txt");
+	AnglesOutput.open("TrainingAngles_" + FileID + ".txt");
+	string line;
+
+	LandmarksNode CurrentSetNode;
+	LandmarkPoint CurrentLandmarkPoint;
+	for (int TestSet = 0; TestSet < this->TrainingData.size(); TestSet++)
+	{
+		CurrentSetNode = this->TrainingData[TestSet];
+		//cout << CurrentSetNode.Name << " (testing set)	" << "True curvature: " << CurrentSetNode.TrueCurvature << endl;
+		//cout << "		" << "RL" << "		" << "AP" << "		" << "SI" << endl;
+		for (int LandmarkPoint = 0; LandmarkPoint < CurrentSetNode.LandmarkPoints.size(); LandmarkPoint++)
+		{
+			CurrentLandmarkPoint = CurrentSetNode.LandmarkPoints[LandmarkPoint];
+			//cout << CurrentLandmarkPoint.Name << "	";
+			line += to_string((CurrentLandmarkPoint).Position[0]) + ", ";
+			line += to_string((CurrentLandmarkPoint).Position[1]) + ", ";
+			line += to_string((CurrentLandmarkPoint).Position[0]);
+			CoordsOutput << line << endl;
+			line.clear();
+		}
+		AnglesOutput << CurrentSetNode.TrueCurvature << endl;
+	}
+	CoordsOutput.close();
+	AnglesOutput.close();
+}
+
 class Node
 {
 public:
@@ -337,7 +401,9 @@ public:
 	vector<Node> OutputLayer;				// Should just contain one node if estimating curvature angle
 
 	double LearningRate = LEARNING_RATE;
-	double Momentum = MOMENTUM;
+	double Momentum = MOMENTUM;				// THIS WONT WORK EACH WEIGHT NEEDS MOMENTUM
+	
+	double AverageEstimationError = 0;
 
 	void ConstructNetwork();
 
@@ -467,7 +533,90 @@ void FeedforwardLayeredNetwork::Feedforward(vector<LandmarkPoint> PatientLandmar
 
 void FeedforwardLayeredNetwork::Backpropagate(double CorrectAngle)
 {
+	double SumSquaredError = 0;
+	double LastWeightChange = 0;			// Used with momentum feature
+	double Output;
 
+	Node * CurrentOutputNode;
+	Node * CurrentHiddenNode;
+	Node * FeedingNode;						// Points to node who feeds input corresponding to weight being changed
+	double NewDelta;
+
+	vector<double> ErrorVector;				// Stores output nodes errors, and used to calculate deltas
+	vector<vector<double>> HiddenDeltas;	// Stores weight change factors computed from gradient descent
+	vector<double> HiddenDeltaLayer;		// Stores each hidden layers deltas to push onto HiddenDeltas
+
+	for (int OutputNode = 0; OutputNode < this->OutputLayer.size(); OutputNode++)
+	{	// OutputNode can only be 0, with CorrectAngle as double
+		CurrentOutputNode = &(this->OutputLayer[OutputNode]);
+		Output = ((*CurrentOutputNode).ActivationPotential - 0.5) * 360;	// Subtract 0.5 and multiply by 180 to map [0,1] to [-180,180]
+		SumSquaredError += (CorrectAngle - Output) * (CorrectAngle - Output);
+		ErrorVector.push_back(CorrectAngle - Output);
+		HiddenDeltaLayer.push_back(ErrorVector[OutputNode] * (*CurrentOutputNode).ActivationPotential * (1 - (*CurrentOutputNode).ActivationPotential));
+		for (int HiddenNode = 0; HiddenNode < this->HiddenLayers[this->HiddenLayers.size() - 1].size(); HiddenNode++)
+		{
+			(*CurrentOutputNode).Weights[HiddenNode] += (this->LearningRate) * ((*CurrentOutputNode).Inputs[HiddenNode]) * (HiddenDeltaLayer[OutputNode])
+				+ (this->Momentum * LastWeightChange);
+			LastWeightChange = (this->LearningRate) * ((*CurrentOutputNode).Inputs[HiddenNode]) * (HiddenDeltaLayer[OutputNode])
+				+ (this->Momentum * LastWeightChange);
+		}
+	}	// ASSERT that all output nodes' weights have been adjusted
+
+	HiddenDeltas.push_back(HiddenDeltaLayer);
+	HiddenDeltaLayer.clear();
+	for (int HiddenLayer = this->HiddenLayers.size() - 1; HiddenLayer >= 1; HiddenLayer--)
+	{
+		for (int HiddenNode = 0; HiddenNode < this->HiddenLayers[HiddenLayer].size(); HiddenNode++)
+		{
+			NewDelta = 0;
+			CurrentHiddenNode = &(this->HiddenLayers[HiddenLayer][HiddenNode]);
+			for (int RemainingHiddenLayer = this->HiddenLayers.size() - HiddenLayer - 1; RemainingHiddenLayer >= 0; RemainingHiddenLayer--)
+			{
+				for (int RemainingLayerNode = 0; RemainingLayerNode < this->HiddenLayers[RemainingHiddenLayer].size(); RemainingLayerNode++)
+				{
+					NewDelta += HiddenDeltas[RemainingHiddenLayer][RemainingLayerNode] * (this->HiddenLayers[RemainingHiddenLayer][RemainingLayerNode].Weights[HiddenNode]);
+				}
+			}
+			HiddenDeltaLayer.push_back(NewDelta * (*CurrentHiddenNode).ActivationPotential * (1 - (*CurrentHiddenNode).ActivationPotential));
+		}
+		HiddenDeltas.push_back(HiddenDeltaLayer);
+		HiddenDeltaLayer.clear();
+		for (int HiddenNode = 0; HiddenNode < this->HiddenLayers[HiddenLayer].size(); HiddenNode++)
+		{
+			CurrentHiddenNode = &(this->HiddenLayers[HiddenLayer][HiddenNode]);
+			for (int HiddenNodeWeight = 0; HiddenNodeWeight < (*CurrentHiddenNode).Weights.size(); HiddenNodeWeight++)
+			{
+				FeedingNode = &(this->HiddenLayers[HiddenLayer - 1][HiddenNodeWeight]);
+				(*CurrentHiddenNode).Weights[HiddenNodeWeight] += (this->LearningRate) * (HiddenDeltas[this->HiddenLayers.size() - HiddenLayer - 1][HiddenNode])* ((*FeedingNode).ActivationPotential);
+			}
+		}
+	}	// ASSERT that all weights have been updated except those connecting input to first layer of hidden nodes
+
+	for (int HiddenNode = 0; HiddenNode < this->HiddenLayers[0].size(); HiddenNode++)
+	{
+		NewDelta = 0;
+		CurrentHiddenNode = &(this->HiddenLayers[0][HiddenNode]);
+		for (int RemainingHiddenLayer = this->HiddenLayers.size() - 1; RemainingHiddenLayer >= 0; RemainingHiddenLayer--)
+		{
+			for (int RemainingLayerNode = this->HiddenLayers.size() - 1; RemainingLayerNode > 0; RemainingLayerNode--)
+			{
+				NewDelta += HiddenDeltas[RemainingHiddenLayer][RemainingLayerNode] * (this->HiddenLayers[RemainingHiddenLayer][RemainingLayerNode].Weights[HiddenNode]);		// CANT BE RIGHT, HiddenNode not connected to HiddenLayerss[][]
+			}
+		}
+		HiddenDeltaLayer.push_back(NewDelta * (*CurrentHiddenNode).ActivationPotential * (1 - (*CurrentHiddenNode).ActivationPotential));
+	}
+	HiddenDeltas.push_back(HiddenDeltaLayer);
+	HiddenDeltaLayer.clear();
+
+	for (int HiddenNode = 0; HiddenNode < this->HiddenLayers[0].size(); HiddenNode++)
+	{
+		CurrentHiddenNode = &(this->HiddenLayers[0][HiddenNode]);
+		for (int HiddenNodeWeight = 0; HiddenNodeWeight < (*CurrentHiddenNode).Weights.size(); HiddenNodeWeight++)
+		{
+			FeedingNode = &(this->InputLayer[HiddenNodeWeight / 3][HiddenNodeWeight % 3]);
+			(*CurrentHiddenNode).Weights[HiddenNodeWeight] += (this->LearningRate) * (HiddenDeltas[HiddenDeltas.size() - 1][HiddenNode])* ((*FeedingNode).ActivationPotential);
+		}
+	}	// ASSERT that all weights have been updated
 }
 
 void FeedforwardLayeredNetwork::WriteSelf(string FileIdentifier)						// Just used for my debugging purposes. Output doesn't necessarily line up - can be confusing
@@ -681,13 +830,24 @@ int main()
 {
 	LandmarkSets InputLandmarkSets;
 	InputLandmarkSets.ReadInputData(INPUT_FILE_NAME);
-	InputLandmarkSets.SeperateTestAndTrainData(0.2);
+
+	for (int i = 0; i < 10; i++)
+	{	// Use a for-loop to write data to MATLAB csv files - DANGEROUS - make sure terminates - includes user input continuation
+		cout << "Press enter to generate file set " << i << " or press crtl + c to terminate program." << endl;
+		cin.ignore();
+
+		InputLandmarkSets.SeperateTestAndTrainData(0.2);
+		InputLandmarkSets.WriteTestingData(to_string(i));
+		InputLandmarkSets.WriteTrainingData(to_string(i));
+	}
 
 	FeedforwardLayeredNetwork AngleEstimator;
 	AngleEstimator.ConstructNetwork();
 	AngleEstimator.WriteSelf("1");
-	AngleEstimator.Feedforward(InputLandmarkSets.MarkupNodes[0].LandmarkPoints);
-	AngleEstimator.WriteSelf("2");
+	//AngleEstimator.Feedforward(InputLandmarkSets.MarkupNodes[0].LandmarkPoints);
+	//AngleEstimator.WriteSelf("2");
+	//AngleEstimator.Backpropagate(InputLandmarkSets.MarkupNodes[0].TrueCurvature);
+	//AngleEstimator.WriteSelf("3");
 
 	cout << "Press enter to end the program." << endl;
 	cin.ignore();
