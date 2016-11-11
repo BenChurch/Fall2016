@@ -57,6 +57,7 @@ public:
 	// Each of these writes 2 .csv files, one for coords, one for angles, in a fashion suitable for MATLAB use 
 	void WriteTestingData(string FileID);
 	void WriteTrainingData(string FileID);
+  void WriteAllData(string FileID);
 };
 
 void LandmarkSets::ReadInputData(const char * FileName)
@@ -297,19 +298,17 @@ void LandmarkSets::WriteTestingData(string FileID)
 	for (int TestSet = 0; TestSet < this->TestingData.size(); TestSet++)
 	{
 		CurrentSetNode = this->TestingData[TestSet];
-		//cout << CurrentSetNode.Name << " (testing set)	" << "True curvature: " << CurrentSetNode.TrueCurvature << endl;
-		//cout << "		" << "RL" << "		" << "AP" << "		" << "SI" << endl;
 		for (int LandmarkPoint = 0; LandmarkPoint < CurrentSetNode.LandmarkPoints.size(); LandmarkPoint++)
 		{
 			CurrentLandmarkPoint = CurrentSetNode.LandmarkPoints[LandmarkPoint];
-			//cout << CurrentLandmarkPoint.Name << "	";
-			line += to_string((CurrentLandmarkPoint).Position[0]) + ", ";
-			line += to_string((CurrentLandmarkPoint).Position[1]) + ", ";
-			line += to_string((CurrentLandmarkPoint).Position[0]);
-			CoordsOutput << line << endl;
-			line.clear();		
+      for (int dim = 0; dim < 3; dim++)
+			  line += to_string((CurrentLandmarkPoint).Position[dim]) + ", ";
 		}
-		AnglesOutput << CurrentSetNode.TrueCurvature << endl;
+    line.pop_back();  // Pops off excess " "
+    line.pop_back();  // Pops off excess ","
+    CoordsOutput << line << endl;
+    line.clear();
+    AnglesOutput << (CurrentSetNode.TrueCurvature) / 180 << endl;
 	}
 	CoordsOutput.close();
 	AnglesOutput.close();
@@ -327,22 +326,50 @@ void LandmarkSets::WriteTrainingData(string FileID)
 	for (int TestSet = 0; TestSet < this->TrainingData.size(); TestSet++)
 	{
 		CurrentSetNode = this->TrainingData[TestSet];
-		//cout << CurrentSetNode.Name << " (testing set)	" << "True curvature: " << CurrentSetNode.TrueCurvature << endl;
-		//cout << "		" << "RL" << "		" << "AP" << "		" << "SI" << endl;
-		for (int LandmarkPoint = 0; LandmarkPoint < CurrentSetNode.LandmarkPoints.size(); LandmarkPoint++)
-		{
-			CurrentLandmarkPoint = CurrentSetNode.LandmarkPoints[LandmarkPoint];
-			//cout << CurrentLandmarkPoint.Name << "	";
-			line += to_string((CurrentLandmarkPoint).Position[0]) + ", ";
-			line += to_string((CurrentLandmarkPoint).Position[1]) + ", ";
-			line += to_string((CurrentLandmarkPoint).Position[0]);
-			CoordsOutput << line << endl;
-			line.clear();
-		}
-		AnglesOutput << CurrentSetNode.TrueCurvature << endl;
+    for (int LandmarkPoint = 0; LandmarkPoint < CurrentSetNode.LandmarkPoints.size(); LandmarkPoint++)
+    {
+      CurrentLandmarkPoint = CurrentSetNode.LandmarkPoints[LandmarkPoint];
+      for (int dim = 0; dim < 3; dim++)
+        line += to_string((CurrentLandmarkPoint).Position[dim]) + ", ";
+    }
+    line.pop_back();  // Pops off excess " "
+    line.pop_back();  // Pops off excess ","
+    CoordsOutput << line << endl;
+    line.clear();
+    AnglesOutput << (CurrentSetNode.TrueCurvature) / 180 << endl;
 	}
 	CoordsOutput.close();
 	AnglesOutput.close();
+}
+
+void LandmarkSets::WriteAllData(string FileID)
+{
+  ofstream CoordsOutput, AnglesOutput;
+  CoordsOutput.open("AllCoords_" + FileID + ".txt");
+  AnglesOutput.open("AllAngles_" + FileID + ".txt");
+  string line;
+
+  LandmarksNode CurrentSetNode;
+  LandmarkPoint CurrentLandmarkPoint;
+  for (int Set = 0; Set < this->TrainingData.size() + this->TestingData.size(); Set++)
+  {
+    if (Set < this->TrainingData.size())
+      CurrentSetNode = this->TrainingData[Set];
+    else CurrentSetNode = this->TestingData[Set - this->TrainingData.size()];
+    for (int LandmarkPoint = 0; LandmarkPoint < CurrentSetNode.LandmarkPoints.size(); LandmarkPoint++)
+    {
+      CurrentLandmarkPoint = CurrentSetNode.LandmarkPoints[LandmarkPoint];
+      for (int dim = 0; dim < 3; dim++)
+        line += to_string((CurrentLandmarkPoint).Position[dim]) + ", ";
+    }
+    line.pop_back();  // Pops off excess " "
+    line.pop_back();  // Pops off excess ","
+    CoordsOutput << line << endl;
+    line.clear();
+    AnglesOutput << (CurrentSetNode.TrueCurvature) / 180 << endl;
+  }
+  CoordsOutput.close();
+  AnglesOutput.close();
 }
 
 class Node
@@ -831,15 +858,15 @@ int main()
 	LandmarkSets InputLandmarkSets;
 	InputLandmarkSets.ReadInputData(INPUT_FILE_NAME);
 
+  InputLandmarkSets.SeperateTestAndTrainData(0.2);  // Needed for now to get WriteAllData to work
 	for (int i = 0; i < 5; i++)
 	{	// Use a for-loop to write data to MATLAB csv files - DANGEROUS - make sure terminates - includes user input continuation
 		cout << "Press enter to generate file set " << i+1 << " or press crtl + c to terminate program." << endl;
 		cin.ignore();
-		InputLandmarkSets.TestingData.clear();
-		InputLandmarkSets.TrainingData.clear();
-		InputLandmarkSets.SeperateTestAndTrainData(0.2);
-		InputLandmarkSets.WriteTestingData(to_string(i));
-		InputLandmarkSets.WriteTrainingData(to_string(i));
+		InputLandmarkSets.WriteAllData(to_string(i));
+    //InputLandmarkSets.TestingData.clear();
+    //InputLandmarkSets.TrainingData.clear();
+    //InputLandmarkSets.SeperateTestAndTrainData(0.2);
 	}
 
 	FeedforwardLayeredNetwork AngleEstimator;
