@@ -242,6 +242,7 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
     self.MisplacedLandmarkLabels = []
     self.RightLeftScale = 1000          # Length of vector in coronal plane used to misplace point to behind a rib
     self.AntPostScale = 20   # Length of vector in parasagital plane used to misplace point from behind rib onto rib
+    self.MaxNoiseMM = 20    # 
     
   def DegradeInputData(self, NoiseStdDev, DeletionFraction, DisplacementFraction):
     
@@ -364,7 +365,22 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
       for InputPoint in range(CurrentLandmarkSet.__len__()):
         CurrentLandmarkPoint = CurrentLandmarkSet[InputPoint][1]
         for dim in range(3):      # for each of the point's spatial dimensions
-          CurrentLandmarkPoint[dim] += numpy.random.standard_normal() * self.NoiseStdDev
+          #CurrentLandmarkPoint[dim] += numpy.random.standard_normal() * self.NoiseStdDev
+          CandidateNoise = numpy.random.uniform(self.MaxNoiseMM)
+          while (self.CumulativeDistribution(self.NoiseStdDev, CandidateNoise) > numpy.random.uniform()):
+            # We accept CandidateNoise probabilistically
+            CandidateNoise = numpy.random.uniform(self.MaxNoiseMM)
+          if (numpy.random.uniform() > 0.5):
+            CandidateNoise = (-1.0) * CandidateNoise  # Noise must operate in both directions
+          # We instantiate CandidateNoise probabilistically
+          CurrentLandmarkPoint[dim] += CandidateNoise    
+          
+  def NormalDistribution(self, StdDev, Arg):
+    return (1.0/(numpy.sqrt(2*(StdDev*StdDev)*numpy.pi))) * (numpy.exp((-(Arg*Arg))/(2*StdDev*StdDev)))
+   
+  def CumulativeDistribution(self, StdDev, Arg):
+    import math
+    return (1.0/2) * (1 + math.erf(Arg / (StdDev * math.sqrt(2))))
    
   # returns vector pointing from symmetric neighbor to DisplacementPoint, estimates it from nearby points if symmetric neighbor is missing
   def EstimateRightLeftVector(self, DisplacementPoint, LandmarkSet, RightLeftScale):
