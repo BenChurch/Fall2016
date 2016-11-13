@@ -859,7 +859,7 @@ int main()
 	InputLandmarkSets.ReadInputData(INPUT_FILE_NAME);
 
   InputLandmarkSets.SeperateTestAndTrainData(0.2);  // Needed for now to get WriteAllData to work
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < 1; i++)
 	{	// Use a for-loop to write data to MATLAB csv files - DANGEROUS - make sure terminates - includes user input continuation
 		cout << "Press enter to generate file set " << i+1 << " or press crtl + c to terminate program." << endl;
 		cin.ignore();

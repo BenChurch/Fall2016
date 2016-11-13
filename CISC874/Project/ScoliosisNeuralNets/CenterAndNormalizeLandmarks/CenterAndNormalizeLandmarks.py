@@ -102,18 +102,19 @@ class CenterAndNormalizeLandmarksWidget(ScriptedLoadableModuleWidget):
   def onReloadButton(self):
     self.MarkupNodes = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
     for PointSet in range(self.MarkupNodes.__len__()):
-      if (self.MarkupNodes.__getitem__(PointSet).GetNthFiducialLabel(0)[-1] == "@"):
+      if (self.MarkupNodes.__getitem__(PointSet).GetNthFiducialLabel(0)[-1] == "-Z"):
         slicer.mrmlScene.RemoveNode(self.MarkupNodes.__getitem__(PointSet))
-      if (self.MarkupNodes.__getitem__(PointSet).GetNthFiducialLabel(0)[-1] == "#"):
+      if (self.MarkupNodes.__getitem__(PointSet).GetNthFiducialLabel(0)[-1] == "-N"):
         slicer.mrmlScene.RemoveNode(self.MarkupNodes.__getitem__(PointSet))
     slicer.util.reloadScriptedModule('CenterAndNormalizeLandmarks')
     
   # Assumes CalculateAngles of DegradeTransverseProcesses has been done
   def onSaveButton(self):
     import csv
-    CenteredDataOutput = qt.QFileDialog.getSaveFileName(0, "Centered point sets", "", "CSV File (*.csv)")
+    CenteredDataOutput = qt.QFileDialog.getSaveFileName(0, "Zeroed point sets", "", "CSV File (*.csv)")
     NormalizedDataOutput = qt.QFileDialog.getSaveFileName(0, "Normalized point sets", "", "CSV File (*.csv)")
     self.MarkupNodes = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
+    self.MarkupNodes = sorted(self.MarkupNodes, key = lambda DataSet: DataSet.GetName())
     AnglesTable = slicer.util.getModuleGui('DegradeTransverseProcesses').children()[3].children()[1]
     #print (AnglesTable.item(0,1)[0])
     MaxAngles = []
@@ -126,8 +127,8 @@ class CenterAndNormalizeLandmarksWidget(ScriptedLoadableModuleWidget):
       CompleteSetNum = 0
       for MarkupsNode in range(self.MarkupNodes.__len__()):
         CurrentLandmarkSet = self.MarkupNodes.__getitem__(MarkupsNode)
-        if(CurrentLandmarkSet.GetName()[-1] == "@"):
-          # If the landmark set is a modified one
+        if(CurrentLandmarkSet.GetName()[-1] == "Z"):
+          # If the landmark set is a zeroed one
           writer.writerow(['Max angle:', str(MaxAngles[CompleteSetNum]), CurrentLandmarkSet.GetName(), '']) 
           CompleteSetNum += 1
           for LandmarkPoint in range(CurrentLandmarkSet.GetNumberOfFiducials()):
@@ -141,8 +142,8 @@ class CenterAndNormalizeLandmarksWidget(ScriptedLoadableModuleWidget):
       CompleteSetNum = 0
       for MarkupsNode in range(self.MarkupNodes.__len__()):
         CurrentLandmarkSet = self.MarkupNodes.__getitem__(MarkupsNode)
-        if(CurrentLandmarkSet.GetName()[-1] == "#"):
-          # If the landmark set is a modified one
+        if(CurrentLandmarkSet.GetName()[-1] == "N"):
+          # If the landmark set is a normalized one
           writer.writerow(['Max angle:', str(MaxAngles[CompleteSetNum]), CurrentLandmarkSet.GetName(), '']) 
           CompleteSetNum += 1
           for LandmarkPoint in range(CurrentLandmarkSet.GetNumberOfFiducials()):
@@ -182,12 +183,12 @@ class CenterPointsLogic(ScriptedLoadableModuleLogic):
     # Create new FiducialMarkupNodes for Slicer scene
     for InputSet in range(self.LandmarkPointSets.__len__()):
       NewMarkupsNode = slicer.vtkMRMLMarkupsFiducialNode()
-      NewMarkupsNode.SetName(self.InputData.__getitem__(InputSet).GetName() + "@")
+      NewMarkupsNode.SetName(self.InputData.__getitem__(InputSet).GetName() + "-Z")
       CurrentLandmarkSet = self.LandmarkPointSets[InputSet]
       for InputPoint in range(CurrentLandmarkSet.__len__()):
         CurrentLandmarkPoint = CurrentLandmarkSet[InputPoint][1]
         NewMarkupsNode.AddFiducial(CurrentLandmarkPoint[0], CurrentLandmarkPoint[1], CurrentLandmarkPoint[2])
-        NewPointLabel = self.LandmarkPointSets[InputSet][InputPoint][0] + "@"
+        NewPointLabel = self.LandmarkPointSets[InputSet][InputPoint][0]
         NewMarkupsNode.SetNthFiducialLabel(InputPoint, NewPointLabel)
       slicer.mrmlScene.AddNode(NewMarkupsNode)
            
@@ -235,12 +236,12 @@ class NormalizeDataLogic(ScriptedLoadableModuleLogic):
     # Create new FiducialMarkupNodes for Slicer scene
     for InputSet in range(self.LandmarkPointSets.__len__()):
       NewMarkupsNode = slicer.vtkMRMLMarkupsFiducialNode()
-      NewMarkupsNode.SetName(self.InputData.__getitem__(InputSet).GetName() + "#")
+      NewMarkupsNode.SetName(self.InputData.__getitem__(InputSet).GetName() + "-N")
       CurrentLandmarkSet = self.LandmarkPointSets[InputSet]
       for InputPoint in range(CurrentLandmarkSet.__len__()):
         CurrentLandmarkPoint = CurrentLandmarkSet[InputPoint][1]
         NewMarkupsNode.AddFiducial(CurrentLandmarkPoint[0], CurrentLandmarkPoint[1], CurrentLandmarkPoint[2])
-        NewPointLabel = self.LandmarkPointSets[InputSet][InputPoint][0] + "#"
+        NewPointLabel = self.LandmarkPointSets[InputSet][InputPoint][0]
         NewMarkupsNode.SetNthFiducialLabel(InputPoint, NewPointLabel)
       slicer.mrmlScene.AddNode(NewMarkupsNode)
           

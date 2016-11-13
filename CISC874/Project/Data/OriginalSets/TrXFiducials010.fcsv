@@ -31,7 +31,4 @@ vtkMRMLMarkupsFiducialNode_26,-37.8945,-52.5131,-302.21,0,0,0,1,1,1,0,L2L,,vtkMR
 vtkMRMLMarkupsFiducialNode_27,45.8001,-47.2758,-298.192,0,0,0,1,1,1,0,L2R,,vtkMRMLModelNode4
 vtkMRMLMarkupsFiducialNode_28,-43.3833,-46.5532,-334.413,0,0,0,1,1,1,0,L3L,,vtkMRMLModelNode4
 vtkMRMLMarkupsFiducialNode_29,53.8542,-39.1715,-332.426,0,0,0,1,1,1,0,L3R,,vtkMRMLModelNode4
-vtkMRMLMarkupsFiducialNode_30,-37.1256,-32.1594,-362.595,0,0,0,1,1,1,0,L4L,,
-vtkMRMLMarkupsFiducialNode_31,46.8975,-25.5969,-364.582,0,0,0,1,1,1,0,L4R,,
-vtkMRMLMarkupsFiducialNode_32,-39.9793,-30.915,-396.953,0,0,0,1,1,1,0,L5L,,
-vtkMRMLMarkupsFiducialNode_33,55.3079,-28.4094,-392.059,0,0,0,1,1,1,0,L5R,,
+

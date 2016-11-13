@@ -218,16 +218,23 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
     
     
   def PopulateAnglesTable(self, MaxAngles, MaxVertebrae, MarkupPoints):
-    for i, Angle in enumerate(MaxAngles):
-      CurrentLandmarkSet = MarkupPoints.__getitem__(i)
+    SortedAngles  = sorted(zip(MarkupPoints, MaxAngles), key = lambda DataSet: DataSet[0].GetName())
+    SortedNames = sorted(zip(MarkupPoints, MaxVertebrae), key = lambda DataSet: DataSet[0].GetName())
+    #print SortedAngles
+    #print SortedNames
+    SortedMarkupPoints = zip(*SortedAngles)[0]
+    SortedMaxAngles = zip(*SortedAngles)[1]
+    SortedMaxVertebrae = zip(*SortedNames)[1]
+    for i, Angle in enumerate(SortedMaxAngles):
+      CurrentLandmarkSet = SortedMarkupPoints.__getitem__(i)
       self.angleTable.setItem(i, 0, qt.QTableWidgetItem())
       self.angleTable.setItem(i, 1, qt.QTableWidgetItem())
       self.angleTable.setItem(i, 2, qt.QTableWidgetItem())
       self.angleTable.setItem(i, 3, qt.QTableWidgetItem())
       self.angleTable.item(i, 0).setText(CurrentLandmarkSet.GetName())
       self.angleTable.item(i, 1).setText(str(Angle))
-      self.angleTable.item(i, 2).setText(MaxVertebrae[0][i])
-      self.angleTable.item(i, 3).setText(MaxVertebrae[1][i])
+      #self.angleTable.item(i, 2).setText(SortedMaxVertebrae[0][i])
+      #self.angleTable.item(i, 3).setText(SortedMaxVertebrae[1][i])
 #
 # DegradeTransverseProcessesLogic
 #
@@ -285,7 +292,7 @@ class DegradeTransverseProcessesLogic(ScriptedLoadableModuleLogic):
       for InputPoint in range(CurrentLandmarkSet.__len__()):
         CurrentLandmarkPoint = CurrentLandmarkSet[InputPoint][1]
         NewMarkupsNode.AddFiducial(CurrentLandmarkPoint[0], CurrentLandmarkPoint[1], CurrentLandmarkPoint[2])
-        NewPointLabel = self.LandmarkPointSets[InputSet][InputPoint][0] + "~"
+        NewPointLabel = self.LandmarkPointSets[InputSet][InputPoint][0]
         NewMarkupsNode.SetNthFiducialLabel(InputPoint, NewPointLabel)
       slicer.mrmlScene.AddNode(NewMarkupsNode)
            
@@ -536,7 +543,7 @@ class CalculateAnglesLogic(ScriptedLoadableModuleLogic):
         self.LandmarkPoints[LandmarkSet].append(CurrentLandmarkSet.GetMarkupPointVector(LandmarkPoint,0))
     self.Angles = []
     self.MaxAngles = []
-    self.MaxVertebrae = ""
+    #self.MaxVertebrae = ""
       
   def CalculateAngles(self):
     for LandmarkSet in range(self.MarkupsNodes.__len__()):
@@ -557,8 +564,8 @@ class CalculateAnglesLogic(ScriptedLoadableModuleLogic):
       
   # returns maximum angle between any two vertbrae, measured from the left transvserse process 
   def FindMaxCoronalAngles(self):
-    self.MinVertebra = []
-    self.MaxVertebra = []
+    self.MinLabels = []
+    self.MaxLabels = []
     self.MaxAngles = []
     for LandmarkSet in range(self.MarkupsNodes.__len__()):
       CurrentLandmarkSet = self.MarkupsNodes.__getitem__(LandmarkSet)
@@ -571,11 +578,11 @@ class CalculateAnglesLogic(ScriptedLoadableModuleLogic):
         if(self.Angles[LandmarkSet][Vertebra/2] > MaxAngle):
           MaxVertebra = self.LandmarkLabels[LandmarkSet][Vertebra][:-1]
           MaxAngle = self.Angles[LandmarkSet][Vertebra/2]
-      self.MinVertebra.append(MinVertebra)
-      self.MaxVertebra.append(MaxVertebra)
+      self.MinLabels.append(MinVertebra)
+      self.MaxLabels.append(MaxVertebra)
       self.MaxAngle = MaxAngle - MinAngle
       self.MaxAngles.append(self.MaxAngle)
-    self.MaxVertebrae = (self.MinVertebra, self.MaxVertebra)
+    self.MaxVertebrae = (self.MinLabels, self.MaxLabels)
     return (self.MaxAngles, self.MaxVertebrae)
   
   def FindVectorLength(self, Vector):
