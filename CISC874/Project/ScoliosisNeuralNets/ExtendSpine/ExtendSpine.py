@@ -420,7 +420,7 @@ class CombineSetsLogic(ScriptedLoadableModuleLogic):
     for DataSet in range(self.AllDataSets.__len__()):
       if self.AllDataSets.__getitem__(DataSet).GetName()[-1] == "C":
         self.ExtendedDataSets.append(self.AllDataSets.__getitem__(DataSet))
-      elif self.AllDataSets.__getitem__(DataSet).GetName()[-1] == "Z":
+      elif self.AllDataSets.__getitem__(DataSet).GetName()[-1] == "~":
         self.DegradedDataSets.append(self.AllDataSets.__getitem__(DataSet))
     self.ExtendedDataSets = sorted(self.ExtendedDataSets, key=lambda DataSet: DataSet.GetName())
     self.DegradedDataSets = sorted(self.DegradedDataSets, key=lambda DataSet: DataSet.GetName())
