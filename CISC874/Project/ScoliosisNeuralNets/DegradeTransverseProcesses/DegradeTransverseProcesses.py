@@ -169,8 +169,8 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
     self.MarkupNodes = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
     logic = CalculateAnglesLogic()
     self.Angles = logic.CalculateAngles()
-    (self.MaxAngles, self.MaxVertebrae) = logic.FindMaxCoronalAngles()
-    self.PopulateAnglesTable(self.MaxAngles, self.MaxVertebrae, self.MarkupNodes)
+    (self.MaxAngles, self.CriticalVertebrae) = logic.FindMaxCoronalAngles()
+    self.PopulateAnglesTable(self.MaxAngles, self.CriticalVertebrae, self.MarkupNodes)
     
   def onReloadButton(self):
     self.MarkupNodes = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
@@ -217,14 +217,14 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
       writer.writerow(['EOF', '', '', ''])
     
     
-  def PopulateAnglesTable(self, MaxAngles, MaxVertebrae, MarkupPoints):
+  def PopulateAnglesTable(self, MaxAngles, CriticalVertebrae, MarkupPoints):
     SortedAngles  = sorted(zip(MarkupPoints, MaxAngles), key = lambda DataSet: DataSet[0].GetName())
-    SortedNames = sorted(zip(MarkupPoints, MaxVertebrae), key = lambda DataSet: DataSet[0].GetName())
-    #print SortedAngles
-    #print SortedNames
+    SortedMinVertebraeZip = sorted(zip(MarkupPoints, CriticalVertebrae[0]), key = lambda DataSet: DataSet[0].GetName())
+    SortedMinVertebrae = zip(*SortedMinVertebraeZip)[1]
+    SortedMaxVertebraeZip = sorted(zip(MarkupPoints, CriticalVertebrae[1]), key = lambda DataSet: DataSet[0].GetName())
+    SortedMaxVertebrae = zip(*SortedMaxVertebraeZip)[1]
     SortedMarkupPoints = zip(*SortedAngles)[0]
     SortedMaxAngles = zip(*SortedAngles)[1]
-    SortedMaxVertebrae = zip(*SortedNames)[1]
     for i, Angle in enumerate(SortedMaxAngles):
       CurrentLandmarkSet = SortedMarkupPoints.__getitem__(i)
       self.angleTable.setItem(i, 0, qt.QTableWidgetItem())
@@ -233,8 +233,8 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
       self.angleTable.setItem(i, 3, qt.QTableWidgetItem())
       self.angleTable.item(i, 0).setText(CurrentLandmarkSet.GetName())
       self.angleTable.item(i, 1).setText(str(Angle))
-      #self.angleTable.item(i, 2).setText(SortedMaxVertebrae[0][i])
-      #self.angleTable.item(i, 3).setText(SortedMaxVertebrae[1][i])
+      self.angleTable.item(i, 2).setText(SortedMinVertebrae[i])
+      self.angleTable.item(i, 3).setText(SortedMaxVertebrae[i])
 #
 # DegradeTransverseProcessesLogic
 #
