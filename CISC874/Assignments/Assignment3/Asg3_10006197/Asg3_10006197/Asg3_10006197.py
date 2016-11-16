@@ -1,4 +1,21 @@
-﻿import csv, numpy, math
+﻿# CISC 874 Assignment #3 - Written by Ben Church - 10006197
+
+# This short program defines a network class suitable to the problem at hand.
+# Its architecture was hard-coded given the known application, and the
+# resulting ease of implementation over a generalizable network.
+# The networks only method is ReduceDimensionality. This trains the
+# networks weight values on all the input samples, and keeps track of 
+# the output resulting from each input, to be later written out.
+
+# The network uses the weight update algorithm exactly as described in
+# the class notes.
+
+# The main program reads in and organizes the sound data, and then runs it
+# throught the network, Python allows this to be done with 5 lines.
+# The networks output history is then written to output.csv which can 
+# be converted to a .wav file by MATLAB.
+
+import csv, numpy, math
 
 class Network:
     def __init__(self):
@@ -10,8 +27,6 @@ class Network:
 
         # Will contain network ouputs for each input, to be writtent to 'output.csv'
         self.OutputHistory = []
-
-        #self.CoVarMat = [[0,0],[0,0]]  # [[x1x1, x1y2], [x2y1, y2y2]]
 
     def ReduceDimensionality(self, ChannelZero, ChannelOne):
         for Input in zip(ChannelZero, ChannelOne):
@@ -27,7 +42,7 @@ class Network:
             self.Weights[1] += ((self.LearningRate) * (self.Output) * (self.Inputs[1]) - (self.Output * self.Output * self.Weights[1]))
 
 # Read sound.csv into one array for each channel
-SoundFile = open('./sound.csv', 'rt', encoding = 'ascii')
+SoundFile = open('./sound.csv', 'rt')
 LineReader = csv.reader(SoundFile)
 (ChannelZero, ChannelOne) = list((zip(*LineReader)))
 
@@ -36,8 +51,10 @@ PCANetwork.ReduceDimensionality(ChannelZero, ChannelOne)
 
 with open('./output.csv', 'w') as csvfile:
     OutputWriter = csv.writer(csvfile, delimiter = ',', lineterminator = '\n')
-    OutputWriter.writerow(['Input sample #','Resulting output'])
+    #OutputWriter.writerow(['Input sample #','Resulting output'])   --  MATLAB needs rows to be similar, header messes this up
     for i, Output in enumerate(PCANetwork.OutputHistory):
-        OutputWriter.writerow([str(i), str(Output)])
+        #OutputWriter.writerow([str(i), str(Output)])       --      leave off indices rather than write MATLAB code
+        OutputWriter.writerow([str(Output)])
+
 for weight in PCANetwork.Weights:
     print(weight)
