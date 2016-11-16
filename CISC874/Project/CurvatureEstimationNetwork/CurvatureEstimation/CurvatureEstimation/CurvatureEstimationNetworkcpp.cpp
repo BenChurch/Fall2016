@@ -14,6 +14,8 @@ static const char * Dir = ".";	// Using current directory
 static const char * INPUT_FILE_NAME = "Input.csv";
 static const char * OUTPUT_FILE_NAME = "Output.txt";
 
+static const int MAX_COBB_ANGLE = 150;      // Maps the network's [0, 1] range output to 0 deg to MAX_COBB_ANGLE deg
+
 static const int MAX_TRAINING_EPOCHS = 100;
 
 static const int NUM_HIDDEN_LAYERS = 1;
@@ -423,9 +425,16 @@ class FeedforwardLayeredNetwork
 public:
 	FeedforwardLayeredNetwork();
 
+  double AngleEstimate;
+  string InferiorCriticalVertebraEstimate;
+  string SuperiorCriticalVertebraEstimate;
+
+  // Catalogue of possible landmarked vertebrae to convert network critical vertebrae estimates to numbers to error
+  vector<string> Vertebrae;
+
 	vector<vector<Node>> InputLayer;     // Try organizing input analogously to spinal geometry    InputLayer[Vertebra][0] == Left     InputLayer[Vertebra][1] == Right
 	vector<vector<Node>> HiddenLayers;
-	vector<Node> OutputLayer;				// Should just contain one node if estimating curvature angle
+	vector<Node> OutputLayer;				// Contains 18 nodes, first for curvature estimation, 17 more to identify the two critical vertebrae
 
 	double LearningRate = LEARNING_RATE;
 	double Momentum = MOMENTUM;				// THIS WONT WORK EACH WEIGHT NEEDS MOMENTUM
@@ -436,6 +445,7 @@ public:
 
 	void Feedforward(vector<LandmarkPoint> PatientLandmarks);
 	void Backpropagate(double CorrectAngle);
+  void BackpropagateOneLayer(double CorrectAngle, string InferiorVertebra, string SuperiorVertebra);
 
 	void WriteSelf(string FileIdentifier);
 private:
@@ -445,6 +455,8 @@ FeedforwardLayeredNetwork::FeedforwardLayeredNetwork()
 {
 	SetCurrentDirectoryA(Dir);
 	srand(time(NULL));			// Provide random number seed for random weight initialization
+  // Catalogue of possible landmarked vertebrae to convert network critical vertebrae estimates to numbers to error
+  this->Vertebrae = { "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12", "L1", "L2", "L3", "L4", "L5" };
 }
 
 void FeedforwardLayeredNetwork::ConstructNetwork()
@@ -497,7 +509,7 @@ void FeedforwardLayeredNetwork::ConstructNetwork()
 	this->HiddenLayers.push_back(CurrentHiddenLayer);
   }
 
-  for (int OutputNode = 0; OutputNode < 1; OutputNode++)		// Hack - just need one output node
+  for (int OutputNode = 0; OutputNode < 18; OutputNode++)		// Magic number: 18, first node for angle estimation, 17 more to identify the critical vertebrae
   {
 	  for (int HiddenNode = 0; HiddenNode < this->HiddenLayers[this->HiddenLayers.size()-1].size(); HiddenNode++)
 	  {
@@ -556,6 +568,33 @@ void FeedforwardLayeredNetwork::Feedforward(vector<LandmarkPoint> PatientLandmar
 	{
 		this->OutputLayer[OutputNode].ComputeSigmoidalActivation();
 	}	// ASSERT entire network in equilibrium
+
+  this->AngleEstimate = this->OutputLayer[0].ActivationPotential * MAX_COBB_ANGLE;
+
+  // Identify which identification nodes are active
+  Node * CurrentOutputNode;
+  double LargestActivation = 0;
+  int LargestActivationNode = 0;
+  double SecondLargestActivation = 0;
+  int SecondLargestActivationNode = 0;
+  for (int OutputNode = 1; OutputNode < this->OutputLayer.size(); OutputNode++)
+  {
+    CurrentOutputNode = &(this->OutputLayer[OutputNode]);
+    if ((*CurrentOutputNode).ActivationPotential > LargestActivation)
+    {
+      SecondLargestActivation = LargestActivation;
+      SecondLargestActivationNode = LargestActivationNode;
+      LargestActivation = (*CurrentOutputNode).ActivationPotential;
+      LargestActivationNode = OutputNode;
+    }
+    else if ((*CurrentOutputNode).ActivationPotential > SecondLargestActivation)
+    {
+      SecondLargestActivation = (*CurrentOutputNode).ActivationPotential;
+      SecondLargestActivationNode = OutputNode;
+    }
+  }
+  this->InferiorCriticalVertebraEstimate = this->Vertebrae[SecondLargestActivationNode-1];
+  this->SuperiorCriticalVertebraEstimate = this->Vertebrae[LargestActivationNode-1];
 }
 
 void FeedforwardLayeredNetwork::Backpropagate(double CorrectAngle)
@@ -574,7 +613,7 @@ void FeedforwardLayeredNetwork::Backpropagate(double CorrectAngle)
 	vector<double> HiddenDeltaLayer;		// Stores each hidden layers deltas to push onto HiddenDeltas
 
 	for (int OutputNode = 0; OutputNode < this->OutputLayer.size(); OutputNode++)
-	{	// OutputNode can only be 0, with CorrectAngle as double
+	{	
 		CurrentOutputNode = &(this->OutputLayer[OutputNode]);
 		Output = ((*CurrentOutputNode).ActivationPotential - 0.5) * 360;	// Subtract 0.5 and multiply by 180 to map [0,1] to [-180,180]
 		SumSquaredError += (CorrectAngle - Output) * (CorrectAngle - Output);
@@ -644,6 +683,55 @@ void FeedforwardLayeredNetwork::Backpropagate(double CorrectAngle)
 			(*CurrentHiddenNode).Weights[HiddenNodeWeight] += (this->LearningRate) * (HiddenDeltas[HiddenDeltas.size() - 1][HiddenNode])* ((*FeedingNode).ActivationPotential);
 		}
 	}	// ASSERT that all weights have been updated
+}
+
+void FeedforwardLayeredNetwork::BackpropagateOneLayer(double CorrectAngle, string InferiorVertebra, string SuperiorVertebra)
+{
+  // Some kind of normalized error is needed, to combine the apples and oranges error of the curvature estimation and critical vertebrae indentification
+  // Propose dividing angle error by 90 deg, dividing number of vertebrae between networks critical estimations and true ones each by two, add all together
+  double AngleError;                      // First component of combined error
+  double InferiorIdentificationError = 0; // Second component
+  double SuperiorIdentificationError = 0; // Third
+  double SumSquaredError = 0;             // As suggested above
+  double LastWeightChange = 0;		      	// Used with momentum feature
+  double Output;
+
+  Node * CurrentOutputNode;
+  Node * CurrentHiddenNode;
+  Node * FeedingNode;						// Points to node who feeds input corresponding to weight being changed
+  double NewDelta;
+
+  vector<double> ErrorVector;				// Stores output nodes errors, and used to calculate deltas
+  //vector<vector<double>> HiddenDeltas;	// Stores weight change factors computed from gradient descent
+  vector<double> HiddenDeltaLayer;		// Stores each hidden layers deltas to push onto HiddenDeltas
+
+  AngleError = (this->AngleEstimate - CorrectAngle);
+  SumSquaredError += AngleError * AngleError;
+
+  int Vertebra = 0;
+  if (InferiorCriticalVertebraEstimate != InferiorVertebra)
+  {  //
+    while (this->Vertebrae[Vertebra] != InferiorCriticalVertebraEstimate)
+    {
+      Vertebra++;
+    }
+  }
+  else
+  { // Even if we guess the CriticalInferiorVertebra correctly, we should still fix error
+
+  }
+
+  if (this->SuperiorCriticalVertebraEstimate != SuperiorVertebra)
+  {
+    for (int Vertebra = 0; Vertebra < 17; Vertebra++)
+    {
+
+    }
+  }
+  else
+  { // Even if we guess the CriticalSuperiorVertebra correctly, we should still fix error
+
+  }
 }
 
 void FeedforwardLayeredNetwork::WriteSelf(string FileIdentifier)						// Just used for my debugging purposes. Output doesn't necessarily line up - can be confusing
