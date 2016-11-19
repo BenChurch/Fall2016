@@ -1,3 +1,4 @@
+#include <array>
 #include <fstream>
 #include <iostream>
 #include <math.h>		// For computation of nodes' sigmoidal-exponential activation function
@@ -379,6 +380,8 @@ class Node
 public:
 	// Default constructor needs Weight and Threhsold values
 	Node(vector<double> InitialWeights, double InitialThreshold);
+
+	// Allocate/instantiate node attributes
 	vector<double> Inputs;
 	vector<double> Weights;
 	double Threshold;
@@ -425,12 +428,12 @@ class FeedforwardLayeredNetwork
 public:
 	FeedforwardLayeredNetwork();
 
-  double AngleEstimate;
-  string InferiorCriticalVertebraEstimate;
-  string SuperiorCriticalVertebraEstimate;
+	double AngleEstimate;
+	string InferiorCriticalVertebraEstimate;
+	string SuperiorCriticalVertebraEstimate;
 
-  // Catalogue of possible landmarked vertebrae to convert network critical vertebrae estimates to numbers to error
-  vector<string> Vertebrae;
+	// Catalogue of possible landmarked vertebrae to convert network critical vertebrae estimates to numbers to error
+	vector<string> Vertebrae;
 
 	vector<vector<Node>> InputLayer;     // Try organizing input analogously to spinal geometry    InputLayer[Vertebra][0] == Left     InputLayer[Vertebra][1] == Right
 	vector<vector<Node>> HiddenLayers;
@@ -440,12 +443,13 @@ public:
 	double Momentum = MOMENTUM;				// THIS WONT WORK EACH WEIGHT NEEDS MOMENTUM
 	
 	double AverageEstimationError = 0;
+	double ErrorOffset = 0.45;			// Used to push the weights past the minimum adjustment required for correctness
 
 	void ConstructNetwork();
 
 	void Feedforward(vector<LandmarkPoint> PatientLandmarks);
 	void Backpropagate(double CorrectAngle);
-  void BackpropagateOneLayer(double CorrectAngle, string InferiorVertebra, string SuperiorVertebra);
+	void BackpropagateOneLayer(double CorrectAngle, string InferiorVertebra, string SuperiorVertebra);
 
 	void WriteSelf(string FileIdentifier);
 private:
@@ -455,8 +459,8 @@ FeedforwardLayeredNetwork::FeedforwardLayeredNetwork()
 {
 	SetCurrentDirectoryA(Dir);
 	srand(time(NULL));			// Provide random number seed for random weight initialization
-  // Catalogue of possible landmarked vertebrae to convert network critical vertebrae estimates to numbers to error
-  this->Vertebrae = { "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12", "L1", "L2", "L3", "L4", "L5" };
+	// Catalogue of possible landmarked vertebrae to convert network critical vertebrae estimates to numbers to error
+	this->Vertebrae = { "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12", "L1", "L2", "L3", "L4", "L5" };
 }
 
 void FeedforwardLayeredNetwork::ConstructNetwork()
@@ -687,35 +691,65 @@ void FeedforwardLayeredNetwork::Backpropagate(double CorrectAngle)
 
 void FeedforwardLayeredNetwork::BackpropagateOneLayer(double CorrectAngle, string InferiorVertebra, string SuperiorVertebra)
 {
-  // Some kind of normalized error is needed, to combine the apples and oranges error of the curvature estimation and critical vertebrae indentification
-  // Propose dividing angle error by 90 deg, dividing number of vertebrae between networks critical estimations and true ones each by two, add all together
-  double AngleError;                      // First component of combined error
-  double InferiorIdentificationError = 0; // Second component
-  double SuperiorIdentificationError = 0; // Third
-  double SumSquaredError = 0;             // As suggested above
-  double LastWeightChange = 0;		      	// Used with momentum feature
-  double Output;
+	// Some kind of normalized error is needed, to combine the apples and oranges error of the curvature estimation and critical vertebrae indentification
+	// Propose dividing angle error by 90 deg, dividing number of vertebrae between networks critical estimations and true ones each by two, add all together
+	double AngleError;                      // First component of combined error
+	double InferiorIdentificationError = 0; // Second component
+	double SuperiorIdentificationError = 0; // Third
+	double SumSquaredError = 0;             // As suggested above
+	double LastWeightChange = 0;		      	// Used with momentum feature
+	double Output;
 
-  Node * CurrentOutputNode;
-  Node * CurrentHiddenNode;
-  Node * FeedingNode;						// Points to node who feeds input corresponding to weight being changed
-  double NewDelta;
+	Node * CurrentOutputNode;
+	Node * CurrentHiddenNode;
+	Node * FeedingNode;						// Points to node who feeds input corresponding to weight being changed
+	double NewDelta;
 
-  vector<double> ErrorVector;				// Stores output nodes errors, and used to calculate deltas
-  //vector<vector<double>> HiddenDeltas;	// Stores weight change factors computed from gradient descent
-  vector<double> HiddenDeltaLayer;		// Stores each hidden layers deltas to push onto HiddenDeltas
+	vector<array<double, 3>> ErrorVector;				// Stores output nodes errors, and used to calculate deltas
+	array<double, 3> Error;
+	//vector<vector<double>> HiddenDeltas;	// Stores weight change factors computed from gradient descent
+	vector<double> HiddenDeltaLayer;		// Stores each hidden layers deltas to push onto HiddenDeltas
 
-  AngleError = (this->AngleEstimate - CorrectAngle);
-  SumSquaredError += AngleError * AngleError;
+	AngleError = (this->AngleEstimate - CorrectAngle);
+	SumSquaredError += AngleError * AngleError;
 
-  int Vertebra = 0;
-  if (InferiorCriticalVertebraEstimate != InferiorVertebra)
-  {  //
-    while (this->Vertebrae[Vertebra] != InferiorCriticalVertebraEstimate)
-    {
-      Vertebra++;
-    }
-  }
+	int Vertebra = 16;		// Initialize at bottom of spine and work towards superior vertebra at lower indices
+	if (this->InferiorCriticalVertebraEstimate != InferiorVertebra)
+	{  // Compute critical inferior vertebra identification error
+		while (this->Vertebrae[Vertebra] != this->InferiorCriticalVertebraEstimate)
+		{
+			Vertebra--;
+		}
+		while (this->Vertebrae[Vertebra] != InferiorVertebra)
+		{
+			InferiorIdentificationError += 1;
+			Vertebra--;
+		}
+		InferiorIdentificationError = InferiorIdentificationError / 2.0;	// Normalization, as proposed
+	}
+
+	// Add inferior critical vertebra estimation error to overall error
+	SumSquaredError += InferiorIdentificationError * InferiorIdentificationError;
+
+	Vertebra = 0;	// Reinitialize at top of spine and work down
+	if (this->SuperiorCriticalVertebraEstimate != SuperiorVertebra)
+	{	// Compute critical superior vertebra identification error
+		while (this->Vertebrae[Vertebra] != this->SuperiorCriticalVertebraEstimate)
+		{
+			Vertebra++;
+		}
+		while (this->Vertebrae[Vertebra] != SuperiorVertebra)
+		{
+			SuperiorCriticalVertebraEstimate += 1;
+			Vertebra++;
+		}
+		SuperiorIdentificationError = SuperiorIdentificationError / 2.0;	// Normalization, as proposed
+	}
+
+	// Add superior critical vertebra estimation error to overall error
+	SumSquaredError += SuperiorIdentificationError * SuperiorIdentificationError;
+	Error = { [AngleError, InferiorIdentificationError, SuperiorIdentificationError] };
+	ErrorVector.push_back(Error);
   else
   { // Even if we guess the CriticalInferiorVertebra correctly, we should still fix error
 
