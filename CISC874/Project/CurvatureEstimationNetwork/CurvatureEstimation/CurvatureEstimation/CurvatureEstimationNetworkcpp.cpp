@@ -705,15 +705,37 @@ void FeedforwardLayeredNetwork::BackpropagateOneLayer(double CorrectAngle, strin
 	Node * FeedingNode;						// Points to node who feeds input corresponding to weight being changed
 	double NewDelta;
 
-	vector<array<double, 3>> ErrorVector;				// Stores output nodes errors, and used to calculate deltas
-	array<double, 3> Error;
-	//vector<vector<double>> HiddenDeltas;	// Stores weight change factors computed from gradient descent
-	vector<double> HiddenDeltaLayer;		// Stores each hidden layers deltas to push onto HiddenDeltas
+	vector<vector<double>> ErrorVector;				// Stores output nodes errors, and used to calculate deltas
+	vector<double> Error;                     // Holds latest element of ErrorVector
+  vector<double> deltaHiddenToOutput;		// Stores deltas for weight changes from hidden to output layer
 
 	AngleError = (this->AngleEstimate - CorrectAngle);
 	SumSquaredError += AngleError * AngleError;
+  Error.push_back(AngleError);
 
-	int Vertebra = 16;		// Initialize at bottom of spine and work towards superior vertebra at lower indices
+  //int Vertebra = 0;	// Reinitialize at top of spine and work down
+  for (int Vertebra = 0; Vertebra < this->OutputLayer.size(); Vertebra++)
+  {
+    if ()
+  }
+  if (this->SuperiorCriticalVertebraEstimate != SuperiorVertebra)
+  {	// Compute critical superior vertebra identification error
+    while ((this->Vertebrae[Vertebra] != this->SuperiorCriticalVertebraEstimate) && (this->Vertebrae[Vertebra] != SuperiorVertebra))
+    {
+      Error.push_back()
+      Vertebra++;
+    }
+     // We are either at the network's estimation, or the true top critical vertebra
+    while (this->Vertebrae[Vertebra] != SuperiorVertebra)
+    {
+      SuperiorCriticalVertebraEstimate += 1;
+      Vertebra++;
+    }
+    SuperiorIdentificationError = SuperiorIdentificationError / 2.0;	// Normalization, as proposed
+  }
+  Error.push_back(SuperiorIdentificationError);
+
+	Vertebra = 16;		// Initialize at bottom of spine and work towards superior vertebra at lower indices
 	if (this->InferiorCriticalVertebraEstimate != InferiorVertebra)
 	{  // Compute critical inferior vertebra identification error
 		while (this->Vertebrae[Vertebra] != this->InferiorCriticalVertebraEstimate)
@@ -727,45 +749,21 @@ void FeedforwardLayeredNetwork::BackpropagateOneLayer(double CorrectAngle, strin
 		}
 		InferiorIdentificationError = InferiorIdentificationError / 2.0;	// Normalization, as proposed
 	}
-
+  Error.push_back(InferiorIdentificationError);
 	// Add inferior critical vertebra estimation error to overall error
 	SumSquaredError += InferiorIdentificationError * InferiorIdentificationError;
 
-	Vertebra = 0;	// Reinitialize at top of spine and work down
-	if (this->SuperiorCriticalVertebraEstimate != SuperiorVertebra)
-	{	// Compute critical superior vertebra identification error
-		while (this->Vertebrae[Vertebra] != this->SuperiorCriticalVertebraEstimate)
-		{
-			Vertebra++;
-		}
-		while (this->Vertebrae[Vertebra] != SuperiorVertebra)
-		{
-			SuperiorCriticalVertebraEstimate += 1;
-			Vertebra++;
-		}
-		SuperiorIdentificationError = SuperiorIdentificationError / 2.0;	// Normalization, as proposed
-	}
 
 	// Add superior critical vertebra estimation error to overall error
 	SumSquaredError += SuperiorIdentificationError * SuperiorIdentificationError;
-	Error = { [AngleError, InferiorIdentificationError, SuperiorIdentificationError] };
 	ErrorVector.push_back(Error);
-  else
-  { // Even if we guess the CriticalInferiorVertebra correctly, we should still fix error
+  Error.clear();
 
+  for (int OutputNode = 0; OutputNode < this->OutputLayer.size(); OutputNode++)
+  { // Now that we have ErrorVector for output state, populate Hidden
+    deltaHiddenToOutput.push_back
   }
 
-  if (this->SuperiorCriticalVertebraEstimate != SuperiorVertebra)
-  {
-    for (int Vertebra = 0; Vertebra < 17; Vertebra++)
-    {
-
-    }
-  }
-  else
-  { // Even if we guess the CriticalSuperiorVertebra correctly, we should still fix error
-
-  }
 }
 
 void FeedforwardLayeredNetwork::WriteSelf(string FileIdentifier)						// Just used for my debugging purposes. Output doesn't necessarily line up - can be confusing
