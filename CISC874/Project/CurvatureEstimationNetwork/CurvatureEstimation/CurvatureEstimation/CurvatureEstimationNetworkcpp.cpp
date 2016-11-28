@@ -15,14 +15,14 @@ static const char * Dir = ".";	// Using current directory
 static const char * INPUT_FILE_NAME = "Input.csv";
 static const char * OUTPUT_FILE_NAME = "Output.txt";
 
-static const int MAX_COBB_ANGLE = 150;      // Maps the network's [0, 1] range output to 0 deg to MAX_COBB_ANGLE deg
+static const int MAX_COBB_ANGLE = 120;      // Maps the network's [0, 1] range output to 0 deg to MAX_COBB_ANGLE deg
 
-static const int MAX_TRAINING_EPOCHS = 100;
+static const int MAX_TRAINING_EPOCHS = 15;
 
 static const int NUM_HIDDEN_LAYERS = 1;
 static const int NUMS_HIDDEN_NODES[1] = {10};
 static const double LEARNING_RATE = 0.15;
-static const double MOMENTUM = 0.1;
+static const double MOMENTUM = 0;
 static const double INITIAL_THRESHOLDS = 0.5;   // Initial threshold value for NON-INPUT nodes
 
 class LandmarkPoint
@@ -37,6 +37,8 @@ class LandmarksNode
 public:
 	string Name;
 	double TrueCurvature;
+	string InfCritVert;
+	string SupCritVert;
 	vector<LandmarkPoint> LandmarkPoints;
 };
 
@@ -102,6 +104,13 @@ void LandmarkSets::ReadInputData(const char * FileName)
 		getline(LineStream, Cell, ',');
 		LandmarksNode CurrentLandmarkSet;
 		CurrentLandmarkSet.TrueCurvature = atof(Cell.c_str());
+		Cell.clear();
+		getline(LineStream, Cell, ',');
+		CurrentLandmarkSet.InfCritVert = Cell;
+		Cell.clear();
+		getline(LineStream, Cell, ',');
+		CurrentLandmarkSet.SupCritVert = Cell;
+		Cell.clear();
 		getline(LineStream, Cell, ',');
 		CurrentLandmarkSet.Name = Cell;
 
@@ -139,6 +148,13 @@ void LandmarkSets::ReadInputData(const char * FileName)
 				Cell.clear();
 				getline(LineStream, Cell, ',');
 				CurrentLandmarkSet.TrueCurvature = atof(Cell.c_str());
+				Cell.clear();
+				getline(LineStream, Cell, ',');
+				CurrentLandmarkSet.InfCritVert = Cell;
+				Cell.clear();
+				getline(LineStream, Cell, ',');
+				CurrentLandmarkSet.SupCritVert = Cell;
+				Cell.clear();
 				getline(LineStream, Cell, ',');
 				CurrentLandmarkSet.Name = Cell;
 			}
@@ -155,7 +171,8 @@ void LandmarkSets::PrintAllData()
 	for (int LandmarkSet = 0; LandmarkSet < this->MarkupNodes.size(); LandmarkSet++)
 	{
 		CurrentMarkupsNode = this->MarkupNodes[LandmarkSet];
-		cout << CurrentMarkupsNode.Name << "	True curvature: " << CurrentMarkupsNode.TrueCurvature << endl;
+		cout << CurrentMarkupsNode.Name << "	True curvature: " << CurrentMarkupsNode.TrueCurvature
+			<< "	SupCritVert: " << CurrentMarkupsNode.SupCritVert << "	InfCritVert" << CurrentMarkupsNode.InfCritVert << endl;
 		cout << "		" << "RL" << "		" << "AP" << "		" << "SI" << endl;
 		for (int LandmarkPoint = 0; LandmarkPoint < CurrentMarkupsNode.LandmarkPoints.size(); LandmarkPoint++)
 		{
@@ -431,6 +448,8 @@ public:
 	double AngleEstimate;
 	string InferiorCriticalVertebraEstimate;
 	string SuperiorCriticalVertebraEstimate;
+	double MSE = 0;
+	vector<double> Error;	// Store error value for each output node, for each input's error
 
 	// Catalogue of possible landmarked vertebrae to convert network critical vertebrae estimates to numbers to error
 	vector<string> Vertebrae;
@@ -440,9 +459,8 @@ public:
 	vector<Node> OutputLayer;				// Contains 18 nodes, first for curvature estimation, 17 more to identify the two critical vertebrae
 
 	double LearningRate = LEARNING_RATE;
-	double Momentum = MOMENTUM;				// THIS WONT WORK EACH WEIGHT NEEDS MOMENTUM
+	double Momentum = MOMENTUM;				// THIS WONT WORK EACH WEIGHT NEEDS MOMENTUM ????
 	
-	double AverageEstimationError = 0;
 	double ErrorOffset = 0.45;			// Used to push the weights past the minimum adjustment required for correctness
 
 	void ConstructNetwork();
@@ -450,6 +468,11 @@ public:
 	void Feedforward(vector<LandmarkPoint> PatientLandmarks);
 	void Backpropagate(double CorrectAngle);
 	void BackpropagateOneLayer(double CorrectAngle, string InferiorVertebra, string SuperiorVertebra);
+
+	void ComputeError(double CorrectAngle, string InferiorVertebra, string SuperiorVertebra);					// Updates this->MSE based on outputNode states
+
+	void Train(LandmarkSets AllData);					// Will call Test() to gauge performance
+	double Test(vector<LandmarksNode> TestData);		// Return mean-squarred-error
 
 	void WriteSelf(string FileIdentifier);
 private:
@@ -521,7 +544,7 @@ void FeedforwardLayeredNetwork::ConstructNetwork()
 		  RandomDouble = (double)(RandomInt) / 100.0;
 		  CurrentNodeInitialWeights.push_back(RandomDouble);
 	  }
-	  Node CurrentOutputNode(CurrentNodeInitialWeights, 0);
+	  Node CurrentOutputNode(CurrentNodeInitialWeights, 0.5);
 	  CurrentNodeInitialWeights.clear();
 	  this->OutputLayer.push_back(CurrentOutputNode);
   }
@@ -531,6 +554,18 @@ void FeedforwardLayeredNetwork::ConstructNetwork()
 void FeedforwardLayeredNetwork::Feedforward(vector<LandmarkPoint> PatientLandmarks)
 {
 	LandmarkPoint * CurrentLandmarkPoint;
+
+	// Reinitialize hidden node inputs (input node inputs are simply overwritten, these are summated)
+	for (int HiddenLayer = 0; HiddenLayer < this->HiddenLayers.size(); HiddenLayer++)
+		for (int HiddenNode = 0; HiddenNode < this->HiddenLayers[HiddenLayer].size(); HiddenNode++)
+			for (int Input = 0; Input < this->HiddenLayers[HiddenLayer][HiddenNode].Inputs.size(); Input++)
+				this->HiddenLayers[HiddenLayer][HiddenNode].Inputs[Input] = 0;
+
+	// Reinitialize output node inputs
+	for (int OutputNode = 0; OutputNode < this->OutputLayer.size(); OutputNode++)
+		for (int Input = 0; Input < this->OutputLayer[OutputNode].Inputs.size(); Input++)
+			this->OutputLayer[OutputNode].Inputs[Input] = 0;
+
 	for (int Landmark = 0; Landmark < PatientLandmarks.size(); Landmark++)
 	{
 		// We will assume that Landmarks are ordered properly, L-R-L-R-etc...
@@ -572,8 +607,9 @@ void FeedforwardLayeredNetwork::Feedforward(vector<LandmarkPoint> PatientLandmar
 	{
 		this->OutputLayer[OutputNode].ComputeSigmoidalActivation();
 	}	// ASSERT entire network in equilibrium
-
-  this->AngleEstimate = this->OutputLayer[0].ActivationPotential * MAX_COBB_ANGLE;
+	
+	// Map output in range [0, 1] to angle in range [-150deg, 150deg]
+  this->AngleEstimate = (this->OutputLayer[0].ActivationPotential - 0.5) * 2 * MAX_COBB_ANGLE;
 
   // Identify which identification nodes are active
   Node * CurrentOutputNode;
@@ -584,21 +620,30 @@ void FeedforwardLayeredNetwork::Feedforward(vector<LandmarkPoint> PatientLandmar
   for (int OutputNode = 1; OutputNode < this->OutputLayer.size(); OutputNode++)
   {
     CurrentOutputNode = &(this->OutputLayer[OutputNode]);
-    if ((*CurrentOutputNode).ActivationPotential > LargestActivation)
+    if (((*CurrentOutputNode).ActivationPotential > LargestActivation) && (*CurrentOutputNode).ActivationPotential > (*CurrentOutputNode).Threshold)
     {
       SecondLargestActivation = LargestActivation;
       SecondLargestActivationNode = LargestActivationNode;
       LargestActivation = (*CurrentOutputNode).ActivationPotential;
       LargestActivationNode = OutputNode;
     }
-    else if ((*CurrentOutputNode).ActivationPotential > SecondLargestActivation)
+    else if (((*CurrentOutputNode).ActivationPotential > SecondLargestActivation) && (*CurrentOutputNode).ActivationPotential > (*CurrentOutputNode).Threshold)
     {
       SecondLargestActivation = (*CurrentOutputNode).ActivationPotential;
       SecondLargestActivationNode = OutputNode;
     }
   }
-  this->InferiorCriticalVertebraEstimate = this->Vertebrae[SecondLargestActivationNode-1];
-  this->SuperiorCriticalVertebraEstimate = this->Vertebrae[LargestActivationNode-1];
+  if (SecondLargestActivationNode > LargestActivationNode)
+  {
+	  this->InferiorCriticalVertebraEstimate = this->Vertebrae[SecondLargestActivationNode - 1];
+	  this->SuperiorCriticalVertebraEstimate = this->Vertebrae[LargestActivationNode - 1];
+  }
+  else
+  {
+	  this->InferiorCriticalVertebraEstimate = this->Vertebrae[LargestActivationNode - 1];
+	  this->SuperiorCriticalVertebraEstimate = this->Vertebrae[SecondLargestActivationNode - 1];
+  }
+  
 }
 
 void FeedforwardLayeredNetwork::Backpropagate(double CorrectAngle)
@@ -691,79 +736,214 @@ void FeedforwardLayeredNetwork::Backpropagate(double CorrectAngle)
 
 void FeedforwardLayeredNetwork::BackpropagateOneLayer(double CorrectAngle, string InferiorVertebra, string SuperiorVertebra)
 {
-	// Some kind of normalized error is needed, to combine the apples and oranges error of the curvature estimation and critical vertebrae indentification
-	// Propose dividing angle error by 90 deg, dividing number of vertebrae between networks critical estimations and true ones each by two, add all together
-	double AngleError;                      // First component of combined error
-	double InferiorIdentificationError = 0; // Second component
-	double SuperiorIdentificationError = 0; // Third
-	double SumSquaredError = 0;             // As suggested above
+	this->Error.clear();
 	double LastWeightChange = 0;		      	// Used with momentum feature
 	double Output;
 
 	Node * CurrentOutputNode;
 	Node * CurrentHiddenNode;
-	Node * FeedingNode;						// Points to node who feeds input corresponding to weight being changed
+	Node * CurrentInputNode;
+
+	vector<double> deltaHiddenToOutput;		// Stores deltas for weight changes from hidden to output layer
+	vector<double> deltaInputToHidden;		
+	
+	this->ComputeError(CorrectAngle, InferiorVertebra, SuperiorVertebra);
+
+	for (int OutputNode = 0; OutputNode < this->OutputLayer.size(); OutputNode++)
+	{ // Now that we have ErrorVector for output state, populate Hidden
+		CurrentOutputNode = &(this->OutputLayer[OutputNode]);
+		deltaHiddenToOutput.push_back(this->Error[OutputNode] * ((*CurrentOutputNode).ActivationPotential) * (1 - (*CurrentOutputNode).ActivationPotential));
+		for (int HiddenToOuptut = 0; HiddenToOuptut < (*CurrentOutputNode).Inputs.size(); HiddenToOuptut++)
+		{
+			(*CurrentOutputNode).Weights[HiddenToOuptut] += this->LearningRate * ((*CurrentOutputNode).Inputs[HiddenToOuptut]) * (deltaHiddenToOutput[OutputNode])
+				+ this->Momentum * LastWeightChange;
+			LastWeightChange = this->LearningRate * ((*CurrentOutputNode).Inputs[HiddenToOuptut]) * (deltaHiddenToOutput[OutputNode])
+				+ this->Momentum * LastWeightChange;
+		}
+	}	// ASSERT OutputLayer weights are updated
+
 	double NewDelta;
-
-	vector<vector<double>> ErrorVector;				// Stores output nodes errors, and used to calculate deltas
-	vector<double> Error;                     // Holds latest element of ErrorVector
-  vector<double> deltaHiddenToOutput;		// Stores deltas for weight changes from hidden to output layer
-
-	AngleError = (this->AngleEstimate - CorrectAngle);
-	SumSquaredError += AngleError * AngleError;
-  Error.push_back(AngleError);
-
-  //int Vertebra = 0;	// Reinitialize at top of spine and work down
-  for (int Vertebra = 0; Vertebra < this->OutputLayer.size(); Vertebra++)
-  {
-    if ()
-  }
-  if (this->SuperiorCriticalVertebraEstimate != SuperiorVertebra)
-  {	// Compute critical superior vertebra identification error
-    while ((this->Vertebrae[Vertebra] != this->SuperiorCriticalVertebraEstimate) && (this->Vertebrae[Vertebra] != SuperiorVertebra))
-    {
-      Error.push_back()
-      Vertebra++;
-    }
-     // We are either at the network's estimation, or the true top critical vertebra
-    while (this->Vertebrae[Vertebra] != SuperiorVertebra)
-    {
-      SuperiorCriticalVertebraEstimate += 1;
-      Vertebra++;
-    }
-    SuperiorIdentificationError = SuperiorIdentificationError / 2.0;	// Normalization, as proposed
-  }
-  Error.push_back(SuperiorIdentificationError);
-
-	Vertebra = 16;		// Initialize at bottom of spine and work towards superior vertebra at lower indices
-	if (this->InferiorCriticalVertebraEstimate != InferiorVertebra)
-	{  // Compute critical inferior vertebra identification error
-		while (this->Vertebrae[Vertebra] != this->InferiorCriticalVertebraEstimate)
+	for (int HiddenNode = 0; HiddenNode < this->HiddenLayers[0].size(); HiddenNode++)
+	{	// We are assuming we have one hidden layer
+		CurrentHiddenNode = &(this->HiddenLayers[0][HiddenNode]);
+		NewDelta = 0;
+		for (int OutputNode = 0; OutputNode < this->OutputLayer.size(); OutputNode++)
 		{
-			Vertebra--;
+			CurrentOutputNode = &(this->OutputLayer[OutputNode]);
+			NewDelta += (deltaHiddenToOutput[OutputNode]) * (*CurrentOutputNode).Weights[HiddenNode];
 		}
-		while (this->Vertebrae[Vertebra] != InferiorVertebra)
+		NewDelta = NewDelta * (*CurrentHiddenNode).ActivationPotential * (1 - (*CurrentHiddenNode).ActivationPotential);
+		for (int VertebraInput = 0; VertebraInput < this->InputLayer.size(); VertebraInput++)
 		{
-			InferiorIdentificationError += 1;
-			Vertebra--;
+			for (int DimensionInput = 0; DimensionInput < this->InputLayer[VertebraInput].size(); DimensionInput++)
+			{
+				CurrentInputNode = &(this->InputLayer[VertebraInput][DimensionInput]);
+				(*CurrentHiddenNode).Weights[VertebraInput * this->InputLayer[0].size() + DimensionInput] += this->LearningRate * NewDelta * (*CurrentInputNode).ActivationPotential;
+			}
+			
 		}
-		InferiorIdentificationError = InferiorIdentificationError / 2.0;	// Normalization, as proposed
 	}
-  Error.push_back(InferiorIdentificationError);
-	// Add inferior critical vertebra estimation error to overall error
-	SumSquaredError += InferiorIdentificationError * InferiorIdentificationError;
+}
 
+void FeedforwardLayeredNetwork::ComputeError(double CorrectAngle, string InferiorVertebra, string SuperiorVertebra)
+{
+	Node * CurrentOutputNode;
+	Node * CurrentHiddenNode;
+	Node * CurrentInputNode;
 
-	// Add superior critical vertebra estimation error to overall error
-	SumSquaredError += SuperiorIdentificationError * SuperiorIdentificationError;
-	ErrorVector.push_back(Error);
-  Error.clear();
+	double AngleError;                      // First component of combined error
+	double InferiorIdentificationError = 0; // Second component
+	double SuperiorIdentificationError = 0; // Third
+	double SumSquaredAngleError = 0;             // As suggested above
+	double SumSquaredIndentificationError = 0;
 
-  for (int OutputNode = 0; OutputNode < this->OutputLayer.size(); OutputNode++)
-  { // Now that we have ErrorVector for output state, populate Hidden
-    deltaHiddenToOutput.push_back
-  }
+	AngleError = (CorrectAngle - this->AngleEstimate);	// Angle error in degrees
+	SumSquaredAngleError += AngleError * AngleError;
+	this->Error.push_back(AngleError / (2*MAX_COBB_ANGLE));	// Normalize error over range [-1,1]
 
+	int Vertebra = 0;
+
+	while (this->Vertebrae[Vertebra] != SuperiorVertebra && this->Vertebrae[Vertebra] != this->SuperiorCriticalVertebraEstimate)
+	{	// Compute vertebra identification error
+		CurrentOutputNode = &(this->OutputLayer[Vertebra + 1]);
+		if ((*CurrentOutputNode).ActivationPotential > (*CurrentOutputNode).Threshold - this->ErrorOffset)
+		{	// If an output node was above threshold, despite not winning
+			SuperiorIdentificationError = -((*CurrentOutputNode).ActivationPotential - ((*CurrentOutputNode).Threshold - this->ErrorOffset));
+			this->Error.push_back(SuperiorIdentificationError);
+			SumSquaredIndentificationError += SuperiorIdentificationError * SuperiorIdentificationError;
+		}
+		else
+			this->Error.push_back(0);
+		Vertebra++;
+		// We haven't encountered an active node yet, or we'd be at this->SuperiorCriticalVertebraEstimate
+	}
+	CurrentOutputNode = &(this->OutputLayer[Vertebra + 1]);
+	if (this->Vertebrae[Vertebra] == SuperiorVertebra && this->Vertebrae[Vertebra] == this->SuperiorCriticalVertebraEstimate)
+	{	// We're finished with the loop, if both looping conditions were negated simultaneously, no error, wind up here
+		this->Error.push_back(0);
+	}
+	else if (this->Vertebrae[Vertebra] == SuperiorVertebra)
+	{	// We're at the vertebra that should be active, but it isn't
+		SuperiorIdentificationError = ((*CurrentOutputNode).Threshold + this->ErrorOffset) - (*CurrentOutputNode).ActivationPotential;
+		this->Error.push_back(SuperiorIdentificationError);
+		SumSquaredIndentificationError += SuperiorIdentificationError * SuperiorIdentificationError;
+	}
+	else if (this->Vertebrae[Vertebra] == this->SuperiorCriticalVertebraEstimate)
+	{	// We're at the node our network thinks corresponds to the critical superior vertebra, but it's wrong
+		SuperiorIdentificationError = (((*CurrentOutputNode).Threshold) - ((*CurrentOutputNode).ActivationPotential + this->ErrorOffset));
+		this->Error.push_back(SuperiorIdentificationError);
+		SumSquaredIndentificationError += SuperiorIdentificationError * SuperiorIdentificationError;
+	}
+	Vertebra++;
+
+	// Now find the inferior vertebra estimate
+	while (this->Vertebrae[Vertebra] != InferiorVertebra && this->Vertebrae[Vertebra] != this->InferiorCriticalVertebraEstimate)
+	{	// Compute vertebra identification error
+		CurrentOutputNode = &(this->OutputLayer[Vertebra + 1]);
+		if ((*CurrentOutputNode).ActivationPotential > (*CurrentOutputNode).Threshold - this->ErrorOffset)
+		{	// If an output node was above threshold, despite not winning -  ***************** catches mistaken SuperiorEstimate?
+			InferiorIdentificationError = (*CurrentOutputNode).Threshold - this->ErrorOffset - (*CurrentOutputNode).ActivationPotential;
+			this->Error.push_back(InferiorIdentificationError);
+			SumSquaredIndentificationError += InferiorIdentificationError * InferiorIdentificationError;
+		}
+		else if (((*CurrentOutputNode).ActivationPotential < (*CurrentOutputNode).Threshold + this->ErrorOffset) && (this->Vertebrae[Vertebra] == SuperiorVertebra))
+		{	// Catches mistakes when SupCritVertEstimate is too superior - we're at the node that should have been active
+			SuperiorIdentificationError = -((*CurrentOutputNode).Threshold + this->ErrorOffset) - (*CurrentOutputNode).ActivationPotential;
+			this->Error.push_back(SuperiorIdentificationError);
+			SumSquaredIndentificationError += SuperiorIdentificationError * SuperiorIdentificationError;
+		}
+		else
+			this->Error.push_back(0);
+		Vertebra++;
+		// We haven't encountered an active node yet, or we'd be at this->InferiorCriticalVertebraEstimate
+	}
+	CurrentOutputNode = &(this->OutputLayer[Vertebra + 1]);
+	if (this->Vertebrae[Vertebra] == InferiorVertebra && this->Vertebrae[Vertebra] == this->InferiorCriticalVertebraEstimate)
+	{	// We're finished with the loop, if both looping conditions were negated simultaneously, no error, wind up here
+		this->Error.push_back(0);
+	}
+	else if (this->Vertebrae[Vertebra] == InferiorVertebra)
+	{	// We're at the vertebra that should be active, but it isn't
+		InferiorIdentificationError = ((*CurrentOutputNode).Threshold + this->ErrorOffset) - (*CurrentOutputNode).ActivationPotential;
+		this->Error.push_back(InferiorIdentificationError);
+		SumSquaredIndentificationError += InferiorIdentificationError * InferiorIdentificationError;
+	}
+	else if (this->Vertebrae[Vertebra] == this->InferiorCriticalVertebraEstimate)
+	{	// We're at the node our network thinks corresponds to the critical inferior vertebra, but it's wrong
+		InferiorIdentificationError = (((*CurrentOutputNode).Threshold) - ((*CurrentOutputNode).ActivationPotential + this->ErrorOffset));
+		this->Error.push_back(InferiorIdentificationError);
+		SumSquaredIndentificationError += InferiorIdentificationError * InferiorIdentificationError;
+	}
+
+	while (this->Vertebrae[Vertebra] != "L5")
+	{	// If there are still output nodes for which to calculate error
+		Vertebra++;
+		CurrentOutputNode = &(this->OutputLayer[Vertebra + 1]);
+		if (((*CurrentOutputNode).ActivationPotential < (*CurrentOutputNode).ActivationPotential) && (this->Vertebrae[Vertebra] == InferiorVertebra))
+		{	// We got to out estimate before the correct one, this catches the error on the correct one
+			InferiorIdentificationError = -(((*CurrentOutputNode).Threshold + this->ErrorOffset) - (*CurrentOutputNode).ActivationPotential);
+			this->Error.push_back(InferiorIdentificationError);
+			SumSquaredIndentificationError += InferiorIdentificationError * InferiorIdentificationError;
+			continue;
+		}
+		if (((*CurrentOutputNode).ActivationPotential) > ((*CurrentOutputNode).Threshold - this->ErrorOffset) && !(this->SuperiorCriticalVertebraEstimate == SuperiorVertebra || this->InferiorCriticalVertebraEstimate == InferiorVertebra))
+		{	// A node is more active that should be
+			SuperiorIdentificationError = ((*CurrentOutputNode).Threshold) - ((*CurrentOutputNode).ActivationPotential + this->ErrorOffset);	// Just use this to hold error
+			this->Error.push_back(SuperiorIdentificationError);
+			SumSquaredIndentificationError += SuperiorIdentificationError * SuperiorIdentificationError;
+			continue;
+		}
+		if (((*CurrentOutputNode).ActivationPotential < (*CurrentOutputNode).Threshold + this->ErrorOffset) && !((this->SuperiorCriticalVertebraEstimate == SuperiorVertebra || this->InferiorCriticalVertebraEstimate == InferiorVertebra)))
+		{	// If a node is less active than it should be
+			InferiorIdentificationError = -(((*CurrentOutputNode).Threshold + this->ErrorOffset) - (*CurrentOutputNode).ActivationPotential);
+			this->Error.push_back(InferiorIdentificationError);
+			SumSquaredIndentificationError += InferiorIdentificationError * InferiorIdentificationError;
+			continue;
+		}
+		// Make it this far, no error on this node
+		this->Error.push_back(0);
+	}
+}
+
+void FeedforwardLayeredNetwork::Train(LandmarkSets AllData)
+{
+	LandmarksNode * CurrentLandmarksNode;
+	int CurrentTrainingEpoch = 0;
+	double MSAngleE;
+	double MSIdentE;
+	while (CurrentTrainingEpoch < MAX_TRAINING_EPOCHS)
+	{
+		MSAngleE = 0;
+		MSIdentE = 0;
+		for (int LandmarkSet = 0; LandmarkSet < AllData.TrainingData.size(); LandmarkSet++)
+		{
+			CurrentLandmarksNode = &(AllData.TrainingData[LandmarkSet]);
+			this->Feedforward((*CurrentLandmarksNode).LandmarkPoints);
+			this->BackpropagateOneLayer((*CurrentLandmarksNode).TrueCurvature, (*CurrentLandmarksNode).InfCritVert, (*CurrentLandmarksNode).SupCritVert);
+			cout << (*CurrentLandmarksNode).Name << endl << "	True curvature: " << (*CurrentLandmarksNode).TrueCurvature << "	Estimated curvature: " << this->AngleEstimate << endl;
+			cout << "	SupCritVert: " << (*CurrentLandmarksNode).SupCritVert << "		Estimated SCV: " << this->SuperiorCriticalVertebraEstimate << endl;
+			cout << "	InfCritVert: " << (*CurrentLandmarksNode).InfCritVert << "		Estimated ICV: " << this->InferiorCriticalVertebraEstimate << endl << endl;
+			MSAngleE += this->Error[0] * this->Error[0];
+			for (int OutputNode = 1; OutputNode < this->OutputLayer.size(); OutputNode++)
+				MSIdentE += this->Error[OutputNode] * this->Error[OutputNode];
+
+		}
+		cout << "MSE (angle, deg) after epoch #" << CurrentTrainingEpoch + 1 << "	-	" << this->MSE << endl;
+		CurrentTrainingEpoch++;
+	}
+}
+
+double FeedforwardLayeredNetwork::Test(vector<LandmarksNode> TestData)
+{
+	this->MSE = 0;
+	for (int LandmarkSet = 0; LandmarkSet < TestData.size(); LandmarkSet++)
+	{
+		this->Feedforward(TestData[LandmarkSet].LandmarkPoints);
+		this->ComputeError(TestData[LandmarkSet].TrueCurvature, TestData[LandmarkSet].InfCritVert, TestData[LandmarkSet].SupCritVert);
+		this->MSE += this->Error[0] * this->Error[0];	// Just use angle error, quantitative
+	}
+	this->MSE = this->MSE / (double(TestData.size()));
+	return this->MSE;
 }
 
 void FeedforwardLayeredNetwork::WriteSelf(string FileIdentifier)						// Just used for my debugging purposes. Output doesn't necessarily line up - can be confusing
@@ -978,24 +1158,18 @@ int main()
 	LandmarkSets InputLandmarkSets;
 	InputLandmarkSets.ReadInputData(INPUT_FILE_NAME);
 
-  InputLandmarkSets.SeperateTestAndTrainData(0.2);  // Needed for now to get WriteAllData to work
-	for (int i = 0; i < 1; i++)
+	 InputLandmarkSets.SeperateTestAndTrainData(0.2);  // Needed for now to get WriteAllData to work
+	for (int i = 0; i < 0; i++)
 	{	// Use a for-loop to write data to MATLAB csv files - DANGEROUS - make sure terminates - includes user input continuation
 		cout << "Press enter to generate file set " << i+1 << " or press crtl + c to terminate program." << endl;
 		cin.ignore();
 		InputLandmarkSets.WriteAllData(to_string(i));
-    //InputLandmarkSets.TestingData.clear();
-    //InputLandmarkSets.TrainingData.clear();
-    //InputLandmarkSets.SeperateTestAndTrainData(0.2);
 	}
 
 	FeedforwardLayeredNetwork AngleEstimator;
 	AngleEstimator.ConstructNetwork();
 	AngleEstimator.WriteSelf("1");
-	//AngleEstimator.Feedforward(InputLandmarkSets.MarkupNodes[0].LandmarkPoints);
-	//AngleEstimator.WriteSelf("2");
-	//AngleEstimator.Backpropagate(InputLandmarkSets.MarkupNodes[0].TrueCurvature);
-	//AngleEstimator.WriteSelf("3");
+	AngleEstimator.Train(InputLandmarkSets);
 
 	cout << "Press enter to end the program." << endl;
 	cin.ignore();

@@ -37,6 +37,10 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
 
     # Instantiate and connect widgets ...
 
+    # reload button
+    self.reloadButton = qt.QPushButton('Restart module')
+    self.layout.addWidget(self.reloadButton)
+    
     #
     # Parameters Area
     #
@@ -118,8 +122,8 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
     
     outputVerticalLayout = qt.QGridLayout(anglePanel)
 
-    TableHeaders = ["Landmark set", "Max angle", "Vertebra 1", "Vertebra 2"]
-    self.angleTable = qt.QTableWidget((slicer.mrmlScene.GetNodesByClass('vtkMRMLMarkupsFiducialNode').GetNumberOfItems() * 2), 4)
+    TableHeaders = ["Landmark set", "Max angle", "InfCritVert", "SupCritVert"]
+    self.angleTable = qt.QTableWidget((slicer.mrmlScene.GetNodesByClass('vtkMRMLMarkupsFiducialNode').GetNumberOfItems()), 4)
     self.angleTable.sortingEnabled = False
     self.angleTable.setEditTriggers(0)
     self.angleTable.setMinimumHeight(self.angleTable.verticalHeader().length() + 25)
@@ -131,10 +135,6 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
     self.savePointsWithAnglesButton = qt.QPushButton("Save altered data + angles")
     outputVerticalLayout.addWidget(self.CalculateAnglesButton, 0, 0, 1, 3)
     outputVerticalLayout.addWidget(self.savePointsWithAnglesButton, 0, 3, 1, 3)
-
-    # reload button
-    self.reloadButton = qt.QPushButton('Restart module')
-    self.layout.addWidget(self.reloadButton)
     
     # connections
     self.DegradeButton.connect('clicked(bool)', self.onDegradeButton)
@@ -221,8 +221,10 @@ class DegradeTransverseProcessesWidget(ScriptedLoadableModuleWidget):
     SortedAngles  = sorted(zip(MarkupPoints, MaxAngles), key = lambda DataSet: DataSet[0].GetName())
     SortedMinVertebraeZip = sorted(zip(MarkupPoints, CriticalVertebrae[0]), key = lambda DataSet: DataSet[0].GetName())
     SortedMinVertebrae = zip(*SortedMinVertebraeZip)[1]
+    #print SortedMinVertebrae
     SortedMaxVertebraeZip = sorted(zip(MarkupPoints, CriticalVertebrae[1]), key = lambda DataSet: DataSet[0].GetName())
     SortedMaxVertebrae = zip(*SortedMaxVertebraeZip)[1]
+    #print SortedMaxVertebrae
     SortedMarkupPoints = zip(*SortedAngles)[0]
     SortedMaxAngles = zip(*SortedAngles)[1]
     for i, Angle in enumerate(SortedMaxAngles):
@@ -549,6 +551,8 @@ class CalculateAnglesLogic(ScriptedLoadableModuleLogic):
     for LandmarkSet in range(self.MarkupsNodes.__len__()):
       CurrentLandmarkSet = self.MarkupsNodes.__getitem__(LandmarkSet)
       self.Angles.append([])
+      print ""
+      print CurrentLandmarkSet.GetName()
       for Vertebra in range(0, CurrentLandmarkSet.GetNumberOfFiducials(), 2):
         VertebraLeft = CurrentLandmarkSet.GetMarkupPointVector(Vertebra, 0)
         VertebraRight = CurrentLandmarkSet.GetMarkupPointVector(Vertebra + 1, 0)
@@ -558,8 +562,9 @@ class CalculateAnglesLogic(ScriptedLoadableModuleLogic):
           LtoRVector[dim] = LtoRVector[dim] / LtoRVectorLength
         Angle = numpy.arccos(numpy.dot(LtoRVector,[1,0,0])) * (180/numpy.pi)
         if(VertebraLeft[2] > VertebraRight[2]):
-          Angle = -Angle  
+          Angle = (-1)*Angle  
         self.Angles[LandmarkSet].append(Angle)
+        print Angle
     return self.Angles
       
   # returns maximum angle between any two vertbrae, measured from the left transvserse process 
@@ -571,13 +576,35 @@ class CalculateAnglesLogic(ScriptedLoadableModuleLogic):
       CurrentLandmarkSet = self.MarkupsNodes.__getitem__(LandmarkSet)
       MinAngle = 180
       MaxAngle = -180
+      MinVertebra = ''
+      MaxVertebra = ''
+      print CurrentLandmarkSet.GetName() + "   - Finding angles"
       for Vertebra in range(0, CurrentLandmarkSet.GetNumberOfFiducials(), 2):
         if(self.Angles[LandmarkSet][Vertebra/2] < MinAngle):
-          MinVertebra = self.LandmarkLabels[LandmarkSet][Vertebra][:-1]
+          MinVertebra = ''
+          it = 0
+          while not (self.LandmarkLabels[LandmarkSet][Vertebra][it] == "R" or (self.LandmarkLabels[LandmarkSet][Vertebra][it] == "L"and it > 0)):
+            MinVertebra += self.LandmarkLabels[LandmarkSet][Vertebra][it]
+            print "Min: " + MinVertebra
+            it += 1
           MinAngle = self.Angles[LandmarkSet][Vertebra/2]
         if(self.Angles[LandmarkSet][Vertebra/2] > MaxAngle):
-          MaxVertebra = self.LandmarkLabels[LandmarkSet][Vertebra][:-1]
+          MaxVertebra = ''
+          it = 0
+          while not (self.LandmarkLabels[LandmarkSet][Vertebra][it] == "R" or (self.LandmarkLabels[LandmarkSet][Vertebra][it] == "L" and it > 0)):
+            MaxVertebra += self.LandmarkLabels[LandmarkSet][Vertebra][it]
+            print "Max: " + MaxVertebra
+            it += 1  
           MaxAngle = self.Angles[LandmarkSet][Vertebra/2]
+      #print MinVertebra + " " + MaxVertebra
+      if (MinVertebra[0] == "T" and MaxVertebra[0] == "L") or (MinVertebra[0] == MaxVertebra[0] and int(MinVertebra[1:]) < int(MaxVertebra[1:])):
+        # The vertebra supposed to be inferior is on top
+        Vertebrae = [MaxVertebra, MinVertebra]
+        Angles = [MaxAngle, MinAngle]
+        MaxVertebra = Vertebrae[1]
+        MinVertebra = Vertebrae[0]
+        MaxAngle = Angles[1]
+        MinAngle = Angles[0]
       self.MinLabels.append(MinVertebra)
       self.MaxLabels.append(MaxVertebra)
       self.MaxAngle = MaxAngle - MinAngle

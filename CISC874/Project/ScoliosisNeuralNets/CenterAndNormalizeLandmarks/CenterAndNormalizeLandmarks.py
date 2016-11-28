@@ -115,11 +115,16 @@ class CenterAndNormalizeLandmarksWidget(ScriptedLoadableModuleWidget):
     NormalizedDataOutput = qt.QFileDialog.getSaveFileName(0, "Normalized point sets", "", "CSV File (*.csv)")
     self.MarkupNodes = slicer.util.getNodesByClass('vtkMRMLMarkupsFiducialNode')
     self.MarkupNodes = sorted(self.MarkupNodes, key = lambda DataSet: DataSet.GetName())
-    AnglesTable = slicer.util.getModuleGui('DegradeTransverseProcesses').children()[3].children()[1]
+    AnglesTable = slicer.util.getModuleGui('DegradeTransverseProcesses').children()[4].children()[1]  
     #print (AnglesTable.item(0,1)[0])
     MaxAngles = []
-    for InputSet in range(AnglesTable.rowCount/2):
+    SupCritVert = []
+    InfCritVert = []
+    for InputSet in range(AnglesTable.rowCount):
       MaxAngles.append(float(AnglesTable.item(InputSet,1).data(0)))
+      InfCritVert.append(AnglesTable.item(InputSet,2).data(0))
+      SupCritVert.append(AnglesTable.item(InputSet,3).data(0))
+      
             
     with open(CenteredDataOutput, 'wb') as csvfile:
       writer = csv.writer(csvfile, delimiter=',', quotechar='|')
@@ -144,7 +149,7 @@ class CenterAndNormalizeLandmarksWidget(ScriptedLoadableModuleWidget):
         CurrentLandmarkSet = self.MarkupNodes.__getitem__(MarkupsNode)
         if(CurrentLandmarkSet.GetName()[-1] == "N"):
           # If the landmark set is a normalized one
-          writer.writerow(['Max angle:', str(MaxAngles[CompleteSetNum]), CurrentLandmarkSet.GetName(), '']) 
+          writer.writerow(['Max angle:', str(MaxAngles[CompleteSetNum]), InfCritVert[CompleteSetNum], SupCritVert[CompleteSetNum], CurrentLandmarkSet.GetName()]) 
           CompleteSetNum += 1
           for LandmarkPoint in range(CurrentLandmarkSet.GetNumberOfFiducials()):
             CurrentPoint = CurrentLandmarkSet.GetMarkupPointVector(LandmarkPoint, 0)
