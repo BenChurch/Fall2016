@@ -364,9 +364,9 @@ void LandmarkSets::WriteTrainingData(string FileID)
 
 void LandmarkSets::WriteAllData(string FileID)
 {
-  ofstream CoordsOutput, AnglesOutput;
+  ofstream CoordsOutput, TargetOutput;
   CoordsOutput.open("AllCoords_" + FileID + ".txt");
-  AnglesOutput.open("AllAngles_" + FileID + ".txt");
+  TargetOutput.open("AllAngles_" + FileID + ".txt");
   string line;
 
   LandmarksNode CurrentSetNode;
@@ -386,10 +386,10 @@ void LandmarkSets::WriteAllData(string FileID)
     line.pop_back();  // Pops off excess ","
     CoordsOutput << line << endl;
     line.clear();
-    AnglesOutput << (CurrentSetNode.TrueCurvature) / 180 << endl;
+    TargetOutput << ((CurrentSetNode.TrueCurvature) / MAX_COBB_ANGLE) << endl;
   }
   CoordsOutput.close();
-  AnglesOutput.close();
+  TargetOutput.close();
 }
 
 class Node
