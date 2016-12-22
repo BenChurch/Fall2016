@@ -335,21 +335,26 @@ class ModelToPatientRegistrationLogic:
     
   def ComputeAnatomicScaleFactorsLocally(self):
     import math
-    
+    SumScalingFactor = 0
+    AverageScalingFactor = 0
     # When this is called, self.ModelRegistrationPoints contain no anchor points
     
     # Top most point is a special boundary condition
-    ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsLeft[0][1][0] - self.ModelRegistrationPointsLeft[1][1][0])**2 + \
+    #ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsLeft[0][1][0] - self.ModelRegistrationPointsLeft[1][1][0])**2 + \
+    ModelDistanceMetric = math.sqrt((0 - 0)**2 + \
       (self.ModelRegistrationPointsLeft[0][1][1] - self.ModelRegistrationPointsLeft[1][1][1])**2 + \
       (self.ModelRegistrationPointsLeft[0][1][2] - self.ModelRegistrationPointsLeft[1][1][2])**2)
-    CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsLeft[0][1][0] - self.PatientRegistrationPointsLeft[1][1][0])**2 + \
+    #CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsLeft[0][1][0] - self.PatientRegistrationPointsLeft[1][1][0])**2 + \
+    CurrentScalingFactor = math.sqrt((0 - 0)**2 + \
       (self.PatientRegistrationPointsLeft[0][1][1] - self.PatientRegistrationPointsLeft[1][1][1])**2 + \
       (self.PatientRegistrationPointsLeft[0][1][2] - self.PatientRegistrationPointsLeft[1][1][2])**2)/ModelDistanceMetric
     self.LocalVertebralScalingFactorsLeft.append(CurrentScalingFactor)
-    ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsRight[0][1][0] - self.ModelRegistrationPointsRight[1][1][0])**2 + \
+    #ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsRight[0][1][0] - self.ModelRegistrationPointsRight[1][1][0])**2 + \
+    ModelDistanceMetric = math.sqrt((0 - 0)**2 + \
       (self.ModelRegistrationPointsRight[0][1][1] - self.ModelRegistrationPointsRight[1][1][1])**2 + \
       (self.ModelRegistrationPointsRight[0][1][2] - self.ModelRegistrationPointsRight[1][1][2])**2)
-    CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsRight[0][1][0] - self.PatientRegistrationPointsRight[1][1][0])**2 + \
+    #CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsRight[0][1][0] - self.PatientRegistrationPointsRight[1][1][0])**2 + \
+    CurrentScalingFactor = math.sqrt((0 - 0)**2 + \
       (self.PatientRegistrationPointsRight[0][1][1] - self.PatientRegistrationPointsRight[1][1][1])**2 + \
       (self.PatientRegistrationPointsRight[0][1][2] - self.PatientRegistrationPointsRight[1][1][2])**2)/ModelDistanceMetric
     
@@ -357,16 +362,20 @@ class ModelToPatientRegistrationLogic:
     
     # Deal with the left-sided points
     for i, (ModelPointLeft, PatientPointLeft) in enumerate(zip(self.ModelRegistrationPointsLeft[1:-1], self.PatientRegistrationPointsLeft[1:-1]), start=1):
-      ModelDistanceMetric = math.sqrt((ModelPointLeft[1][0] - self.ModelRegistrationPointsLeft[i-1][1][0])**2 + \
+      #ModelDistanceMetric = math.sqrt((ModelPointLeft[1][0] - self.ModelRegistrationPointsLeft[i-1][1][0])**2 + \
+      ModelDistanceMetric = math.sqrt((0 - 0)**2 + \
         (ModelPointLeft[1][1] - self.ModelRegistrationPointsLeft[i-1][1][1])**2 + \
         (ModelPointLeft[1][2] - self.ModelRegistrationPointsLeft[i-1][1][2])**2)
-      ModelDistanceMetric = ModelDistanceMetric + math.sqrt((self.ModelRegistrationPointsLeft[i+1][1][0] - ModelPointLeft[1][0])**2 + \
+      #ModelDistanceMetric = ModelDistanceMetric + math.sqrt((self.ModelRegistrationPointsLeft[i+1][1][0] - ModelPointLeft[1][0])**2 + \
+      ModelDistanceMetric = ModelDistanceMetric + math.sqrt((0 - 0)**2 + \
         (self.ModelRegistrationPointsLeft[i+1][1][1] - ModelPointLeft[1][1])**2 + \
         (self.ModelRegistrationPointsLeft[i+1][1][2] - ModelPointLeft[1][2])**2)
-      CurrentScalingFactor = math.sqrt((PatientPointLeft[1][0] - self.PatientRegistrationPointsLeft[i-1][1][0])**2 + \
+      #CurrentScalingFactor = math.sqrt((PatientPointLeft[1][0] - self.PatientRegistrationPointsLeft[i-1][1][0])**2 + \
+      CurrentScalingFactor = math.sqrt((0 - 0)**2 + \
         (PatientPointLeft[1][1] - self.PatientRegistrationPointsLeft[i-1][1][1])**2 + \
         (PatientPointLeft[1][2] - self.PatientRegistrationPointsLeft[i-1][1][2])**2)/ModelDistanceMetric
-      CurrentScalingFactor = CurrentScalingFactor + math.sqrt((self.PatientRegistrationPointsLeft[i+1][1][0] - PatientPointLeft[1][0])**2 + \
+      #CurrentScalingFactor = CurrentScalingFactor + math.sqrt((self.PatientRegistrationPointsLeft[i+1][1][0] - PatientPointLeft[1][0])**2 + \
+      CurrentScalingFactor = CurrentScalingFactor + math.sqrt((0 - 0)**2 + \
         (self.PatientRegistrationPointsLeft[i+1][1][1] - PatientPointLeft[1][1])**2 + \
         (self.PatientRegistrationPointsLeft[i+1][1][2] - PatientPointLeft[1][2])**2)/ModelDistanceMetric
       
@@ -374,35 +383,56 @@ class ModelToPatientRegistrationLogic:
    
     # Then with the right-sided points
     for i, (ModelPointRight, PatientPointRight) in enumerate(zip(self.ModelRegistrationPointsRight[1:-1], self.PatientRegistrationPointsRight[1:-1]), start=1):
-      ModelDistanceMetric = math.sqrt((ModelPointRight[1][0] - self.ModelRegistrationPointsRight[i-1][1][0])**2 + \
+      #ModelDistanceMetric = math.sqrt((ModelPointRight[1][0] - self.ModelRegistrationPointsRight[i-1][1][0])**2 + \
+      ModelDistanceMetric = math.sqrt((0 - 0)**2 + \
         (ModelPointRight[1][1] - self.ModelRegistrationPointsRight[i-1][1][1])**2 + \
         (ModelPointRight[1][2] - self.ModelRegistrationPointsRight[i-1][1][2])**2)
-      ModelDistanceMetric = ModelDistanceMetric + math.sqrt((self.ModelRegistrationPointsRight[i+1][1][0] - ModelPointRight[1][0])**2 + \
+      #ModelDistanceMetric = ModelDistanceMetric + math.sqrt((self.ModelRegistrationPointsRight[i+1][1][0] - ModelPointRight[1][0])**2 + \
+      ModelDistanceMetric = ModelDistanceMetric + math.sqrt((0 - 0)**2 + \
         (self.ModelRegistrationPointsRight[i+1][1][1] - ModelPointRight[1][1])**2 + \
         (self.ModelRegistrationPointsRight[i+1][1][2] - ModelPointRight[1][2])**2)
-      CurrentScalingFactor = math.sqrt((PatientPointRight[1][0] - self.PatientRegistrationPointsRight[i-1][1][0])**2 + \
+      #CurrentScalingFactor = math.sqrt((PatientPointRight[1][0] - self.PatientRegistrationPointsRight[i-1][1][0])**2 + \
+      CurrentScalingFactor = math.sqrt((0 - 0)**2 + \
         (PatientPointRight[1][1] - self.PatientRegistrationPointsRight[i-1][1][1])**2 + \
         (PatientPointRight[1][2] - self.PatientRegistrationPointsRight[i-1][1][2])**2)/ModelDistanceMetric
-      CurrentScalingFactor = CurrentScalingFactor + math.sqrt((self.PatientRegistrationPointsRight[i+1][1][0] - PatientPointRight[1][0])**2 + \
+      #CurrentScalingFactor = CurrentScalingFactor + math.sqrt((self.PatientRegistrationPointsRight[i+1][1][0] - PatientPointRight[1][0])**2 + \
+      CurrentScalingFactor = CurrentScalingFactor + math.sqrt((0 - 0)**2 + \
         (self.PatientRegistrationPointsRight[i+1][1][1] - PatientPointRight[1][1])**2 + \
         (self.PatientRegistrationPointsRight[i+1][1][2] - PatientPointRight[1][2])**2)/ModelDistanceMetric
       self.LocalVertebralScalingFactorsRight.append(CurrentScalingFactor)
       
     # Bottom most point is a special boundary condition
-    ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsLeft[-2][1][0] - self.ModelRegistrationPointsLeft[-1][1][0])**2 + \
+    #ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsLeft[-2][1][0] - self.ModelRegistrationPointsLeft[-1][1][0])**2 + \
+    ModelDistanceMetric = math.sqrt((0 - 0)**2 + \
       (self.ModelRegistrationPointsLeft[-2][1][1] - self.ModelRegistrationPointsLeft[-1][1][1])**2 + \
       (self.ModelRegistrationPointsLeft[-2][1][2] - self.ModelRegistrationPointsLeft[-1][1][2])**2)
-    CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsLeft[-2][1][0] - self.PatientRegistrationPointsLeft[-1][1][0])**2 + \
+    #CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsLeft[-2][1][0] - self.PatientRegistrationPointsLeft[-1][1][0])**2 + \
+    CurrentScalingFactor = math.sqrt((0 - 0)**2 + \
       (self.PatientRegistrationPointsLeft[-2][1][1] - self.PatientRegistrationPointsLeft[-1][1][1])**2 + \
       (self.PatientRegistrationPointsLeft[-2][1][2] - self.PatientRegistrationPointsLeft[-1][1][2])**2)/ModelDistanceMetric
     self.LocalVertebralScalingFactorsLeft.append(CurrentScalingFactor)
-    ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsRight[-2][1][0] - self.ModelRegistrationPointsRight[-1][1][0])**2 + \
+    #ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsRight[-2][1][0] - self.ModelRegistrationPointsRight[-1][1][0])**2 + \
+    ModelDistanceMetric = math.sqrt((0 - 0)**2 + \
       (self.ModelRegistrationPointsRight[-2][1][1] - self.ModelRegistrationPointsRight[-1][1][1])**2 + \
       (self.ModelRegistrationPointsRight[-2][1][2] - self.ModelRegistrationPointsRight[-1][1][2])**2)
-    CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsRight[-2][1][0] - self.PatientRegistrationPointsRight[-1][1][0])**2 + \
+    #CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsRight[-2][1][0] - self.PatientRegistrationPointsRight[-1][1][0])**2 + \
+    CurrentScalingFactor = math.sqrt((0 - 0)**2 + \
       (self.PatientRegistrationPointsRight[-2][1][1] - self.PatientRegistrationPointsRight[-1][1][1])**2 + \
       (self.PatientRegistrationPointsRight[-2][1][2] - self.PatientRegistrationPointsRight[-1][1][2])**2)/ModelDistanceMetric
     self.LocalVertebralScalingFactorsRight.append(CurrentScalingFactor)
+    
+    print "Using hacked scaling"
+    for i, LeftRegistrationPoint in enumerate(self.ModelRegistrationPointsLeft):
+      SumScalingFactor += self.LocalVertebralScalingFactorsLeft[i]
+    for i, RightRegistrationPoint in enumerate(self.ModelRegistrationPointsRight):
+      SumScalingFactor += self.LocalVertebralScalingFactorsRight[i]
+      
+    AverageScalingFactor = SumScalingFactor / (self.ModelRegistrationPointsLeft.__len__() + self.ModelRegistrationPointsRight.__len__())
+    for i, LVSFL in enumerate(self.LocalVertebralScalingFactorsLeft):
+      self.LocalVertebralScalingFactorsLeft[i] = AverageScalingFactor
+    for i, LVSFR in enumerate(self.LocalVertebralScalingFactorsRight):
+      self.LocalVertebralScalingFactorsRight[i] = AverageScalingFactor
+      
   
   def AnchorPatientSpine(self):
     import math, numpy 
