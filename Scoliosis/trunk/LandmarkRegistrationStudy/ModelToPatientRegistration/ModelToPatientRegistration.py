@@ -335,104 +335,73 @@ class ModelToPatientRegistrationLogic:
     
   def ComputeAnatomicScaleFactorsLocally(self):
     import math
-    SumScalingFactor = 0
-    AverageScalingFactor = 0
+    
     # When this is called, self.ModelRegistrationPoints contain no anchor points
     
     # Top most point is a special boundary condition
-    #ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsLeft[0][1][0] - self.ModelRegistrationPointsLeft[1][1][0])**2 + \
-    ModelDistanceMetric = math.sqrt((0 - 0)**2 + \
+    ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsLeft[0][1][0] - self.ModelRegistrationPointsLeft[1][1][0])**2 + \
       (self.ModelRegistrationPointsLeft[0][1][1] - self.ModelRegistrationPointsLeft[1][1][1])**2 + \
       (self.ModelRegistrationPointsLeft[0][1][2] - self.ModelRegistrationPointsLeft[1][1][2])**2)
-    #CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsLeft[0][1][0] - self.PatientRegistrationPointsLeft[1][1][0])**2 + \
-    CurrentScalingFactor = math.sqrt((0 - 0)**2 + \
+    CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsLeft[0][1][0] - self.PatientRegistrationPointsLeft[1][1][0])**2 + \
       (self.PatientRegistrationPointsLeft[0][1][1] - self.PatientRegistrationPointsLeft[1][1][1])**2 + \
       (self.PatientRegistrationPointsLeft[0][1][2] - self.PatientRegistrationPointsLeft[1][1][2])**2)/ModelDistanceMetric
     self.LocalVertebralScalingFactorsLeft.append(CurrentScalingFactor)
-    #ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsRight[0][1][0] - self.ModelRegistrationPointsRight[1][1][0])**2 + \
-    ModelDistanceMetric = math.sqrt((0 - 0)**2 + \
+    ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsRight[0][1][0] - self.ModelRegistrationPointsRight[1][1][0])**2 + \
       (self.ModelRegistrationPointsRight[0][1][1] - self.ModelRegistrationPointsRight[1][1][1])**2 + \
       (self.ModelRegistrationPointsRight[0][1][2] - self.ModelRegistrationPointsRight[1][1][2])**2)
-    #CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsRight[0][1][0] - self.PatientRegistrationPointsRight[1][1][0])**2 + \
-    CurrentScalingFactor = math.sqrt((0 - 0)**2 + \
+    CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsRight[0][1][0] - self.PatientRegistrationPointsRight[1][1][0])**2 + \
       (self.PatientRegistrationPointsRight[0][1][1] - self.PatientRegistrationPointsRight[1][1][1])**2 + \
       (self.PatientRegistrationPointsRight[0][1][2] - self.PatientRegistrationPointsRight[1][1][2])**2)/ModelDistanceMetric
-    
+    CurrentScalingFactor = 1.0 / CurrentScalingFactor
     self.LocalVertebralScalingFactorsRight.append(CurrentScalingFactor)
     
     # Deal with the left-sided points
     for i, (ModelPointLeft, PatientPointLeft) in enumerate(zip(self.ModelRegistrationPointsLeft[1:-1], self.PatientRegistrationPointsLeft[1:-1]), start=1):
-      #ModelDistanceMetric = math.sqrt((ModelPointLeft[1][0] - self.ModelRegistrationPointsLeft[i-1][1][0])**2 + \
-      ModelDistanceMetric = math.sqrt((0 - 0)**2 + \
+      ModelDistanceMetric = math.sqrt((ModelPointLeft[1][0] - self.ModelRegistrationPointsLeft[i-1][1][0])**2 + \
         (ModelPointLeft[1][1] - self.ModelRegistrationPointsLeft[i-1][1][1])**2 + \
         (ModelPointLeft[1][2] - self.ModelRegistrationPointsLeft[i-1][1][2])**2)
-      #ModelDistanceMetric = ModelDistanceMetric + math.sqrt((self.ModelRegistrationPointsLeft[i+1][1][0] - ModelPointLeft[1][0])**2 + \
-      ModelDistanceMetric = ModelDistanceMetric + math.sqrt((0 - 0)**2 + \
+      ModelDistanceMetric = ModelDistanceMetric + math.sqrt((self.ModelRegistrationPointsLeft[i+1][1][0] - ModelPointLeft[1][0])**2 + \
         (self.ModelRegistrationPointsLeft[i+1][1][1] - ModelPointLeft[1][1])**2 + \
         (self.ModelRegistrationPointsLeft[i+1][1][2] - ModelPointLeft[1][2])**2)
-      #CurrentScalingFactor = math.sqrt((PatientPointLeft[1][0] - self.PatientRegistrationPointsLeft[i-1][1][0])**2 + \
-      CurrentScalingFactor = math.sqrt((0 - 0)**2 + \
+      CurrentScalingFactor = math.sqrt((PatientPointLeft[1][0] - self.PatientRegistrationPointsLeft[i-1][1][0])**2 + \
         (PatientPointLeft[1][1] - self.PatientRegistrationPointsLeft[i-1][1][1])**2 + \
         (PatientPointLeft[1][2] - self.PatientRegistrationPointsLeft[i-1][1][2])**2)/ModelDistanceMetric
-      #CurrentScalingFactor = CurrentScalingFactor + math.sqrt((self.PatientRegistrationPointsLeft[i+1][1][0] - PatientPointLeft[1][0])**2 + \
-      CurrentScalingFactor = CurrentScalingFactor + math.sqrt((0 - 0)**2 + \
+      CurrentScalingFactor = CurrentScalingFactor + math.sqrt((self.PatientRegistrationPointsLeft[i+1][1][0] - PatientPointLeft[1][0])**2 + \
         (self.PatientRegistrationPointsLeft[i+1][1][1] - PatientPointLeft[1][1])**2 + \
         (self.PatientRegistrationPointsLeft[i+1][1][2] - PatientPointLeft[1][2])**2)/ModelDistanceMetric
-      
       self.LocalVertebralScalingFactorsLeft.append(CurrentScalingFactor)
    
     # Then with the right-sided points
     for i, (ModelPointRight, PatientPointRight) in enumerate(zip(self.ModelRegistrationPointsRight[1:-1], self.PatientRegistrationPointsRight[1:-1]), start=1):
-      #ModelDistanceMetric = math.sqrt((ModelPointRight[1][0] - self.ModelRegistrationPointsRight[i-1][1][0])**2 + \
-      ModelDistanceMetric = math.sqrt((0 - 0)**2 + \
+      ModelDistanceMetric = math.sqrt((ModelPointRight[1][0] - self.ModelRegistrationPointsRight[i-1][1][0])**2 + \
         (ModelPointRight[1][1] - self.ModelRegistrationPointsRight[i-1][1][1])**2 + \
         (ModelPointRight[1][2] - self.ModelRegistrationPointsRight[i-1][1][2])**2)
-      #ModelDistanceMetric = ModelDistanceMetric + math.sqrt((self.ModelRegistrationPointsRight[i+1][1][0] - ModelPointRight[1][0])**2 + \
-      ModelDistanceMetric = ModelDistanceMetric + math.sqrt((0 - 0)**2 + \
+      ModelDistanceMetric = ModelDistanceMetric + math.sqrt((self.ModelRegistrationPointsRight[i+1][1][0] - ModelPointRight[1][0])**2 + \
         (self.ModelRegistrationPointsRight[i+1][1][1] - ModelPointRight[1][1])**2 + \
         (self.ModelRegistrationPointsRight[i+1][1][2] - ModelPointRight[1][2])**2)
-      #CurrentScalingFactor = math.sqrt((PatientPointRight[1][0] - self.PatientRegistrationPointsRight[i-1][1][0])**2 + \
-      CurrentScalingFactor = math.sqrt((0 - 0)**2 + \
+      CurrentScalingFactor = math.sqrt((PatientPointRight[1][0] - self.PatientRegistrationPointsRight[i-1][1][0])**2 + \
         (PatientPointRight[1][1] - self.PatientRegistrationPointsRight[i-1][1][1])**2 + \
         (PatientPointRight[1][2] - self.PatientRegistrationPointsRight[i-1][1][2])**2)/ModelDistanceMetric
-      #CurrentScalingFactor = CurrentScalingFactor + math.sqrt((self.PatientRegistrationPointsRight[i+1][1][0] - PatientPointRight[1][0])**2 + \
-      CurrentScalingFactor = CurrentScalingFactor + math.sqrt((0 - 0)**2 + \
+      CurrentScalingFactor = CurrentScalingFactor + math.sqrt((self.PatientRegistrationPointsRight[i+1][1][0] - PatientPointRight[1][0])**2 + \
         (self.PatientRegistrationPointsRight[i+1][1][1] - PatientPointRight[1][1])**2 + \
         (self.PatientRegistrationPointsRight[i+1][1][2] - PatientPointRight[1][2])**2)/ModelDistanceMetric
       self.LocalVertebralScalingFactorsRight.append(CurrentScalingFactor)
       
     # Bottom most point is a special boundary condition
-    #ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsLeft[-2][1][0] - self.ModelRegistrationPointsLeft[-1][1][0])**2 + \
-    ModelDistanceMetric = math.sqrt((0 - 0)**2 + \
+    ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsLeft[-2][1][0] - self.ModelRegistrationPointsLeft[-1][1][0])**2 + \
       (self.ModelRegistrationPointsLeft[-2][1][1] - self.ModelRegistrationPointsLeft[-1][1][1])**2 + \
       (self.ModelRegistrationPointsLeft[-2][1][2] - self.ModelRegistrationPointsLeft[-1][1][2])**2)
-    #CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsLeft[-2][1][0] - self.PatientRegistrationPointsLeft[-1][1][0])**2 + \
-    CurrentScalingFactor = math.sqrt((0 - 0)**2 + \
+    CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsLeft[-2][1][0] - self.PatientRegistrationPointsLeft[-1][1][0])**2 + \
       (self.PatientRegistrationPointsLeft[-2][1][1] - self.PatientRegistrationPointsLeft[-1][1][1])**2 + \
       (self.PatientRegistrationPointsLeft[-2][1][2] - self.PatientRegistrationPointsLeft[-1][1][2])**2)/ModelDistanceMetric
     self.LocalVertebralScalingFactorsLeft.append(CurrentScalingFactor)
-    #ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsRight[-2][1][0] - self.ModelRegistrationPointsRight[-1][1][0])**2 + \
-    ModelDistanceMetric = math.sqrt((0 - 0)**2 + \
+    ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsRight[-2][1][0] - self.ModelRegistrationPointsRight[-1][1][0])**2 + \
       (self.ModelRegistrationPointsRight[-2][1][1] - self.ModelRegistrationPointsRight[-1][1][1])**2 + \
       (self.ModelRegistrationPointsRight[-2][1][2] - self.ModelRegistrationPointsRight[-1][1][2])**2)
-    #CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsRight[-2][1][0] - self.PatientRegistrationPointsRight[-1][1][0])**2 + \
-    CurrentScalingFactor = math.sqrt((0 - 0)**2 + \
+    CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsRight[-2][1][0] - self.PatientRegistrationPointsRight[-1][1][0])**2 + \
       (self.PatientRegistrationPointsRight[-2][1][1] - self.PatientRegistrationPointsRight[-1][1][1])**2 + \
       (self.PatientRegistrationPointsRight[-2][1][2] - self.PatientRegistrationPointsRight[-1][1][2])**2)/ModelDistanceMetric
     self.LocalVertebralScalingFactorsRight.append(CurrentScalingFactor)
-    
-    print "Using hacked scaling"
-    for i, LeftRegistrationPoint in enumerate(self.ModelRegistrationPointsLeft):
-      SumScalingFactor += self.LocalVertebralScalingFactorsLeft[i]
-    for i, RightRegistrationPoint in enumerate(self.ModelRegistrationPointsRight):
-      SumScalingFactor += self.LocalVertebralScalingFactorsRight[i]
-      
-    AverageScalingFactor = SumScalingFactor / (self.ModelRegistrationPointsLeft.__len__() + self.ModelRegistrationPointsRight.__len__())
-    for i, LVSFL in enumerate(self.LocalVertebralScalingFactorsLeft):
-      self.LocalVertebralScalingFactorsLeft[i] = AverageScalingFactor
-    for i, LVSFR in enumerate(self.LocalVertebralScalingFactorsRight):
-      self.LocalVertebralScalingFactorsRight[i] = AverageScalingFactor
-      
   
   def AnchorPatientSpine(self):
     import math, numpy 
@@ -441,13 +410,12 @@ class ModelToPatientRegistrationLogic:
     TopPoint = self.PatientRegistrationPointsLeft[0]
     BottomPoint = self.PatientRegistrationPointsLeft[1]                                                                                   # Assumes there's more than on fid. on left side
     VerticalVector = [TopPoint[1][0] - BottomPoint[1][0], TopPoint[1][1] - BottomPoint[1][1], TopPoint[1][2] - BottomPoint[1][2]]
+    AnatomicScalingFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
     #if(self.PatientRegistrationPointsLeft[0][0][:-1] == self.PatientRegistrationPointsRight[0][0][:-1]):  # If symetric partner is present 
     RightPoint = self.ChooseClosestPointFrom(TopPoint, self.PatientRegistrationPointsRight)
     print TopPoint
     print RightPoint
     HorizontalVector = [TopPoint[1][0] - RightPoint[1][0], TopPoint[1][1] - RightPoint[1][1], TopPoint[1][2] - RightPoint[1][2]]
-    AnatomicScalingFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
-    #AnatomicScalingFactor = math.sqrt(HorizontalVector[0]**2 + HorizontalVector[1]**2 + HorizontalVector[2]**2)
     OffsetVector = numpy.cross(HorizontalVector, VerticalVector)
     OffsetNorm = math.sqrt((OffsetVector[0])**2 + (OffsetVector[1])**2 + (OffsetVector[2])**2)
     if self.UseVertebraWiseScaling:
@@ -462,10 +430,9 @@ class ModelToPatientRegistrationLogic:
     TopPoint = self.PatientRegistrationPointsRight[0]
     BottomPoint = self.PatientRegistrationPointsRight[1]                                                                               # Assuming there's more than one fid on right side  
     VerticalVector = [TopPoint[1][0] - BottomPoint[1][0], TopPoint[1][1] - BottomPoint[1][1], TopPoint[1][2] - BottomPoint[1][2]]
+    AnatomicScalingFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
     LeftPoint = self.ChooseClosestPointFrom(TopPoint,self.PatientRegistrationPointsLeft)
     HorizontalVector = [LeftPoint[1][0] - TopPoint[1][0], LeftPoint[1][1] - TopPoint[1][1], LeftPoint[1][2] - TopPoint[1][2]]
-    AnatomicScalingFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
-    #AnatomicScalingFactor = math.sqrt(HorizontalVector[0]**2 + HorizontalVector[1]**2 + HorizontalVector[2]**2)
     OffsetVector = numpy.cross(HorizontalVector, VerticalVector)
     OffsetNorm = math.sqrt((OffsetVector[0])**2 + (OffsetVector[1])**2 + (OffsetVector[2])**2)
     if self.UseVertebraWiseScaling:
@@ -489,10 +456,9 @@ class ModelToPatientRegistrationLogic:
           #VerticalVectorAbove[dim] = VerticalVectorAbove[dim]/(int(CurrentPoint[0][1:-1]) - int(AbovePoint[0][1:-1]))
           #VerticalVectorBelow[dim] = VerticalVectorBelow[dim]/(int(BelowPoint[0][1:-1]) - int(CurrentPoint[0][1:-1]))
           VerticalVector[dim] = (VerticalVectorAbove[dim] + VerticalVectorBelow[dim])/2
+        AnatomicScalingFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
         RightPoint = self.ChooseClosestPointFrom(CurrentPoint, self.PatientRegistrationPointsRight)               # NOT NECESSARILY CURRENTPOINT'S VERTEBRAL NEIGHBOR
         HorizontalVector = [RightPoint[1][0] - CurrentPoint[1][0], RightPoint[1][1] - CurrentPoint[1][1], RightPoint[1][2] - CurrentPoint[1][2]]
-        AnatomicScalingFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
-        #AnatomicScalingFactor = math.sqrt(HorizontalVector[0]**2 + HorizontalVector[1]**2 + HorizontalVector[2]**2)
         OffsetVector = numpy.cross(VerticalVector, HorizontalVector)
         OffsetNorm = math.sqrt(OffsetVector[0]**2 + OffsetVector[1]**2 + OffsetVector[2]**2)
         if(self.UseVertebraWiseScaling):
@@ -513,10 +479,9 @@ class ModelToPatientRegistrationLogic:
           #VerticalVectorAbove[dim] = VerticalVectorAbove[dim]/(int(CurrentPoint[0][1:-1]) - int(AbovePoint[0][1:-1]))
           #VerticalVectorBelow[dim] = VerticalVectorBelow[dim]/(int(BelowPoint[0][1:-1]) - int(CurrentPoint[0][1:-1]))
           VerticalVector[dim] = (VerticalVectorAbove[dim] + VerticalVectorBelow[dim])/2
+        AnatomicScalingFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
         LeftPoint = self.ChooseClosestPointFrom(CurrentPoint, self.PatientRegistrationPointsLeft)               # NOT NECESSARILY CURRENT POINT'S VERTEBRAL NEIGHBOR
         HorizontalVector = [LeftPoint[1][0] - CurrentPoint[1][0], LeftPoint[1][1] - CurrentPoint[1][1], LeftPoint[1][2] - CurrentPoint[1][2]]
-        AnatomicScalingFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
-        #AnatomicScalingFactor = math.sqrt(HorizontalVector[0]**2 + HorizontalVector[1]**2 + HorizontalVector[2]**2)
         OffsetVector = numpy.cross(HorizontalVector, VerticalVector)
         OffsetNorm = math.sqrt(OffsetVector[0]**2 + OffsetVector[1]**2 + OffsetVector[2]**2)
         if(self.UseVertebraWiseScaling):
@@ -534,34 +499,32 @@ class ModelToPatientRegistrationLogic:
     BesidePoint = self.PatientRegistrationPointsRight[-1]
     LastLeft = self.PatientRegistrationPointsLeft[-1]
     VerticalVector = [AbovePoint[1][0] - LastLeft[1][0], AbovePoint[1][1] - LastLeft[1][1], AbovePoint[1][2] - LastLeft[1][2]]
+    OffsetScaleFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
     HorizontalVector = [BesidePoint[1][0] - LastLeft[1][0], BesidePoint[1][1] - LastLeft[1][1], BesidePoint[1][2] - LastLeft[1][2]]
-    AnatomicScalingFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
-    #AnatomicScalingFactor = math.sqrt(HorizontalVector[0]**2 + HorizontalVector[1]**2 + HorizontalVector[2]**2)
     OffsetVector = numpy.cross(VerticalVector, HorizontalVector)
     OffsetNorm = math.sqrt((OffsetVector[0])**2 + (OffsetVector[1])**2 + (OffsetVector[2])**2) 
     if self.UseVertebraWiseScaling:
       for dim in range(3):
-        OffsetVector[dim] = self.LocalVertebralScalingFactorsLeft[-1]*AnatomicScalingFactor*OffsetVector[dim]/OffsetNorm
+        OffsetVector[dim] = self.LocalVertebralScalingFactorsLeft[-1]*OffsetScaleFactor*OffsetVector[dim]/OffsetNorm
     else:
       for dim in range(3):
-        OffsetVector[dim] = self.scale*GlobalVertebralScalingFactor*OffsetVector[dim]/OffsetNorm
+        OffsetVector[dim] = self.scale*OffsetScaleFactor*OffsetVector[dim]/OffsetNorm
     self.PatientAnchorPointsLeft.append((self.PatientRegistrationPointsLeft[-1][0] + "A", OffsetVector))
     
     AbovePoint = self.PatientRegistrationPointsRight[-2]
     LastRight = BesidePoint
     BesidePoint = LastLeft
     VerticalVector = [AbovePoint[1][0] - LastRight[1][0], AbovePoint[1][1] - LastRight[1][1], AbovePoint[1][2] - LastRight[1][2]]
+    OffsetScaleFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
     HorizontalVector = [BesidePoint[1][0] - LastRight[1][0], BesidePoint[1][1] - LastRight[1][1], BesidePoint[1][2] - LastRight[1][2]]
-    AnatomicScalingFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
-    #AnatomicScalingFactor = math.sqrt(HorizontalVector[0]**2 + HorizontalVector[1]**2 + HorizontalVector[2]**2)
     OffsetVector = numpy.cross(HorizontalVector, VerticalVector)
     OffsetNorm = math.sqrt((OffsetVector[0])**2 + (OffsetVector[1])**2 + (OffsetVector[2])**2) 
     if self.UseVertebraWiseScaling:
       for dim in range(3):
-        OffsetVector[dim] = self.LocalVertebralScalingFactorsRight[-1]*AnatomicScalingFactor*OffsetVector[dim]/OffsetNorm
+        OffsetVector[dim] = self.LocalVertebralScalingFactorsRight[-1]*OffsetScaleFactor*OffsetVector[dim]/OffsetNorm
     else:
       for dim in range(3):
-        OffsetVector[dim] = self.scale*GlobalVertebralScalingFactor*OffsetVector[dim]/OffsetNorm
+        OffsetVector[dim] = self.scale*OffsetScaleFactor*OffsetVector[dim]/OffsetNorm
     self.PatientAnchorPointsRight.append((self.PatientRegistrationPointsRight[-1][0] + "A", OffsetVector))
     
     i = 0
@@ -616,11 +579,10 @@ class ModelToPatientRegistrationLogic:
     VerticalVector = [TopPoint[1][0] - BelowPoint[1][0], TopPoint[1][1] - BelowPoint[1][1], TopPoint[1][2] - BelowPoint[1][2]]
     #for dim in range(3):                                            # Normalization step in case next left sided point is a few vertebrae down
       #VerticalVector[dim] = VerticalVector[dim]/(int(BelowPoint[0][1:-1]) - int(TopPoint[0][1:-1]))
+    AnatomicScalingFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
     #BesidePoint = self.ModelRegistrationPointsRight[0]              # NOT NECESSARILY ON SAME VERTEBRA AS TOP-LEFT POINT - CONSIDER SOME NORMALIZATION METHOD
     BesidePoint = self.ChooseClosestPointFrom(TopPoint, self.ModelRegistrationPointsRight)
     HorizontalVector = [BesidePoint[1][0] - TopPoint[1][0], BesidePoint[1][1] - TopPoint[1][1], BesidePoint[1][2] - TopPoint[1][2]]
-    AnatomicScalingFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
-    #AnatomicScalingFactor = math.sqrt(HorizontalVector[0]**2 + HorizontalVector[1]**2 + HorizontalVector[2]**2)
     OffsetVector = numpy.cross(VerticalVector, HorizontalVector)
     OffsetNorm = math.sqrt((OffsetVector[0])**2 + (OffsetVector[1])**2 + (OffsetVector[2])**2)
     if(self.UseVertebraWiseScaling):
@@ -638,11 +600,10 @@ class ModelToPatientRegistrationLogic:
     VerticalVector = [TopPoint[1][0] - BelowPoint[1][0], TopPoint[1][1] - BelowPoint[1][1], TopPoint[1][2] - BelowPoint[1][2]]
     #for dim in range(3):                                            # Normalization step in case next left sided point is a few vertebrae down
       #VerticalVector[dim] = VerticalVector[dim]/(int(BelowPoint[0][1:-1]) - int(TopPoint[0][1:-1]))
+    AnatomicScalingFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
     #BesidePoint = self.ModelRegistrationPointsLeft[0]         # NOT NECESSARILY ON SAME VERTEBRA AS TOP-LEFT POINT - CONSIDER SOME NORMALIZATION METHOD
     BesidePoint = self.ChooseClosestPointFrom(TopPoint, self.ModelRegistrationPointsLeft)
     HorizontalVector = [BesidePoint[1][0] - TopPoint[1][0], BesidePoint[1][1] - TopPoint[1][1], BesidePoint[1][2] - TopPoint[1][2]]
-    AnatomicScalingFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
-    #AnatomicScalingFactor = math.sqrt(HorizontalVector[0]**2 + HorizontalVector[1]**2 + HorizontalVector[2]**2)
     OffsetVector = numpy.cross(HorizontalVector, VerticalVector)
     OffsetNorm = math.sqrt((OffsetVector[0])**2 + (OffsetVector[1])**2 + (OffsetVector[2])**2)
     if(self.UseVertebraWiseScaling):
@@ -669,11 +630,10 @@ class ModelToPatientRegistrationLogic:
           #TopVector[dim] = TopVector[dim]/(int(OriginalPoint[0][1:-1]) - int(AbovePoint[0][1:-1]))
           #BottomVector[dim] = BottomVector[dim]/(int(BelowPoint[0][1:-1]) - int(OriginalPoint[0][1:-1]))
           VerticalVector[dim] = (TopVector[dim] + BottomVector[dim])/2
+        AnatomicScalingFactor = math.sqrt((VerticalVector[0]**2) + VerticalVector[1]**2 + VerticalVector[2]**2)
         #RightPoint = self.ModelRegistrationPointsRight[RightIterator]                       # NOT NECESSARILY BESIDE IN THE CASE OF INCOMPLETE POINT SETS
         RightPoint = self.ChooseClosestPointFrom(OriginalPoint, self.ModelRegistrationPointsRight)
         HorizontalVector = [RightPoint[1][0] - OriginalPoint[1][0], RightPoint[1][1] - OriginalPoint[1][1], RightPoint[1][2] - OriginalPoint[1][2]]
-        AnatomicScalingFactor = math.sqrt((VerticalVector[0]**2) + VerticalVector[1]**2 + VerticalVector[2]**2)
-        #AnatomicScalingFactor = math.sqrt((HorizontalVector[0]**2) + HorizontalVector[1]**2 + HorizontalVector[2]**2)
         OffsetVector = numpy.cross(VerticalVector, HorizontalVector)
         OffsetNorm = math.sqrt((OffsetVector[0])**2 + (OffsetVector[1])**2 + (OffsetVector[2])**2)
         if(self.UseVertebraWiseScaling):
@@ -695,11 +655,10 @@ class ModelToPatientRegistrationLogic:
           #TopVector[dim] = TopVector[dim]/(int(OriginalPoint[0][1:-1]) - int(AbovePoint[0][1:-1]))
           #BottomVector[dim] = BottomVector[dim]/(int(BelowPoint[0][1:-1]) - int(OriginalPoint[0][1:-1]))
           VerticalVector[dim] = (TopVector[dim] + BottomVector[dim])/2
+        AnatomicScalingFactor = math.sqrt((VerticalVector[0]**2) + VerticalVector[1]**2 + VerticalVector[2]**2)
         #LeftPoint = self.ModelRegistrationPointsLeft[LeftIterator-1]                       # NOT NECESSARILY BESIDE IN THE CASE OF INCOMPLETE POINT SETS
         LeftPoint = self.ChooseClosestPointFrom(OriginalPoint, self.ModelRegistrationPointsLeft)
         HorizontalVector = [LeftPoint[1][0] - OriginalPoint[1][0], LeftPoint[1][1] - OriginalPoint[1][1], LeftPoint[1][2] - OriginalPoint[1][2]]
-        AnatomicScalingFactor = math.sqrt((VerticalVector[0]**2) + VerticalVector[1]**2 + VerticalVector[2]**2)
-        #AnatomicScalingFactor = math.sqrt((HorizontalVector[0]**2) + HorizontalVector[1]**2 + HorizontalVector[2]**2)
         OffsetVector = numpy.cross(HorizontalVector, VerticalVector)
         OffsetNorm = math.sqrt((OffsetVector[0])**2 + (OffsetVector[1])**2 + (OffsetVector[2])**2)
         if(self.UseVertebraWiseScaling):
