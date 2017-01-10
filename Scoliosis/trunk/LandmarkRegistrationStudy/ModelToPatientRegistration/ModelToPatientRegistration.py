@@ -98,6 +98,16 @@ class ModelToPatientRegistrationWidget:
     self.UseLocalFactors.enabled = True
     moduleInterfaceLayout.addRow(self.UseLocalFactors)
     
+    self.UseAverageAnatomicScaling = qt.QCheckBox("Use average of individual scaling factors")
+    self.UseAverageAnatomicScaling.toolTip = "Uses average anatomic scaling factor for uniform scaling of model to patient models"
+    self.UseAverageAnatomicScaling.enabled = True
+    moduleInterfaceLayout.addRow(self.UseAverageAnatomicScaling)
+    
+    self.UseVerticalAnatomicScaling = qt.QCheckBox("Use vertical inter-landmark distances to scale anchor offsets")
+    self.UseVerticalAnatomicScaling.toolTip = "One possible way of scaling the model spine to the patient's"
+    self.UseVerticalAnatomicScaling.enabled = True
+    moduleInterfaceLayout.addRow(self.UseVerticalAnatomicScaling)
+    
     # Find-list-intersection button
     self.GeneratePoints = qt.QPushButton("Generate registration points")
     self.GeneratePoints.toolTip = "Finds intersection of model and patient anatomic landmark sets, then supplements them with anchor points."
@@ -146,10 +156,28 @@ class ModelToPatientRegistrationWidget:
 
 class ModelToPatientRegistrationLogic:
   def __init__(self, OriginalModelPoints, OriginalPatientPoints, ModelRegistrationPointsNode, PatientRegistrationPointsNode):
-    #self.OriginalModelPoints = slicer.util.getNode('UsLandmarks_Atlas')
-    self.OriginalModelPoints = OriginalModelPoints
-    #self.OriginalPatientPoints = slicer.util.getNode('TrXFiducials')
-    self.OriginalPatientPoints = OriginalPatientPoints
+    # Unit vectors
+    self.PatientSupInfVectorsLeft = []
+    self.PatientRightLeftVectorsLeft = []
+    self.PatientAntPostVectorsLeft = []
+    self.PatientSupInfVectorsRight = []
+    self.PatientRightLeftVectorsRight = []
+    self.PatientAntPostVectorsRight = []
+    self.ModelSupInfVectorsLeft = []
+    self.ModelRightLeftVectorsLeft = []
+    self.ModelAntPostVectorsLeft = []
+    self.ModelSupInfVectorsRight = []
+    self.ModelRightLeftVectorsRight = []
+    self.ModelAntPostVectorsRight = []
+    
+    # Scaling factors
+    self.PatientScalingFactorsLeft = []
+    self.PatientScalingFactorsRight = []
+    self.ModelScalingFactorsLeft = []
+    self.ModelScalingFactorsRight = []
+
+    
+    # Input and output (anchor) points
     self.ModelRegistrationPoints = []
     self.ModelRegistrationPointsLeft = []
     self.ModelRegistrationPointsRight = []
@@ -157,42 +185,25 @@ class ModelToPatientRegistrationLogic:
     self.PatientRegistrationPointsLeft = []
     self.PatientRegistrationPointsRight = []
     self.NamesIntersection = []
+    self.OriginalPatientPoints = OriginalPatientPoints
+    self.OriginalModelPoints = OriginalModelPoints
 
     # Reinitialize
-    ModelRegistrationNodeLabel = ModelRegistrationPointsNode.GetName()
-    slicer.mrmlScene.RemoveNode(ModelRegistrationPointsNode)
-    ModelRegistrationPointsNode = slicer.vtkMRMLMarkupsFiducialNode()   
-    self.ModelRegistrationPointsNode = ModelRegistrationPointsNode
-    self.ModelRegistrationPointsNode.SetName(ModelRegistrationNodeLabel)
-
-    PatientRegistrationNodeLabel = PatientRegistrationPointsNode.GetName()
-    slicer.mrmlScene.RemoveNode(PatientRegistrationPointsNode)
-    PatientRegistrationPointsNode = slicer.vtkMRMLMarkupsFiducialNode()
-    self.PatientRegistrationPointsNode = PatientRegistrationPointsNode
-    self.PatientRegistrationPointsNode.SetName(PatientRegistrationNodeLabel)
+    slicer.modules.ModelToPatientRegistrationWidget.ToOutputSelector.currentNode().RemoveAllMarkups()
+    slicer.modules.ModelToPatientRegistrationWidget.FromOutputSelector.currentNode().RemoveAllMarkups()
     
     self.UseVertebraWiseScaling = slicer.modules.ModelToPatientRegistrationWidget.UseLocalFactors.isChecked()
+    self.UseAverageScaling = slicer.modules.ModelToPatientRegistrationWidget.UseAverageAnatomicScaling.isChecked()
+    self.UseVerticalScaling = slicer.modules.ModelToPatientRegistrationWidget.UseVerticalAnatomicScaling.isChecked()
     self.GlobalVertebralScalingFactor = 30       # Distance (mm) in anterior direction to duplicate fiducial points for registration accuracy
-    self.LocalVertebralScalingFactorsLeft = []
-    self.LocalVertebralScalingFactorsRight = []
-    self.PatientAnchorPointsLeft = []
-    self.PatientAnchorPointsRight = []
     
   def AnchorPointSets(self):
     import math, numpy
-   # print self.OriginalPatientPoints
-    self.nOriginalPatientPoints = self.OriginalPatientPoints.GetNumberOfFiducials()
     
-    for i in range(self.nOriginalPatientPoints):
+    for i in range(self.OriginalPatientPoints.GetNumberOfFiducials()):
       name = self.OriginalPatientPoints.GetNthFiducialLabel(i)
       location = self.OriginalPatientPoints.GetMarkupPointVector(i,0)
       self.PatientRegistrationPoints.append((name, location))
-     
-    # self.nOriginalModelPoints = self.OriginalModelPoints.GetNumberOfFiducials()  
-    # for i in range(self.nOriginalModelPoints):
-      # name = self.OriginalModelPoints.GetNthFiducialLabel(i)
-      # location = self.OriginalModelPoints.GetMarkupPointVector(i,0)
-      # self.ModelRegistrationPoints.append((name, location))
     
     self.NamesValid = self.CheckNamingConvention()       # This ensures that PatientRegistrationPoints is a subset of ModelRegistrationPoints
     if not self.NamesValid:
@@ -204,18 +215,16 @@ class ModelToPatientRegistrationLogic:
     
     self.EstablishCorrespondence()
     
-    if self.UseVertebraWiseScaling:
-      print "DEBUG: Using local scaling factors"
-      self.ComputeAnatomicScaleFactorsLocally()
-    else:
-      print "DEBUG: Use global scaling factors"
-      self.scale = self.ComputeSpineLengths()
+    self.ComputeVectors()
+    
+    if self.UseVertebraWiseScaling or self.UseAverageScaling:
+      self.ComputeLocalAnatomicScalingFactors()
     
     # Construct a point set at patient-spine space of points with correspondence
     self.AnchorPatientSpine()
 
     # Construct a point set at average-spine model of points with correspondence
-    self.AnchorAverageSpine()
+    self.AnchorModelSpine()
     
     if(len(self.NamesIntersection) == 0):   # For whatever reason, no points in common could be found between the CT and atlas
       print "Warning - intersection of CT and atlas points is the empty set."
@@ -245,7 +254,7 @@ class ModelToPatientRegistrationLogic:
     for CtPoint in self.PatientRegistrationPoints:
       if CtPoint[0] not in self.ValidNames:
         print "Naming convention not followed."
-        print "   Check input landmark names."
+        print " " + CtPoint[0] + " not allowed"
         NamesValid = False
         return NamesValid
       if(self.CtNames.count(CtPoint[0]) != 1):
@@ -280,8 +289,8 @@ class ModelToPatientRegistrationLogic:
         self.PatientRegistrationPointsLeft.append(CtPoint)
       else:
         self.PatientRegistrationPointsRight.append(CtPoint)
-      self.PatientRegistrationPointsNode.AddFiducial(CtPoint[1][0], CtPoint[1][1], CtPoint[1][2])
-      self.PatientRegistrationPointsNode.SetNthFiducialLabel(i, CtPoint[0])
+      slicer.modules.ModelToPatientRegistrationWidget.ToOutputSelector.currentNode().AddFiducial(CtPoint[1][0], CtPoint[1][1], CtPoint[1][2])
+      slicer.modules.ModelToPatientRegistrationWidget.ToOutputSelector.currentNode().SetNthFiducialLabel(i, CtPoint[0])
   
     for i in range(self.OriginalModelPoints.GetNumberOfFiducials()):
       CurrentLabel = self.OriginalModelPoints.GetNthFiducialLabel(i)
@@ -290,8 +299,8 @@ class ModelToPatientRegistrationLogic:
         if((CurrentLabel[0]+CurrentLabel[2:]) in self.CtNames):
           self.NamesIntersection.append((CurrentLabel[0]+CurrentLabel[2:]))
           self.ModelRegistrationPoints.append((CurrentLabel[0]+CurrentLabel[2:], [CurrentPoint[0], CurrentPoint[1], CurrentPoint[2]]))
-          self.ModelRegistrationPointsNode.AddFiducial(CurrentPoint[0], CurrentPoint[1], CurrentPoint[2])
-          self.ModelRegistrationPointsNode.SetNthFiducialLabel(self.ModelRegistrationPointsNode.GetNumberOfFiducials() - 1, self.ModelRegistrationPoints[-1][0])
+          slicer.modules.ModelToPatientRegistrationWidget.FromOutputSelector.currentNode().AddFiducial(CurrentPoint[0], CurrentPoint[1], CurrentPoint[2])
+          slicer.modules.ModelToPatientRegistrationWidget.FromOutputSelector.currentNode().SetNthFiducialLabel(slicer.modules.ModelToPatientRegistrationWidget.FromOutputSelector.currentNode().GetNumberOfFiducials() - 1, self.ModelRegistrationPoints[-1][0])
           if(CurrentLabel[-1] == "L"):
             self.ModelRegistrationPointsLeft.append((CurrentLabel[0]+CurrentLabel[2:], CurrentPoint))
           else:
@@ -300,477 +309,165 @@ class ModelToPatientRegistrationLogic:
         if(CurrentLabel in self.CtNames):
           self.NamesIntersection.append(CurrentLabel)
           self.ModelRegistrationPoints.append((CurrentLabel,[CurrentPoint[0], CurrentPoint[1], CurrentPoint[2]]))
-          self.ModelRegistrationPointsNode.AddFiducial(CurrentPoint[0], CurrentPoint[1], CurrentPoint[2])
-          self.ModelRegistrationPointsNode.SetNthFiducialLabel(self.ModelRegistrationPointsNode.GetNumberOfFiducials() - 1, CurrentLabel)
+          slicer.modules.ModelToPatientRegistrationWidget.FromOutputSelector.currentNode().AddFiducial(CurrentPoint[0], CurrentPoint[1], CurrentPoint[2])
+          slicer.modules.ModelToPatientRegistrationWidget.FromOutputSelector.currentNode().SetNthFiducialLabel(slicer.modules.ModelToPatientRegistrationWidget.FromOutputSelector.currentNode().GetNumberOfFiducials() - 1, CurrentLabel)
           if(CurrentLabel[-1] == "L"):
             self.ModelRegistrationPointsLeft.append((CurrentLabel,[CurrentPoint[0], CurrentPoint[1], CurrentPoint[2]]))
           else:
             self.ModelRegistrationPointsRight.append((CurrentLabel,[CurrentPoint[0], CurrentPoint[1], CurrentPoint[2]]))
   
-  def ComputeSpineLengths(self):
+  def ComputeVectors(self):
+    import numpy
+    # Assumes that landmark points are correctly ordered and COMPLETE
+    for PatientPoint in self.PatientRegistrationPointsLeft:
+      self.PatientSupInfVectorsLeft.append(self.ComputeSupInfVector(PatientPoint, self.PatientRegistrationPointsLeft))
+      self.PatientRightLeftVectorsLeft.append(self.ComputeRightLeftVector(PatientPoint, self.PatientRegistrationPointsRight))
+      self.PatientAntPostVectorsLeft.append(numpy.cross(self.PatientRightLeftVectorsLeft[-1], self.PatientSupInfVectorsLeft[-1]))
+    for PatientPoint in self.PatientRegistrationPointsRight:
+      self.PatientSupInfVectorsRight.append(self.ComputeSupInfVector(PatientPoint, self.PatientRegistrationPointsRight))
+      self.PatientRightLeftVectorsRight.append(self.ComputeRightLeftVector(PatientPoint, self.PatientRegistrationPointsLeft))
+      self.PatientAntPostVectorsRight.append(numpy.cross(self.PatientRightLeftVectorsRight[-1], self.PatientSupInfVectorsRight[-1]))
+    for ModelPoint in self.ModelRegistrationPointsLeft:
+      self.ModelSupInfVectorsLeft.append(self.ComputeSupInfVector(ModelPoint, self.ModelRegistrationPointsLeft))
+      self.ModelRightLeftVectorsLeft.append(self.ComputeRightLeftVector(ModelPoint, self.ModelRegistrationPointsRight))
+      self.ModelAntPostVectorsLeft.append(numpy.cross(self.ModelRightLeftVectorsLeft[-1], self.ModelSupInfVectorsLeft[-1]))
+    for ModelPoint in self.ModelRegistrationPointsRight:
+      self.ModelSupInfVectorsRight.append(self.ComputeSupInfVector(ModelPoint, self.ModelRegistrationPointsRight))
+      self.ModelRightLeftVectorsRight.append(self.ComputeRightLeftVector(ModelPoint, self.ModelRegistrationPointsLeft))
+      self.ModelAntPostVectorsRight.append(numpy.cross(self.ModelRightLeftVectorsRight[-1], self.ModelSupInfVectorsRight[-1]))
+  
+  def ComputeSupInfVector(self, Point, PointSet):
     import math
-    PatientSpineLength = 0
-    for i, LeftCtPoint in enumerate(self.PatientRegistrationPointsLeft[:-1], start=1):
-      CurrentLength = math.sqrt((self.PatientRegistrationPointsLeft[i][1][0] - LeftCtPoint[1][0])**2 + (self.PatientRegistrationPointsLeft[i][1][1] - LeftCtPoint[1][1])**2 + (self.PatientRegistrationPointsLeft[i][1][2] - LeftCtPoint[1][2])**2)
-      PatientSpineLength = PatientSpineLength + CurrentLength
-    for i, RightCtPoint in enumerate(self.PatientRegistrationPointsRight[:-1], start=1):
-      CurrentLength = math.sqrt((self.PatientRegistrationPointsRight[i][1][0] - RightCtPoint[1][0])**2 + (self.PatientRegistrationPointsRight[i][1][1] - RightCtPoint[1][1])**2 + (self.PatientRegistrationPointsRight[i][1][2] - RightCtPoint[1][2])**2)
-      PatientSpineLength = PatientSpineLength + CurrentLength
-    PatientSpineLength = PatientSpineLength/2           # To average the right and left sides
+    SupInfVector = [0, 0, 0]
     
-    AverageSpineLength = 0
-    for i, LeftAtlasPoint in enumerate(self.ModelRegistrationPointsLeft[:-1], start=1):
-      CurrentLength = math.sqrt((self.ModelRegistrationPointsLeft[i][1][0] - LeftAtlasPoint[1][0])**2 + (self.ModelRegistrationPointsLeft[i][1][1] - LeftAtlasPoint[1][1])**2 + (self.ModelRegistrationPointsLeft[i][1][2] - LeftAtlasPoint[1][2])**2)
-      AverageSpineLength = AverageSpineLength + CurrentLength
-    for i, RightAtlasPoint in enumerate(self.ModelRegistrationPointsRight[:-1], start=1):
-      CurrentLength = math.sqrt((self.ModelRegistrationPointsRight[i][1][0] - RightAtlasPoint[1][0])**2 + (self.ModelRegistrationPointsRight[i][1][1] - RightAtlasPoint[1][1])**2 + (self.ModelRegistrationPointsRight[i][1][2] - RightAtlasPoint[1][2])**2)
-      AverageSpineLength = AverageSpineLength + CurrentLength
-    AverageSpineLength = AverageSpineLength/2
+    if Point[0] == PointSet[0][0]:
+      # Boundary conition, top point
+      for dim in range(3):
+        SupInfVector[dim] += PointSet[1][1][dim] - Point[1][dim]
+    elif Point[0] == PointSet[-1][0]:
+      # Boundary condition, bottom point
+      for dim in range(3):
+        SupInfVector[dim] += Point[1][dim] - PointSet[-2][1][dim]
+    else:
+      # Non-bounary, expecting a point above and below
+      SearchIterator = 1
+      while Point[0] != PointSet[SearchIterator][0]: # Search by label until point is found
+        SearchIterator += 1
+        if SearchIterator > len(PointSet):
+          print "Error - could not compute SupInfVector for point " + Point[0]
+          print " Point not found in registration points - Returning 0-vector."
+          return [0,0,0]
+      for dim in range(3):
+        # Use average since we have points above and below
+        SupInfVector[dim] += ((Point[1][dim] - PointSet[SearchIterator - 1][1][dim]) + (PointSet[SearchIterator + 1][1][dim] - Point[1][dim])) / 2.0
+   
+    return SupInfVector
     
-    print "\n Atlas model curve length(mm) = " + str(AverageSpineLength) 
-    print "Ct model curve length(mm) = " + str(PatientSpineLength)
-    self.scale = PatientSpineLength/AverageSpineLength
-    return self.scale
-    scale
-    
-  def ComputeAnatomicScaleFactorsLocally(self):
+  def ComputeRightLeftVector(self, Point, ParallelPointSet):
     import math
+    RightLeftVecor = [0, 0, 0]
+    SearchIterator = 0
     
-    # When this is called, self.ModelRegistrationPoints contain no anchor points
-    
-    # Top most point is a special boundary condition
-    ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsLeft[0][1][0] - self.ModelRegistrationPointsLeft[1][1][0])**2 + \
-      (self.ModelRegistrationPointsLeft[0][1][1] - self.ModelRegistrationPointsLeft[1][1][1])**2 + \
-      (self.ModelRegistrationPointsLeft[0][1][2] - self.ModelRegistrationPointsLeft[1][1][2])**2)
-    CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsLeft[0][1][0] - self.PatientRegistrationPointsLeft[1][1][0])**2 + \
-      (self.PatientRegistrationPointsLeft[0][1][1] - self.PatientRegistrationPointsLeft[1][1][1])**2 + \
-      (self.PatientRegistrationPointsLeft[0][1][2] - self.PatientRegistrationPointsLeft[1][1][2])**2)/ModelDistanceMetric
-    self.LocalVertebralScalingFactorsLeft.append(CurrentScalingFactor)
-    ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsRight[0][1][0] - self.ModelRegistrationPointsRight[1][1][0])**2 + \
-      (self.ModelRegistrationPointsRight[0][1][1] - self.ModelRegistrationPointsRight[1][1][1])**2 + \
-      (self.ModelRegistrationPointsRight[0][1][2] - self.ModelRegistrationPointsRight[1][1][2])**2)
-    CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsRight[0][1][0] - self.PatientRegistrationPointsRight[1][1][0])**2 + \
-      (self.PatientRegistrationPointsRight[0][1][1] - self.PatientRegistrationPointsRight[1][1][1])**2 + \
-      (self.PatientRegistrationPointsRight[0][1][2] - self.PatientRegistrationPointsRight[1][1][2])**2)/ModelDistanceMetric
-    CurrentScalingFactor = 1.0 / CurrentScalingFactor
-    self.LocalVertebralScalingFactorsRight.append(CurrentScalingFactor)
-    
-    # Deal with the left-sided points
-    for i, (ModelPointLeft, PatientPointLeft) in enumerate(zip(self.ModelRegistrationPointsLeft[1:-1], self.PatientRegistrationPointsLeft[1:-1]), start=1):
-      ModelDistanceMetric = math.sqrt((ModelPointLeft[1][0] - self.ModelRegistrationPointsLeft[i-1][1][0])**2 + \
-        (ModelPointLeft[1][1] - self.ModelRegistrationPointsLeft[i-1][1][1])**2 + \
-        (ModelPointLeft[1][2] - self.ModelRegistrationPointsLeft[i-1][1][2])**2)
-      ModelDistanceMetric = ModelDistanceMetric + math.sqrt((self.ModelRegistrationPointsLeft[i+1][1][0] - ModelPointLeft[1][0])**2 + \
-        (self.ModelRegistrationPointsLeft[i+1][1][1] - ModelPointLeft[1][1])**2 + \
-        (self.ModelRegistrationPointsLeft[i+1][1][2] - ModelPointLeft[1][2])**2)
-      CurrentScalingFactor = math.sqrt((PatientPointLeft[1][0] - self.PatientRegistrationPointsLeft[i-1][1][0])**2 + \
-        (PatientPointLeft[1][1] - self.PatientRegistrationPointsLeft[i-1][1][1])**2 + \
-        (PatientPointLeft[1][2] - self.PatientRegistrationPointsLeft[i-1][1][2])**2)/ModelDistanceMetric
-      CurrentScalingFactor = CurrentScalingFactor + math.sqrt((self.PatientRegistrationPointsLeft[i+1][1][0] - PatientPointLeft[1][0])**2 + \
-        (self.PatientRegistrationPointsLeft[i+1][1][1] - PatientPointLeft[1][1])**2 + \
-        (self.PatientRegistrationPointsLeft[i+1][1][2] - PatientPointLeft[1][2])**2)/ModelDistanceMetric
-      self.LocalVertebralScalingFactorsLeft.append(CurrentScalingFactor)
-   
-    # Then with the right-sided points
-    for i, (ModelPointRight, PatientPointRight) in enumerate(zip(self.ModelRegistrationPointsRight[1:-1], self.PatientRegistrationPointsRight[1:-1]), start=1):
-      ModelDistanceMetric = math.sqrt((ModelPointRight[1][0] - self.ModelRegistrationPointsRight[i-1][1][0])**2 + \
-        (ModelPointRight[1][1] - self.ModelRegistrationPointsRight[i-1][1][1])**2 + \
-        (ModelPointRight[1][2] - self.ModelRegistrationPointsRight[i-1][1][2])**2)
-      ModelDistanceMetric = ModelDistanceMetric + math.sqrt((self.ModelRegistrationPointsRight[i+1][1][0] - ModelPointRight[1][0])**2 + \
-        (self.ModelRegistrationPointsRight[i+1][1][1] - ModelPointRight[1][1])**2 + \
-        (self.ModelRegistrationPointsRight[i+1][1][2] - ModelPointRight[1][2])**2)
-      CurrentScalingFactor = math.sqrt((PatientPointRight[1][0] - self.PatientRegistrationPointsRight[i-1][1][0])**2 + \
-        (PatientPointRight[1][1] - self.PatientRegistrationPointsRight[i-1][1][1])**2 + \
-        (PatientPointRight[1][2] - self.PatientRegistrationPointsRight[i-1][1][2])**2)/ModelDistanceMetric
-      CurrentScalingFactor = CurrentScalingFactor + math.sqrt((self.PatientRegistrationPointsRight[i+1][1][0] - PatientPointRight[1][0])**2 + \
-        (self.PatientRegistrationPointsRight[i+1][1][1] - PatientPointRight[1][1])**2 + \
-        (self.PatientRegistrationPointsRight[i+1][1][2] - PatientPointRight[1][2])**2)/ModelDistanceMetric
-      self.LocalVertebralScalingFactorsRight.append(CurrentScalingFactor)
+    while Point[0][:-1] != ParallelPointSet[SearchIterator][0][:-1]:    # Compare labels from beginning, slow
+      SearchIterator += 1
+      if SearchIterator > len(ParallelPointSet):
+        print "Error - could not find point symmetric to point " + Point[0]
+        print " Point not found in registration points - Returning 0-vector."
+        return [0,0,0]
+    for dim in range(3):
+      RightLeftVecor[dim] = ParallelPointSet[SearchIterator][1][dim] - Point[1][dim]
       
-    # Bottom most point is a special boundary condition
-    ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsLeft[-2][1][0] - self.ModelRegistrationPointsLeft[-1][1][0])**2 + \
-      (self.ModelRegistrationPointsLeft[-2][1][1] - self.ModelRegistrationPointsLeft[-1][1][1])**2 + \
-      (self.ModelRegistrationPointsLeft[-2][1][2] - self.ModelRegistrationPointsLeft[-1][1][2])**2)
-    CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsLeft[-2][1][0] - self.PatientRegistrationPointsLeft[-1][1][0])**2 + \
-      (self.PatientRegistrationPointsLeft[-2][1][1] - self.PatientRegistrationPointsLeft[-1][1][1])**2 + \
-      (self.PatientRegistrationPointsLeft[-2][1][2] - self.PatientRegistrationPointsLeft[-1][1][2])**2)/ModelDistanceMetric
-    self.LocalVertebralScalingFactorsLeft.append(CurrentScalingFactor)
-    ModelDistanceMetric = math.sqrt((self.ModelRegistrationPointsRight[-2][1][0] - self.ModelRegistrationPointsRight[-1][1][0])**2 + \
-      (self.ModelRegistrationPointsRight[-2][1][1] - self.ModelRegistrationPointsRight[-1][1][1])**2 + \
-      (self.ModelRegistrationPointsRight[-2][1][2] - self.ModelRegistrationPointsRight[-1][1][2])**2)
-    CurrentScalingFactor = math.sqrt((self.PatientRegistrationPointsRight[-2][1][0] - self.PatientRegistrationPointsRight[-1][1][0])**2 + \
-      (self.PatientRegistrationPointsRight[-2][1][1] - self.PatientRegistrationPointsRight[-1][1][1])**2 + \
-      (self.PatientRegistrationPointsRight[-2][1][2] - self.PatientRegistrationPointsRight[-1][1][2])**2)/ModelDistanceMetric
-    self.LocalVertebralScalingFactorsRight.append(CurrentScalingFactor)
-  
-  def AnchorPatientSpine(self):
-    import math, numpy 
-    # Compute vectors normal to spine curve for offset points
-    # The top points on each side must be done specially since they have only 1 neighbor
-    TopPoint = self.PatientRegistrationPointsLeft[0]
-    BottomPoint = self.PatientRegistrationPointsLeft[1]                                                                                   # Assumes there's more than on fid. on left side
-    VerticalVector = [TopPoint[1][0] - BottomPoint[1][0], TopPoint[1][1] - BottomPoint[1][1], TopPoint[1][2] - BottomPoint[1][2]]
-    AnatomicScalingFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
-    #if(self.PatientRegistrationPointsLeft[0][0][:-1] == self.PatientRegistrationPointsRight[0][0][:-1]):  # If symetric partner is present 
-    RightPoint = self.ChooseClosestPointFrom(TopPoint, self.PatientRegistrationPointsRight)
-    print TopPoint
-    print RightPoint
-    HorizontalVector = [TopPoint[1][0] - RightPoint[1][0], TopPoint[1][1] - RightPoint[1][1], TopPoint[1][2] - RightPoint[1][2]]
-    OffsetVector = numpy.cross(HorizontalVector, VerticalVector)
-    OffsetNorm = math.sqrt((OffsetVector[0])**2 + (OffsetVector[1])**2 + (OffsetVector[2])**2)
-    if self.UseVertebraWiseScaling:
-      for dim in range(3):
-        OffsetVector[dim] = self.LocalVertebralScalingFactorsLeft[0]*AnatomicScalingFactor*OffsetVector[dim]/OffsetNorm
-    else:
-      for dim in range(3):
-        OffsetVector[dim] = self.scale*self.GlobalVertebralScalingFactor*OffsetVector[dim]/OffsetNorm
-    self.PatientAnchorPointsLeft.append((self.PatientRegistrationPointsNode.GetNthFiducialLabel(0) + "A", OffsetVector))
-   
-    # The same thing on the right side point
-    TopPoint = self.PatientRegistrationPointsRight[0]
-    BottomPoint = self.PatientRegistrationPointsRight[1]                                                                               # Assuming there's more than one fid on right side  
-    VerticalVector = [TopPoint[1][0] - BottomPoint[1][0], TopPoint[1][1] - BottomPoint[1][1], TopPoint[1][2] - BottomPoint[1][2]]
-    AnatomicScalingFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
-    LeftPoint = self.ChooseClosestPointFrom(TopPoint,self.PatientRegistrationPointsLeft)
-    HorizontalVector = [LeftPoint[1][0] - TopPoint[1][0], LeftPoint[1][1] - TopPoint[1][1], LeftPoint[1][2] - TopPoint[1][2]]
-    OffsetVector = numpy.cross(HorizontalVector, VerticalVector)
-    OffsetNorm = math.sqrt((OffsetVector[0])**2 + (OffsetVector[1])**2 + (OffsetVector[2])**2)
-    if self.UseVertebraWiseScaling:
-      for dim in range(3):
-        OffsetVector[dim] = self.LocalVertebralScalingFactorsRight[0]*AnatomicScalingFactor*OffsetVector[dim]/OffsetNorm
-    else:
-      for dim in range(3):
-        OffsetVector[dim] = self.scale*self.GlobalVertebralScalingFactor*OffsetVector[dim]/OffsetNorm
-    self.PatientAnchorPointsRight.append((self.PatientRegistrationPointsNode.GetNthFiducialLabel(1) + "A", OffsetVector))
+    if Point[0][-1] == "R":
+      # Ensure vectors are always Left to Right, convention for easy crossing
+      for i, Coord in enumerate(RightLeftVecor):
+        RightLeftVecor[i] = -1 * Coord
         
-    # Now for the rest of the fiducials (except the bottom two)
-    LeftIterator = 1
-    RightIterator = 1
-    for i, CurrentPoint in enumerate(self.PatientRegistrationPoints[2:-2], start = 2):
-      if(CurrentPoint[0][-1] == "L"):
-        AbovePoint = self.PatientRegistrationPointsLeft[LeftIterator-1]
-        VerticalVectorAbove = [AbovePoint[1][0] - CurrentPoint[1][0], AbovePoint[1][1] - CurrentPoint[1][1], AbovePoint[1][2] - CurrentPoint[1][2]]
-        BelowPoint = self.PatientRegistrationPointsLeft[LeftIterator+1]
-        VerticalVectorBelow = [CurrentPoint[1][0] - BelowPoint[1][0], CurrentPoint[1][1] - BelowPoint[1][1], CurrentPoint[1][2] - BelowPoint[1][2]]
-        for dim in range(3):
-          #VerticalVectorAbove[dim] = VerticalVectorAbove[dim]/(int(CurrentPoint[0][1:-1]) - int(AbovePoint[0][1:-1]))
-          #VerticalVectorBelow[dim] = VerticalVectorBelow[dim]/(int(BelowPoint[0][1:-1]) - int(CurrentPoint[0][1:-1]))
-          VerticalVector[dim] = (VerticalVectorAbove[dim] + VerticalVectorBelow[dim])/2
-        AnatomicScalingFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
-        RightPoint = self.ChooseClosestPointFrom(CurrentPoint, self.PatientRegistrationPointsRight)               # NOT NECESSARILY CURRENTPOINT'S VERTEBRAL NEIGHBOR
-        HorizontalVector = [RightPoint[1][0] - CurrentPoint[1][0], RightPoint[1][1] - CurrentPoint[1][1], RightPoint[1][2] - CurrentPoint[1][2]]
-        OffsetVector = numpy.cross(VerticalVector, HorizontalVector)
-        OffsetNorm = math.sqrt(OffsetVector[0]**2 + OffsetVector[1]**2 + OffsetVector[2]**2)
-        if(self.UseVertebraWiseScaling):
-          for dim in range(3):
-            #OffsetVector[dim] = self.LocalVertebralScalingFactorsLeft[LeftIterator]*(self.AnatomicScalingFactor)*OffsetVector[dim]/OffsetNorm
-            OffsetVector[dim] = (AnatomicScalingFactor)*OffsetVector[dim]/OffsetNorm
-        else:
-          for dim in range(3):
-            OffsetVector[dim] = self.scale*self.GlobalVertebralScalingFactor*OffsetVector[dim]/OffsetNorm
-        self.PatientAnchorPointsLeft.append((CurrentPoint[0] + "A", OffsetVector))
-        LeftIterator = LeftIterator + 1
-      else:
-        AbovePoint = self.PatientRegistrationPointsRight[RightIterator-1]
-        VerticalVectorAbove = [AbovePoint[1][0] - CurrentPoint[1][0], AbovePoint[1][1] - CurrentPoint[1][1], AbovePoint[1][2] - CurrentPoint[1][2]]
-        BelowPoint = self.PatientRegistrationPointsRight[RightIterator+1]
-        VerticalVectorBelow = [CurrentPoint[1][0] - BelowPoint[1][0], CurrentPoint[1][1] - BelowPoint[1][1], CurrentPoint[1][2] - BelowPoint[1][2]]
-        for dim in range(3):
-          #VerticalVectorAbove[dim] = VerticalVectorAbove[dim]/(int(CurrentPoint[0][1:-1]) - int(AbovePoint[0][1:-1]))
-          #VerticalVectorBelow[dim] = VerticalVectorBelow[dim]/(int(BelowPoint[0][1:-1]) - int(CurrentPoint[0][1:-1]))
-          VerticalVector[dim] = (VerticalVectorAbove[dim] + VerticalVectorBelow[dim])/2
-        AnatomicScalingFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
-        LeftPoint = self.ChooseClosestPointFrom(CurrentPoint, self.PatientRegistrationPointsLeft)               # NOT NECESSARILY CURRENT POINT'S VERTEBRAL NEIGHBOR
-        HorizontalVector = [LeftPoint[1][0] - CurrentPoint[1][0], LeftPoint[1][1] - CurrentPoint[1][1], LeftPoint[1][2] - CurrentPoint[1][2]]
-        OffsetVector = numpy.cross(HorizontalVector, VerticalVector)
-        OffsetNorm = math.sqrt(OffsetVector[0]**2 + OffsetVector[1]**2 + OffsetVector[2]**2)
-        if(self.UseVertebraWiseScaling):
-          for dim in range(3):
-            OffsetVector[dim] = self.LocalVertebralScalingFactorsLeft[RightIterator]*(AnatomicScalingFactor)*OffsetVector[dim]/OffsetNorm
-            #OffsetVector[dim] = (AnatomicScalingFactor)*OffsetVector[dim]/OffsetNorm
-        else:
-          for dim in range(3):
-            OffsetVector[dim] = self.scale*self.GlobalVertebralScalingFactor*OffsetVector[dim]/OffsetNorm
-        self.PatientAnchorPointsRight.append((CurrentPoint[0] + "A", OffsetVector))
-        RightIterator = RightIterator + 1
-       
-    # Include similar method for last two points 
-    AbovePoint = self.PatientRegistrationPointsLeft[-2]
-    BesidePoint = self.PatientRegistrationPointsRight[-1]
-    LastLeft = self.PatientRegistrationPointsLeft[-1]
-    VerticalVector = [AbovePoint[1][0] - LastLeft[1][0], AbovePoint[1][1] - LastLeft[1][1], AbovePoint[1][2] - LastLeft[1][2]]
-    OffsetScaleFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
-    HorizontalVector = [BesidePoint[1][0] - LastLeft[1][0], BesidePoint[1][1] - LastLeft[1][1], BesidePoint[1][2] - LastLeft[1][2]]
-    OffsetVector = numpy.cross(VerticalVector, HorizontalVector)
-    OffsetNorm = math.sqrt((OffsetVector[0])**2 + (OffsetVector[1])**2 + (OffsetVector[2])**2) 
-    if self.UseVertebraWiseScaling:
-      for dim in range(3):
-        OffsetVector[dim] = self.LocalVertebralScalingFactorsLeft[-1]*OffsetScaleFactor*OffsetVector[dim]/OffsetNorm
-    else:
-      for dim in range(3):
-        OffsetVector[dim] = self.scale*OffsetScaleFactor*OffsetVector[dim]/OffsetNorm
-    self.PatientAnchorPointsLeft.append((self.PatientRegistrationPointsLeft[-1][0] + "A", OffsetVector))
-    
-    AbovePoint = self.PatientRegistrationPointsRight[-2]
-    LastRight = BesidePoint
-    BesidePoint = LastLeft
-    VerticalVector = [AbovePoint[1][0] - LastRight[1][0], AbovePoint[1][1] - LastRight[1][1], AbovePoint[1][2] - LastRight[1][2]]
-    OffsetScaleFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
-    HorizontalVector = [BesidePoint[1][0] - LastRight[1][0], BesidePoint[1][1] - LastRight[1][1], BesidePoint[1][2] - LastRight[1][2]]
-    OffsetVector = numpy.cross(HorizontalVector, VerticalVector)
-    OffsetNorm = math.sqrt((OffsetVector[0])**2 + (OffsetVector[1])**2 + (OffsetVector[2])**2) 
-    if self.UseVertebraWiseScaling:
-      for dim in range(3):
-        OffsetVector[dim] = self.LocalVertebralScalingFactorsRight[-1]*OffsetScaleFactor*OffsetVector[dim]/OffsetNorm
-    else:
-      for dim in range(3):
-        OffsetVector[dim] = self.scale*OffsetScaleFactor*OffsetVector[dim]/OffsetNorm
-    self.PatientAnchorPointsRight.append((self.PatientRegistrationPointsRight[-1][0] + "A", OffsetVector))
-    
-    i = 0
-    while(i < len(self.PatientRegistrationPointsLeft) and i < len(self.PatientRegistrationPointsRight)):
-      print self.PatientRegistrationPointsLeft[i][0] + " vector: " + str(self.PatientRegistrationPointsLeft[i][1][0]) + " " + str(self.PatientRegistrationPointsLeft[i][1][1]) + " " + str(self.PatientRegistrationPointsLeft[i][1][2])
-      print self.PatientAnchorPointsLeft[i][0] + " vector: " + str(self.PatientRegistrationPointsLeft[i][1][0] + self.PatientAnchorPointsLeft[i][1][0]) + " " + str(self.PatientRegistrationPointsLeft[i][1][1] + \
-        self.PatientAnchorPointsLeft[i][1][1]) + " " + str(self.PatientRegistrationPointsLeft[i][1][2] + self.PatientAnchorPointsLeft[i][1][2])
-      print self.PatientRegistrationPointsRight[i][0] + " vector: " + str(self.PatientRegistrationPointsRight[i][1][0]) + " " + str(self.PatientRegistrationPointsRight[i][1][1]) + " " + str(self.PatientRegistrationPointsRight[i][1][2])
-      print self.PatientAnchorPointsRight[i][0] + " vector: " + str(self.PatientRegistrationPointsRight[i][1][0] + self.PatientAnchorPointsRight[i][1][0]) + " " + str(self.PatientRegistrationPointsRight[i][1][1] + \
-        self.PatientAnchorPointsRight[i][1][1]) + " " + str(self.PatientRegistrationPointsRight[i][1][2] + self.PatientAnchorPointsRight[i][1][2])
-      i = i+1
-      
-    if(i < len(self.PatientRegistrationPointsLeft)):
-      while(i < len(self.PatientRegistrationPointsLeft)):
-        print self.PatientRegistrationPointsLeft[i][0] + " vector: " + str(self.PatientRegistrationPointsLeft[i][1][0]) + " " + str(self.PatientRegistrationPointsLeft[i][1][1]) + " " + str(self.PatientRegistrationPointsLeft[i][1][2])
-        print self.PatientAnchorPointsLeft[i][0] + " vector: " + str(self.PatientRegistrationPointsLeft[i][1][0] + self.PatientAnchorPointsLeft[i][1][0]) + " " + str(self.PatientRegistrationPointsLeft[i][1][1] + \
-          self.PatientAnchorPointsLeft[i][1][1]) + " " + str(self.PatientRegistrationPointsLeft[i][1][2] + self.PatientAnchorPointsLeft[i][1][2])
-        i = i+1
-    elif(i < len(self.PatientRegistrationPointsRight)):
-      while(i < len(self.PatientRegistrationPointsRight)):
-        print self.PatientRegistrationPointsRight[i][0] + " vector: " + str(self.PatientRegistrationPointsRight[i][1][0]) + " " + str(self.PatientRegistrationPointsRight[i][1][1]) + " " + str(self.PatientRegistrationPointsRight[i][1][2])
-        print self.PatientAnchorPointsRight[i][0] + " vector: " + str(self.PatientRegistrationPointsRight[i][1][0] + self.PatientAnchorPointsRight[i][1][0]) + " " + str(self.PatientRegistrationPointsRight[i][1][1] + \
-          self.PatientAnchorPointsRight[i][1][1]) + " " + str(self.PatientRegistrationPointsRight[i][1][2] + self.PatientAnchorPointsRight[i][1][2])
-        i = i+1
-    
-    LeftIterator = 0
-    RightIterator = 0
-    for i in range(self.PatientRegistrationPointsNode.GetNumberOfFiducials()):
-      OriginalCtPoint = self.PatientRegistrationPointsNode.GetMarkupPointVector(i,0)
-      if(self.PatientRegistrationPointsNode.GetNthFiducialLabel(i)[-1] == "L"):
-        self.PatientRegistrationPointsNode.AddFiducial(OriginalCtPoint[0] + self.PatientAnchorPointsLeft[LeftIterator][1][0],OriginalCtPoint[1] + self.PatientAnchorPointsLeft[LeftIterator][1][1],OriginalCtPoint[2] + self.PatientAnchorPointsLeft[LeftIterator][1][2])
-        self.PatientRegistrationPointsNode.SetNthFiducialLabel(self.PatientRegistrationPointsNode.GetNumberOfFiducials() - 1, self.PatientAnchorPointsLeft[LeftIterator][0])
-        LeftIterator = LeftIterator + 1
-      else:
-        self.PatientRegistrationPointsNode.AddFiducial(OriginalCtPoint[0] + self.PatientAnchorPointsRight[RightIterator][1][0],OriginalCtPoint[1] + self.PatientAnchorPointsRight[RightIterator][1][1],OriginalCtPoint[2] + self.PatientAnchorPointsRight[RightIterator][1][2])
-        self.PatientRegistrationPointsNode.SetNthFiducialLabel(self.PatientRegistrationPointsNode.GetNumberOfFiducials() - 1, self.PatientAnchorPointsRight[RightIterator][0])
-        RightIterator = RightIterator + 1
-         
-    slicer.mrmlScene.AddNode(self.PatientRegistrationPointsNode)
-    return
-  
-  def AnchorAverageSpine(self):
-  
-    # TODO: Take into account possibility of missing points, making sure to normalize dilated ScalingFactor
-  
-    import math, numpy      
-    
-    # Top most points are a special boundary condition
-    #First, the top-left point:
-    TopPoint = self.ModelRegistrationPointsLeft[0]
-    BelowPoint = self.ModelRegistrationPointsLeft[1]
-    VerticalVector = [TopPoint[1][0] - BelowPoint[1][0], TopPoint[1][1] - BelowPoint[1][1], TopPoint[1][2] - BelowPoint[1][2]]
-    #for dim in range(3):                                            # Normalization step in case next left sided point is a few vertebrae down
-      #VerticalVector[dim] = VerticalVector[dim]/(int(BelowPoint[0][1:-1]) - int(TopPoint[0][1:-1]))
-    AnatomicScalingFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
-    #BesidePoint = self.ModelRegistrationPointsRight[0]              # NOT NECESSARILY ON SAME VERTEBRA AS TOP-LEFT POINT - CONSIDER SOME NORMALIZATION METHOD
-    BesidePoint = self.ChooseClosestPointFrom(TopPoint, self.ModelRegistrationPointsRight)
-    HorizontalVector = [BesidePoint[1][0] - TopPoint[1][0], BesidePoint[1][1] - TopPoint[1][1], BesidePoint[1][2] - TopPoint[1][2]]
-    OffsetVector = numpy.cross(VerticalVector, HorizontalVector)
-    OffsetNorm = math.sqrt((OffsetVector[0])**2 + (OffsetVector[1])**2 + (OffsetVector[2])**2)
-    if(self.UseVertebraWiseScaling):
-      for dim in range(3):
-        OffsetVector[dim] = AnatomicScalingFactor*OffsetVector[dim]/OffsetNorm
-    else:
-      for dim in range(3):
-        OffsetVector[dim] = self.GlobalVertebralScalingFactor*OffsetVector[dim]/OffsetNorm
-    self.ModelRegistrationPointsNode.AddFiducial(TopPoint[1][0] + OffsetVector[0], TopPoint[1][1] + OffsetVector[1], TopPoint[1][2] + OffsetVector[2])
-    self.ModelRegistrationPointsNode.SetNthFiducialLabel(self.ModelRegistrationPointsNode.GetNumberOfFiducials() - 1, self.ModelRegistrationPointsNode.GetNthFiducialLabel(0) + "A")
-
-    # For the top-right point:
-    TopPoint = self.ModelRegistrationPointsRight[0]
-    BelowPoint = self.ModelRegistrationPointsRight[1]
-    VerticalVector = [TopPoint[1][0] - BelowPoint[1][0], TopPoint[1][1] - BelowPoint[1][1], TopPoint[1][2] - BelowPoint[1][2]]
-    #for dim in range(3):                                            # Normalization step in case next left sided point is a few vertebrae down
-      #VerticalVector[dim] = VerticalVector[dim]/(int(BelowPoint[0][1:-1]) - int(TopPoint[0][1:-1]))
-    AnatomicScalingFactor = math.sqrt(VerticalVector[0]**2 + VerticalVector[1]**2 + VerticalVector[2]**2)
-    #BesidePoint = self.ModelRegistrationPointsLeft[0]         # NOT NECESSARILY ON SAME VERTEBRA AS TOP-LEFT POINT - CONSIDER SOME NORMALIZATION METHOD
-    BesidePoint = self.ChooseClosestPointFrom(TopPoint, self.ModelRegistrationPointsLeft)
-    HorizontalVector = [BesidePoint[1][0] - TopPoint[1][0], BesidePoint[1][1] - TopPoint[1][1], BesidePoint[1][2] - TopPoint[1][2]]
-    OffsetVector = numpy.cross(HorizontalVector, VerticalVector)
-    OffsetNorm = math.sqrt((OffsetVector[0])**2 + (OffsetVector[1])**2 + (OffsetVector[2])**2)
-    if(self.UseVertebraWiseScaling):
-      for dim in range(3):
-        OffsetVector[dim] = AnatomicScalingFactor*OffsetVector[dim]/OffsetNorm
-    else:
-      for dim in range(3):
-        OffsetVector[dim] = self.GlobalVertebralScalingFactor*OffsetVector[dim]/OffsetNorm
-    self.ModelRegistrationPointsNode.AddFiducial(TopPoint[1][0] + OffsetVector[0], TopPoint[1][1] + OffsetVector[1], TopPoint[1][2] + OffsetVector[2])
-    self.ModelRegistrationPointsNode.SetNthFiducialLabel(self.ModelRegistrationPointsNode.GetNumberOfFiducials() - 1, self.ModelRegistrationPointsNode.GetNthFiducialLabel(1) + "A")
-
-    # For the rest of the points (except bottom two)
-    LeftIterator = 1
-    RightIterator = 1
-    for i, OriginalPoint in enumerate(self.ModelRegistrationPoints[2:-2], start=2):
-      if(OriginalPoint[0][-1] == "L"):
-        AbovePoint = self.ModelRegistrationPointsLeft[LeftIterator-1]
-        TopVector = [AbovePoint[1][0] - OriginalPoint[1][0], AbovePoint[1][1] - OriginalPoint[1][1], AbovePoint[1][2] - OriginalPoint[1][2]]
-        BelowPoint = self.ModelRegistrationPointsLeft[LeftIterator+1]
-        LeftIterator = LeftIterator + 1
-        BottomVector = [OriginalPoint[1][0] - BelowPoint[1][0], OriginalPoint[1][1] - BelowPoint[1][1], OriginalPoint[1][2] - BelowPoint[1][2]]
-        #VerticalVector = [(TopVector[0] + BottomVector[0])/2, (TopVector[1] + BottomVector[1])/2, (TopVector[2] + BottomVector[2])/2]
-        for dim in range(3):
-          #TopVector[dim] = TopVector[dim]/(int(OriginalPoint[0][1:-1]) - int(AbovePoint[0][1:-1]))
-          #BottomVector[dim] = BottomVector[dim]/(int(BelowPoint[0][1:-1]) - int(OriginalPoint[0][1:-1]))
-          VerticalVector[dim] = (TopVector[dim] + BottomVector[dim])/2
-        AnatomicScalingFactor = math.sqrt((VerticalVector[0]**2) + VerticalVector[1]**2 + VerticalVector[2]**2)
-        #RightPoint = self.ModelRegistrationPointsRight[RightIterator]                       # NOT NECESSARILY BESIDE IN THE CASE OF INCOMPLETE POINT SETS
-        RightPoint = self.ChooseClosestPointFrom(OriginalPoint, self.ModelRegistrationPointsRight)
-        HorizontalVector = [RightPoint[1][0] - OriginalPoint[1][0], RightPoint[1][1] - OriginalPoint[1][1], RightPoint[1][2] - OriginalPoint[1][2]]
-        OffsetVector = numpy.cross(VerticalVector, HorizontalVector)
-        OffsetNorm = math.sqrt((OffsetVector[0])**2 + (OffsetVector[1])**2 + (OffsetVector[2])**2)
-        if(self.UseVertebraWiseScaling):
-          for dim in range(3):
-            OffsetVector[dim] = AnatomicScalingFactor*OffsetVector[dim]/OffsetNorm
-        else:
-          for dim in range(3):
-            OffsetVector[dim] = self.GlobalVertebralScalingFactor*OffsetVector[dim]/OffsetNorm
-        self.ModelRegistrationPointsNode.AddFiducial(OriginalPoint[1][0] + OffsetVector[0], OriginalPoint[1][1] + OffsetVector[1], OriginalPoint[1][2] + OffsetVector[2])
-        self.ModelRegistrationPointsNode.SetNthFiducialLabel(self.ModelRegistrationPointsNode.GetNumberOfFiducials() - 1, self.ModelRegistrationPointsNode.GetNthFiducialLabel(i) + "A")
-      else:
-        AbovePoint = self.ModelRegistrationPointsRight[RightIterator-1]
-        TopVector = [AbovePoint[1][0] - OriginalPoint[1][0], AbovePoint[1][1] - OriginalPoint[1][1], AbovePoint[1][2] - OriginalPoint[1][2]]
-        BelowPoint = self.ModelRegistrationPointsRight[RightIterator+1]
-        RightIterator = RightIterator + 1
-        BottomVector = [OriginalPoint[1][0] - BelowPoint[1][0], OriginalPoint[1][1] - BelowPoint[1][1], OriginalPoint[1][2] - BelowPoint[1][2]]
-        #VerticalVector = [(TopVector[0] + BottomVector[0])/2, (TopVector[1] + BottomVector[1])/2, (TopVector[2] + BottomVector[2])/2]
-        for dim in range(3):
-          #TopVector[dim] = TopVector[dim]/(int(OriginalPoint[0][1:-1]) - int(AbovePoint[0][1:-1]))
-          #BottomVector[dim] = BottomVector[dim]/(int(BelowPoint[0][1:-1]) - int(OriginalPoint[0][1:-1]))
-          VerticalVector[dim] = (TopVector[dim] + BottomVector[dim])/2
-        AnatomicScalingFactor = math.sqrt((VerticalVector[0]**2) + VerticalVector[1]**2 + VerticalVector[2]**2)
-        #LeftPoint = self.ModelRegistrationPointsLeft[LeftIterator-1]                       # NOT NECESSARILY BESIDE IN THE CASE OF INCOMPLETE POINT SETS
-        LeftPoint = self.ChooseClosestPointFrom(OriginalPoint, self.ModelRegistrationPointsLeft)
-        HorizontalVector = [LeftPoint[1][0] - OriginalPoint[1][0], LeftPoint[1][1] - OriginalPoint[1][1], LeftPoint[1][2] - OriginalPoint[1][2]]
-        OffsetVector = numpy.cross(HorizontalVector, VerticalVector)
-        OffsetNorm = math.sqrt((OffsetVector[0])**2 + (OffsetVector[1])**2 + (OffsetVector[2])**2)
-        if(self.UseVertebraWiseScaling):
-          for dim in range(3):
-            OffsetVector[dim] = AnatomicScalingFactor*OffsetVector[dim]/OffsetNorm
-        else:
-          for dim in range(3):
-            OffsetVector[dim] = self.GlobalVertebralScalingFactor*OffsetVector[dim]/OffsetNorm
-        self.ModelRegistrationPointsNode.AddFiducial(OriginalPoint[1][0] + OffsetVector[0], OriginalPoint[1][1] + OffsetVector[1], OriginalPoint[1][2] + OffsetVector[2])
-        self.ModelRegistrationPointsNode.SetNthFiducialLabel(self.ModelRegistrationPointsNode.GetNumberOfFiducials() - 1, self.ModelRegistrationPointsNode.GetNthFiducialLabel(i) + "A")
-        
-    # Special method for last two model's points' offsets  
-    self.ModelRegistrationPointsNode.AddFiducial(self.ModelRegistrationPointsLeft[-1][1][0], self.ModelRegistrationPointsLeft[-1][1][1] + self.GlobalVertebralScalingFactor, self.ModelRegistrationPointsLeft[-1][1][2])
-    self.ModelRegistrationPointsNode.SetNthFiducialLabel(self.ModelRegistrationPointsNode.GetNumberOfFiducials() - 1, self.PatientRegistrationPointsLeft[-1][0] + "A")
-    self.ModelRegistrationPointsNode.AddFiducial(self.ModelRegistrationPointsRight[-1][1][0], self.ModelRegistrationPointsRight[-1][1][1] + self.GlobalVertebralScalingFactor, self.ModelRegistrationPointsRight[-1][1][2])
-    self.ModelRegistrationPointsNode.SetNthFiducialLabel(self.ModelRegistrationPointsNode.GetNumberOfFiducials() - 1, self.PatientRegistrationPointsRight[-1][0] + "A")
+    return RightLeftVecor
  
-    slicer.mrmlScene.AddNode(self.ModelRegistrationPointsNode)
-    return
+  def ComputeLocalAnatomicScalingFactors(self):
+    import numpy
+    if self.UseVerticalScaling:
+      # Uses lengths of SupInfVectors as anatomic scaling factors
+      SumPatientScalingFactors = 0
+      SumModelScalingFactors = 0
+      for i in range(len(self.PatientRegistrationPointsLeft)):
+        self.PatientScalingFactorsLeft.append(numpy.linalg.norm(self.PatientSupInfVectorsLeft[i]))
+        SumPatientScalingFactors += self.PatientScalingFactorsLeft[-1]
+      for i in range(len(self.PatientRegistrationPointsRight)):
+        self.PatientScalingFactorsRight.append(numpy.linalg.norm(self.PatientSupInfVectorsRight[i]))
+        SumPatientScalingFactors += self.PatientScalingFactorsRight[-1]
+      for i in range(len(self.ModelRegistrationPointsLeft)):
+        self.ModelScalingFactorsLeft.append(numpy.linalg.norm(self.ModelSupInfVectorsLeft[i]))
+        SumModelScalingFactors += self.ModelScalingFactorsLeft[-1]
+      for i in range(len(self.ModelRegistrationPointsRight)):
+        self.ModelScalingFactorsRight.append(numpy.linalg.norm(self.ModelSupInfVectorsRight[i]))
+        SumModelScalingFactors += self.ModelScalingFactorsRight[-1]
       
+      if self.UseAverageScaling:
+        AveragePatientScalingFactor = SumPatientScalingFactors / (len(self.PatientScalingFactorsLeft) + len(self.PatientScalingFactorsRight))
+        AverageModelScalingFactor = SumModelScalingFactors / (len(self.ModelScalingFactorsLeft) + len(self.ModelScalingFactorsRight))
+        for i in range(len(self.PatientScalingFactorsLeft)):
+          self.PatientScalingFactorsLeft[i] = AveragePatientScalingFactor
+        for i in range(len(self.PatientScalingFactorsRight)):
+          self.PatientScalingFactorsRight[i] = AveragePatientScalingFactor
+        for i in range(len(self.ModelScalingFactorsLeft)):
+          self.ModelScalingFactorsLeft[i] = AverageModelScalingFactor
+        for i in range(len(self.ModelScalingFactorsRight)):
+          self.ModelScalingFactorsRight[i] = AverageModelScalingFactor
+        
+      for i in range(len(self.PatientScalingFactorsLeft)):
+        # The multiplication by * (AveragePatientScalingFactor / AverageModelScalingFactor) is the VSF, to factor in the relative lengths of model/patient
+        self.PatientScalingFactorsLeft[i] = self.PatientScalingFactorsLeft[i] * (self.PatientScalingFactorsLeft[i] / self.ModelScalingFactorsLeft[i])
+      for i in range(len(self.PatientScalingFactorsRight)):
+        self.PatientScalingFactorsRight[i] = self.PatientScalingFactorsRight[i] * (self.PatientScalingFactorsRight[i] / self.ModelScalingFactorsRight[i])
+ 
+  def AnchorPatientSpine(self):
+    import numpy
+    LeftIt = 0
+    RightIt = 0
+    print self.PatientScalingFactorsLeft
+    print self.PatientScalingFactorsRight
+    for i in range(len(self.PatientRegistrationPoints)):
+      if self.PatientRegistrationPoints[i][0][-1] == "L":
+        AnchorPoint = (self.PatientRegistrationPoints[i][0] + "A", [0, 0, 0])
+        AntPostVectorNorm = numpy.linalg.norm(self.PatientAntPostVectorsLeft[LeftIt])
+        for dim in range(3):
+          AnchorPoint[1][dim] = self.PatientRegistrationPoints[i][1][dim] + (self.PatientAntPostVectorsLeft[LeftIt][dim] * self.PatientScalingFactorsLeft[LeftIt] / AntPostVectorNorm)
+        slicer.modules.ModelToPatientRegistrationWidget.ToOutputSelector.currentNode().AddFiducial(AnchorPoint[1][0], AnchorPoint[1][1], AnchorPoint[1][2])
+        slicer.modules.ModelToPatientRegistrationWidget.ToOutputSelector.currentNode().SetNthFiducialLabel(slicer.modules.ModelToPatientRegistrationWidget.ToOutputSelector.currentNode().GetNumberOfFiducials() - 1, AnchorPoint[0])
+        LeftIt += 1
+      else: #self.PatientRegistrationPoints[i][0][-1] == "R":
+        AnchorPoint = (self.PatientRegistrationPoints[i][0] + "A", [0, 0, 0])
+        AntPostVectorNorm = numpy.linalg.norm(self.PatientAntPostVectorsRight[RightIt])
+        for dim in range(3):
+          AnchorPoint[1][dim] = self.PatientRegistrationPoints[i][1][dim] + (self.PatientAntPostVectorsRight[RightIt][dim] * self.PatientScalingFactorsRight[RightIt] / AntPostVectorNorm)
+        slicer.modules.ModelToPatientRegistrationWidget.ToOutputSelector.currentNode().AddFiducial(AnchorPoint[1][0], AnchorPoint[1][1], AnchorPoint[1][2])
+        slicer.modules.ModelToPatientRegistrationWidget.ToOutputSelector.currentNode().SetNthFiducialLabel(slicer.modules.ModelToPatientRegistrationWidget.ToOutputSelector.currentNode().GetNumberOfFiducials() - 1, AnchorPoint[0])
+        RightIt += 1
+      self.PatientRegistrationPoints.append((AnchorPoint[0] + "A", [AnchorPoint[1][0], AnchorPoint[1][1], AnchorPoint[1][2]]))
   
-  def ChooseClosestPointFrom(self, CurrentPoint, SelectionPoints):
-    if(CurrentPoint[0][-1] == "L"):
-      if(CurrentPoint[0][0] == "T"):                      # We are marrying up a point on the left-thoracic spine
-        BestGuess = SelectionPoints[0]
-        if(BestGuess[0][0] == "L"):                       # The highest point we could find is necessarily below the CurrentPoint
-          return BestGuess
-        elif(int(BestGuess[0][1:-1]) > int(CurrentPoint[0][1:-1])):
-          return BestGuess
-        else:
-          RightIterator = 1
-          while(BestGuess[0][:-1] != CurrentPoint[0][:-1] and RightIterator < len(SelectionPoints)):
-            NextTry = SelectionPoints[RightIterator]
-            if(NextTry[0][0] == "T"):
-              if(abs(int(NextTry[0][1:-1]) - int(CurrentPoint[0][1:-1])) < abs(int(BestGuess[0][1:-1]) - int(CurrentPoint[0][1:-1]))):
-                BestGuess = NextTry
-              RightIterator = RightIterator + 1
-              continue
-            else:                                         # If a lumbar is closer to our thoracic point than any other thoracic point, we don't need to check any more
-              if(abs(int(NextTry[0][1:-1]) + 12 - int(CurrentPoint[0][1:-1])) < abs(int(BestGuess[0][1:-1]) - int(CurrentPoint[0][1:-1]))):
-                BestGuess = NextTry
-                return BestGuess
-              else:
-                return BestGuess
-          return BestGuess
-      else:                                             # Our point is on the left-lumbar spine
-        BestGuess = SelectionPoints[-1]
-        if(BestGuess[0][0] == "T"):                     # The lowest partner point is in the thoracic spine
-          return BestGuess
-        elif(int(BestGuess[0][1:-1] < int(CurrentPoint[0][1:-1]))): # The lowest point is still above our CurrentPoint
-          return BestGuess
-        else:
-          RightIterator = len(SelectionPoints) - 2
-          while(BestGuess[0][:-1] != CurrentPoint[0][:-1] and RightIterator >= 0):
-            NextTry = SelectionPoints[RightIterator]
-            if(NextTry[0][0] == "L"):
-              if(abs(int(NextTry[0][1:-1]) - int(CurrentPoint[0][1:-1])) < abs(int(BestGuess[0][1:-1]) - int(CurrentPoint[0][1:-1]))):
-                BestGuess = NextTry
-              RightIterator = RightIterator - 1
-              continue
-            else:
-              if(abs(int(NextTry[0][1:-1]) - 12 - int(CurrentPoint[0][1:-1])) < abs(int(BestGuess[0][1:-1]) - int(CurrentPoint[0][1:-1]))):
-                BestGuess = NextTry
-                return BestGuess
-              else:
-                return BestGuess
-          return BestGuess
-    else:                                                   
-      if(CurrentPoint[0][0] == "T"):                      # We are marrying up a point on the right-thoracic spine
-        BestGuess = SelectionPoints[0]
-        if(BestGuess[0][0] == "L"):                       # The highest point we could find is necessarily below the CurrentPoint
-          return BestGuess
-        elif(int(BestGuess[0][1:-1]) > int(CurrentPoint[0][1:-1])):
-          return BestGuess
-        else:
-          LeftIterator = 1
-          while(BestGuess[0][:-1] != CurrentPoint[0][:-1] and LeftIterator < len(SelectionPoints)):
-            NextTry = SelectionPoints[LeftIterator]
-            if(NextTry[0][0] == "T"):
-              if(abs(int(NextTry[0][1:-1]) - int(CurrentPoint[0][1:-1])) < abs(int(BestGuess[0][1:-1]) - int(CurrentPoint[0][1:-1]))):
-                BestGuess = NextTry
-              LeftIterator = LeftIterator + 1
-              continue
-            else:                                         # If a lumbar is closer to our thoracic point than any other thoracic point, we don't need to check any more
-              if(abs(int(NextTry[0][1:-1]) + 12 - int(CurrentPoint[0][1:-1])) < abs(int(BestGuess[0][1:-1]) - int(CurrentPoint[0][1:-1]))):
-                BestGuess = NextTry
-                return BestGuess
-              else:
-                return BestGuess
-          return BestGuess
-      else:                                             # Our point is on the right-lumbar spine
-        BestGuess = SelectionPoints[-1]
-        if(BestGuess[0][0] == "T"):                     # The lowest partner point is in the thoracic spine
-          return BestGuess
-        elif(int(BestGuess[0][1:-1] < int(CurrentPoint[0][1:-1]))): # The lowest point is still above our CurrentPoint
-          return BestGuess
-        else:
-          LeftIterator = len(SelectionPoints) - 2
-          while(BestGuess[0][:-1] != CurrentPoint[0][:-1] and LeftIterator >= 0):
-            NextTry = SelectionPoints[LeftIterator]
-            if(NextTry[0][0] == "L"):
-              if(abs(int(NextTry[0][1:-1]) - int(CurrentPoint[0][1:-1])) < abs(int(BestGuess[0][1:-1]) - int(CurrentPoint[0][1:-1]))):
-                BestGuess = NextTry
-              LeftIterator = LeftIterator - 1
-              continue
-            else:
-              if(abs(int(NextTry[0][1:-1]) - 12 - int(CurrentPoint[0][1:-1])) < abs(int(BestGuess[0][1:-1]) - int(CurrentPoint[0][1:-1]))):
-                BestGuess = NextTry
-                return BestGuess
-              else:
-                return BestGuess
-          return BestGuess
+  def AnchorModelSpine(self):
+    import numpy
+    LeftIt = 0
+    RightIt = 0
+    for i in range(len(self.ModelRegistrationPoints)):
+      if self.ModelRegistrationPoints[i][0][-1] == "L":
+        AnchorPoint = (self.ModelRegistrationPoints[i][0] + "A", [0, 0, 0])
+        AntPostVectorNorm = numpy.linalg.norm(self.ModelAntPostVectorsLeft[LeftIt])
+        for dim in range(3):
+          AnchorPoint[1][dim] = self.ModelRegistrationPoints[i][1][dim] + (self.ModelAntPostVectorsLeft[LeftIt][dim] * self.ModelScalingFactorsLeft[LeftIt] / AntPostVectorNorm)
+        slicer.modules.ModelToPatientRegistrationWidget.FromOutputSelector.currentNode().AddFiducial(AnchorPoint[1][0], AnchorPoint[1][1], AnchorPoint[1][2])
+        slicer.modules.ModelToPatientRegistrationWidget.FromOutputSelector.currentNode().SetNthFiducialLabel(slicer.modules.ModelToPatientRegistrationWidget.FromOutputSelector.currentNode().GetNumberOfFiducials() - 1, AnchorPoint[0])
+        LeftIt += 1
+      else: #self.ModelRegistrationPoints[i][0][-1] == "R":
+        AnchorPoint = (self.ModelRegistrationPoints[i][0] + "A", [0, 0, 0])
+        AntPostVectorNorm = numpy.linalg.norm(self.ModelAntPostVectorsRight[RightIt])
+        for dim in range(3):
+          AnchorPoint[1][dim] = self.ModelRegistrationPoints[i][1][dim] + (self.ModelAntPostVectorsRight[RightIt][dim] * self.ModelScalingFactorsRight[RightIt] / AntPostVectorNorm)
+        slicer.modules.ModelToPatientRegistrationWidget.FromOutputSelector.currentNode().AddFiducial(AnchorPoint[1][0], AnchorPoint[1][1], AnchorPoint[1][2])
+        slicer.modules.ModelToPatientRegistrationWidget.FromOutputSelector.currentNode().SetNthFiducialLabel(slicer.modules.ModelToPatientRegistrationWidget.FromOutputSelector.currentNode().GetNumberOfFiducials() - 1, AnchorPoint[0])
+        RightIt += 1
+      self.ModelRegistrationPoints.append((AnchorPoint[0] + "A", [AnchorPoint[1][0], AnchorPoint[1][1], AnchorPoint[1][2]]))
  
 class ModelToPatientRegistrationTest:
   """
