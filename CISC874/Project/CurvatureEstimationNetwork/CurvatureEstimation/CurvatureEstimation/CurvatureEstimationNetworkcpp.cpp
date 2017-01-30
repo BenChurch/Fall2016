@@ -386,7 +386,8 @@ void LandmarkSets::WriteAllData(string FileID)
     line.pop_back();  // Pops off excess ","
     CoordsOutput << line << endl;
     line.clear();
-    TargetOutput << ((CurrentSetNode.TrueCurvature) / MAX_COBB_ANGLE) << endl;
+	cout << CurrentSetNode.Name << endl;
+    TargetOutput << abs((CurrentSetNode.TrueCurvature) / MAX_COBB_ANGLE) << endl;
   }
   CoordsOutput.close();
   TargetOutput.close();
@@ -1159,7 +1160,7 @@ int main()
 	InputLandmarkSets.ReadInputData(INPUT_FILE_NAME);
 
 	 InputLandmarkSets.SeperateTestAndTrainData(0.2);  // Needed for now to get WriteAllData to work
-	for (int i = 0; i < 0; i++)
+	for (int i = 0; i < 1; i++)
 	{	// Use a for-loop to write data to MATLAB csv files - DANGEROUS - make sure terminates - includes user input continuation
 		cout << "Press enter to generate file set " << i+1 << " or press crtl + c to terminate program." << endl;
 		cin.ignore();
@@ -1167,9 +1168,9 @@ int main()
 	}
 
 	FeedforwardLayeredNetwork AngleEstimator;
-	AngleEstimator.ConstructNetwork();
-	AngleEstimator.WriteSelf("1");
-	AngleEstimator.Train(InputLandmarkSets);
+	//AngleEstimator.ConstructNetwork();
+	//AngleEstimator.WriteSelf("1");
+	//AngleEstimator.Train(InputLandmarkSets);
 
 	cout << "Press enter to end the program." << endl;
 	cin.ignore();
